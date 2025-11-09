@@ -1,0 +1,166 @@
+.wallet-page {
+  min-height: 100vh;
+  padding: 40px 20px;
+}
+
+.container {
+  max-width: 800px;
+  margin: 0 auto;
+}
+
+.wallet-page h1 {
+  margin-bottom: 30px;
+  text-align: center;
+}
+
+.wallet-balance-card {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  padding: 40px;
+  border-radius: 10px;
+  text-align: center;
+  margin-bottom: 30px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+}
+
+.wallet-balance-card h2 {
+  margin-bottom: 20px;
+}
+
+.balance-amount {
+  font-size: 3rem;
+  font-weight: bold;
+  margin-bottom: 20px;
+}
+
+.add-funds-btn {
+  padding: 12px 30px;
+  background: white;
+  color: #667eea;
+  border: none;
+  border-radius: 5px;
+  font-size: 1rem;
+  font-weight: bold;
+  cursor: pointer;
+  transition: transform 0.2s;
+}
+
+.add-funds-btn:hover {
+  transform: translateY(-2px);
+}
+
+.add-funds-form {
+  margin-top: 20px;
+  padding: 20px;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 5px;
+}
+
+.add-funds-form input {
+  width: 100%;
+  padding: 12px;
+  border: none;
+  border-radius: 5px;
+  font-size: 1rem;
+  margin-bottom: 10px;
+}
+
+.form-buttons {
+  display: flex;
+  gap: 10px;
+}
+
+.form-buttons button {
+  flex: 1;
+  padding: 12px;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  font-weight: bold;
+  transition: transform 0.2s;
+}
+
+.form-buttons button:hover {
+  transform: translateY(-2px);
+}
+
+.form-buttons button[type="submit"] {
+  background: #28a745;
+  color: white;
+}
+
+.form-buttons button[type="button"] {
+  background: rgba(255, 255, 255, 0.3);
+  color: white;
+}
+
+.transactions-section {
+  background: white;
+  padding: 30px;
+  border-radius: 10px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+}
+
+.transactions-section h2 {
+  margin-bottom: 20px;
+}
+
+.transactions-list {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+.transaction-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 15px;
+  background: #f9f9f9;
+  border-radius: 5px;
+  transition: background 0.2s;
+}
+
+.transaction-item:hover {
+  background: #f0f0f0;
+}
+
+.transaction-details {
+  flex: 1;
+}
+
+.transaction-reason {
+  font-weight: bold;
+  margin-bottom: 5px;
+  color: #333;
+}
+
+.transaction-description {
+  color: #666;
+  font-size: 0.9rem;
+  margin-bottom: 5px;
+}
+
+.transaction-date {
+  color: #999;
+  font-size: 0.8rem;
+}
+
+.transaction-amount {
+  font-size: 1.5rem;
+  font-weight: bold;
+}
+
+.transaction-amount.CREDIT {
+  color: #28a745;
+}
+
+.transaction-amount.DEBIT {
+  color: #dc3545;
+}
+
+.no-transactions {
+  text-align: center;
+  padding: 40px;
+  color: #666;
+}
