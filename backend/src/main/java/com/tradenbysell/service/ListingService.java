@@ -21,6 +21,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.security.core.Authentication;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -41,6 +42,9 @@ public class ListingService {
 
     @Autowired
     private BidRepository bidRepository;
+    
+    @Autowired(required = false)
+    private com.tradenbysell.service.ModerationService moderationService;
 
     @Transactional
     public ListingDTO createListing(String userId, ListingCreateDTO createDTO) {
@@ -205,7 +209,7 @@ public class ListingService {
     }
 
     @Transactional
-    public void addImages(String listingId, List<String> imageUrls) {
+    public void addImages(String listingId, List<String> imageUrls, Authentication authentication) {
         Listing listing = listingRepository.findById(listingId)
                 .orElseThrow(() -> new ResourceNotFoundException("Listing not found"));
 
@@ -216,6 +220,24 @@ public class ListingService {
             image.setImageUrl(imageUrl);
             image.setDisplayOrder(order++);
             listingImageRepository.save(image);
+        }
+        
+        // Trigger moderation check after images are added
+        if (moderationService != null && authentication != null) {
+            try {
+                com.tradenbysell.dto.ModerationResponseDTO moderationResult = 
+                    moderationService.moderateListing(listingId, authentication);
+                
+                // If flagged, deactivate listing automatically
+                if (moderationResult != null && moderationResult.getShould_flag() != null && 
+                    moderationResult.getShould_flag()) {
+                    listing.setIsActive(false);
+                    listingRepository.save(listing);
+                }
+            } catch (Exception e) {
+                // Log error but don't fail listing creation if moderation fails
+                System.err.println("Error during moderation check: " + e.getMessage());
+            }
         }
     }
 
@@ -253,10 +275,14 @@ public class ListingService {
         dto.setTags(tags);
 
         Bid highestBid = bidRepository.findTopByListingIdOrderByBidAmountDescBidTimeAsc(listing.getListingId()).orElse(null);
+        List<Bid> allBids = bidRepository.findByListingIdOrderByBidAmountDescBidTimeAsc(listing.getListingId());
+        
         if (highestBid != null) {
             dto.setHighestBid(highestBid.getBidAmount());
-            dto.setBidCount((long) bidRepository.findByListingIdOrderByBidAmountDescBidTimeAsc(listing.getListingId()).size());
         }
+        
+        // Always set bid count, even if 0
+        dto.setBidCount((long) allBids.size());
 
         return dto;
     }

@@ -12,6 +12,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/listings")
@@ -80,11 +81,22 @@ public class ListingController {
     }
 
     @PostMapping("/{listingId}/images")
-    public ResponseEntity<Void> addImages(@PathVariable String listingId,
+    public ResponseEntity<Map<String, Object>> addImages(@PathVariable String listingId,
                                          @RequestBody List<String> imageUrls,
                                          Authentication authentication) {
-        listingService.addImages(listingId, imageUrls);
-        return ResponseEntity.ok().build();
+        listingService.addImages(listingId, imageUrls, authentication);
+        
+        // Get listing to check if it was flagged
+        com.tradenbysell.dto.ListingDTO listing = listingService.getListingById(listingId);
+        Map<String, Object> response = new java.util.HashMap<>();
+        response.put("message", "Images added successfully");
+        response.put("listingActive", listing.getIsActive());
+        
+        if (!listing.getIsActive()) {
+            response.put("warning", "Listing was flagged by ML moderation and is pending admin review");
+        }
+        
+        return ResponseEntity.ok(response);
     }
 }
 

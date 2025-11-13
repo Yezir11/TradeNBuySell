@@ -5,7 +5,19 @@ import Navigation from '../components/Navigation';
 import './LandingPage.css';
 
 const LandingPage = () => {
-  const { isAuthenticated } = useAuth();
+  const { isAuthenticated, loading } = useAuth();
+
+  // Show loading state while validating token
+  if (loading) {
+    return (
+      <div className="landing-page">
+        <Navigation />
+        <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '50vh' }}>
+          <p>Loading...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="landing-page">

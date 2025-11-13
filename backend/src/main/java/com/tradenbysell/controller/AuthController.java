@@ -4,6 +4,7 @@ import com.tradenbysell.dto.AuthRequest;
 import com.tradenbysell.dto.AuthResponse;
 import com.tradenbysell.dto.PasswordSetupRequest;
 import com.tradenbysell.dto.RegisterRequest;
+import com.tradenbysell.dto.UserProfileDTO;
 import com.tradenbysell.service.AuthService;
 import com.tradenbysell.util.AuthUtil;
 import jakarta.validation.Valid;
@@ -46,6 +47,12 @@ public class AuthController {
     public ResponseEntity<AuthResponse> getCurrentUser(Authentication authentication) {
         AuthResponse response = authService.getCurrentUser(authUtil.getUserId(authentication));
         return ResponseEntity.ok(response);
+    }
+
+    @GetMapping("/profile")
+    public ResponseEntity<UserProfileDTO> getProfile(Authentication authentication) {
+        UserProfileDTO profile = authService.getUserProfile(authUtil.getUserId(authentication));
+        return ResponseEntity.ok(profile);
     }
 }
 

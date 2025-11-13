@@ -1,27 +1,24 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useAuth } from '../context/AuthContext';
 import api from '../services/api';
 import Navigation from '../components/Navigation';
 import './AdminDashboard.css';
 
 const AdminDashboard = () => {
-  const { user, isAdmin } = useAuth();
+  const { isAdmin } = useAuth();
   const [reports, setReports] = useState([]);
   const [users, setUsers] = useState([]);
+  const [flaggedListings, setFlaggedListings] = useState([]);
+  const [moderationStats, setModerationStats] = useState({});
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState('reports');
   const [selectedReport, setSelectedReport] = useState(null);
+  const [selectedModeration, setSelectedModeration] = useState(null);
   const [adminAction, setAdminAction] = useState('');
   const [reportStatus, setReportStatus] = useState('NEW');
+  const [moderationPage, setModerationPage] = useState(0);
 
-  useEffect(() => {
-    if (!isAdmin()) {
-      return;
-    }
-    fetchDashboardData();
-  }, [activeTab]);
-
-  const fetchDashboardData = async () => {
+  const fetchDashboardData = useCallback(async () => {
     try {
       if (activeTab === 'reports') {
         const response = await api.get('/api/admin/reports');
@@ -29,13 +26,27 @@ const AdminDashboard = () => {
       } else if (activeTab === 'users') {
         const response = await api.get('/api/admin/users');
         setUsers(response.data);
+      } else if (activeTab === 'moderation') {
+        const [listingsResponse, statsResponse] = await Promise.all([
+          api.get(`/api/moderation/admin/flagged-listings?page=${moderationPage}&size=20`),
+          api.get('/api/moderation/admin/statistics')
+        ]);
+        setFlaggedListings(listingsResponse.data.content || []);
+        setModerationStats(statsResponse.data || {});
       }
     } catch (err) {
       console.error('Failed to fetch dashboard data:', err);
     } finally {
       setLoading(false);
     }
-  };
+  }, [activeTab, moderationPage]);
+
+  useEffect(() => {
+    if (!isAdmin()) {
+      return;
+    }
+    fetchDashboardData();
+  }, [activeTab, moderationPage, fetchDashboardData, isAdmin]);
 
   const handleReportUpdate = async (reportId) => {
     if (!adminAction.trim()) {
@@ -62,6 +73,25 @@ const AdminDashboard = () => {
       fetchDashboardData();
     } catch (err) {
       alert(`Failed to ${action} user`);
+    }
+  };
+
+  const handleModerationAction = async (logId) => {
+    if (!adminAction.trim()) {
+      alert('Please select an action');
+      return;
+    }
+
+    try {
+      await api.put(`/api/moderation/admin/log/${logId}/action`, {
+        action: adminAction,
+        reason: `Admin action: ${adminAction}`
+      });
+      setSelectedModeration(null);
+      setAdminAction('');
+      fetchDashboardData();
+    } catch (err) {
+      alert('Failed to update moderation action');
     }
   };
 
@@ -107,6 +137,12 @@ const AdminDashboard = () => {
               onClick={() => setActiveTab('users')}
             >
               Users
+            </button>
+            <button
+              className={activeTab === 'moderation' ? 'active' : ''}
+              onClick={() => setActiveTab('moderation')}
+            >
+              Moderation {moderationStats.pendingFlagged > 0 && `(${moderationStats.pendingFlagged})`}
             </button>
             <button
               className={activeTab === 'analytics' ? 'active' : ''}
@@ -273,6 +309,122 @@ const AdminDashboard = () => {
                       ))}
                     </tbody>
                   </table>
+                </div>
+              )}
+            </div>
+          )}
+
+          {activeTab === 'moderation' && (
+            <div className="moderation-section">
+              <div className="section-header">
+                <h2>ML Content Moderation</h2>
+                <div className="moderation-stats">
+                  <span>Pending: {moderationStats.pendingFlagged || 0}</span>
+                  <span>Approved: {moderationStats.approved || 0}</span>
+                  <span>Rejected: {moderationStats.rejected || 0}</span>
+                </div>
+              </div>
+
+              {flaggedListings.length === 0 ? (
+                <div className="no-flagged">No flagged listings found</div>
+              ) : (
+                <div className="flagged-listings">
+                  {flaggedListings.map(log => (
+                    <div key={log.logId} className="moderation-card">
+                      <div className="moderation-header">
+                        <div>
+                          <h3>Listing #{log.listingId || 'N/A'}</h3>
+                          <span className={`label-badge ${log.predictedLabel}`}>
+                            {log.predictedLabel} ({Math.round(log.confidence * 100)}%)
+                          </span>
+                        </div>
+                        <span className="moderation-date">
+                          {new Date(log.createdAt).toLocaleString()}
+                        </span>
+                      </div>
+
+                      <div className="moderation-details">
+                        <p><strong>User:</strong> {log.userName}</p>
+                        <p><strong>Confidence:</strong> {Math.round(log.confidence * 100)}%</p>
+                        <p><strong>Status:</strong> {log.adminAction || 'PENDING'}</p>
+                        
+                        {log.imageHeatmap && (
+                          <div className="heatmap-preview">
+                            <p><strong>ML Explanation:</strong></p>
+                            <img src={log.imageHeatmap} alt="Heatmap" style={{maxWidth: '300px', marginTop: '10px'}} />
+                          </div>
+                        )}
+
+                        {log.textExplanation && (
+                          <div className="text-explanation">
+                            <p><strong>Important Tokens:</strong></p>
+                            <div className="tokens-list">
+                              {log.textExplanation.tokens?.slice(0, 10).map((token, idx) => (
+                                <span key={idx} className="token-badge">
+                                  {token} ({log.textExplanation.scores?.[idx]?.toFixed(2)})
+                                </span>
+                              ))}
+                            </div>
+                          </div>
+                        )}
+                      </div>
+
+                      {selectedModeration === log.logId ? (
+                        <div className="moderation-actions">
+                          <select
+                            value={adminAction}
+                            onChange={(e) => setAdminAction(e.target.value)}
+                            className="action-select"
+                          >
+                            <option value="">Select Action</option>
+                            <option value="APPROVED">Approve</option>
+                            <option value="REJECTED">Reject</option>
+                            <option value="BLACKLISTED">Blacklist User</option>
+                          </select>
+                          <button
+                            onClick={() => handleModerationAction(log.logId)}
+                            className="btn-primary"
+                          >
+                            Submit Action
+                          </button>
+                          <button
+                            onClick={() => {
+                              setSelectedModeration(null);
+                              setAdminAction('');
+                            }}
+                            className="btn-secondary"
+                          >
+                            Cancel
+                          </button>
+                        </div>
+                      ) : (
+                        <button
+                          onClick={() => setSelectedModeration(log.logId)}
+                          className="btn-primary"
+                        >
+                          Review
+                        </button>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              )}
+
+              {moderationStats.totalPages > 1 && (
+                <div className="pagination">
+                  <button
+                    onClick={() => setModerationPage(Math.max(0, moderationPage - 1))}
+                    disabled={moderationPage === 0}
+                  >
+                    Previous
+                  </button>
+                  <span>Page {moderationPage + 1} of {moderationStats.totalPages}</span>
+                  <button
+                    onClick={() => setModerationPage(Math.min(moderationStats.totalPages - 1, moderationPage + 1))}
+                    disabled={moderationPage >= moderationStats.totalPages - 1}
+                  >
+                    Next
+                  </button>
                 </div>
               )}
             </div>

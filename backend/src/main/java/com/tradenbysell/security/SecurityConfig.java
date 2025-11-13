@@ -48,8 +48,11 @@ public class SecurityConfig {
             .cors(cors -> cors.configurationSource(corsConfigurationSource()))
             .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
             .authorizeHttpRequests(auth -> auth
-                .requestMatchers("/api/auth/**", "/images/**").permitAll()
+                .requestMatchers("/images/**").permitAll()
+                .requestMatchers("/api/auth/login", "/api/auth/register", "/api/auth/setup-password").permitAll()
                 .requestMatchers(HttpMethod.GET, "/api/listings", "/api/listings/**").permitAll()
+                .requestMatchers("/api/moderation/admin/**").hasRole("ADMIN")
+                .requestMatchers("/api/moderation/**").authenticated()
                 .requestMatchers("/api/admin/**").hasRole("ADMIN")
                 .anyRequest().authenticated()
             )

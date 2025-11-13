@@ -90,5 +90,21 @@ public class AuthService {
         String token = jwtUtil.generateToken(user.getUserId());
         return new AuthResponse(token, user.getUserId(), user.getEmail(), user.getFullName(), user.getRole().name());
     }
+
+    public com.tradenbysell.dto.UserProfileDTO getUserProfile(String userId) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new ResourceNotFoundException("User not found"));
+        return new com.tradenbysell.dto.UserProfileDTO(
+                user.getUserId(),
+                user.getEmail(),
+                user.getFullName(),
+                user.getRole().name(),
+                user.getWalletBalance(),
+                user.getTrustScore(),
+                user.getRegisteredAt(),
+                user.getLastLoginAt(),
+                user.getIsSuspended()
+        );
+    }
 }
 

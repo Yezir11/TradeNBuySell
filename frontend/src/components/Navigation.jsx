@@ -4,10 +4,13 @@ import { useAuth } from '../context/AuthContext';
 import './Navigation.css';
 
 const Navigation = () => {
-  const { isAuthenticated, user, logout, isAdmin } = useAuth();
+  const { isAuthenticated, user, logout, isAdmin, loading } = useAuth();
   const navigate = useNavigate();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isUserDropdownOpen, setIsUserDropdownOpen] = useState(false);
+
+  // Don't show user dropdown if loading or no user
+  const showUserDropdown = isAuthenticated && user && !loading;
 
   const handleLogout = () => {
     logout();
@@ -37,7 +40,7 @@ const Navigation = () => {
 
         <div className={`nav-links ${isMobileMenuOpen ? 'active' : ''}`}>
           <NavLink to="/marketplace" onClick={() => setIsMobileMenuOpen(false)}>Marketplace</NavLink>
-          {isAuthenticated && (
+          {!loading && isAuthenticated && user && (
             <>
               <NavLink to="/post-listing" onClick={() => setIsMobileMenuOpen(false)}>Post Listing</NavLink>
               <NavLink to="/trades" onClick={() => setIsMobileMenuOpen(false)}>Trades</NavLink>
@@ -48,14 +51,14 @@ const Navigation = () => {
               )}
             </>
           )}
-          {!isAuthenticated && (
+          {!loading && !isAuthenticated && (
             <NavLink to="/auth" onClick={() => setIsMobileMenuOpen(false)}>Login / Register</NavLink>
           )}
 
-          {isAuthenticated && (
+          {showUserDropdown && (
             <div className="user-dropdown">
               <div className="user-info" onClick={toggleUserDropdown}>
-                <span>{user?.fullName || user?.email}</span>
+                <span>{user.fullName || user.email}</span>
                 <i className="fas fa-caret-down"></i>
               </div>
               {isUserDropdownOpen && (

@@ -43,8 +43,10 @@ public class BidController {
     }
 
     @PostMapping("/listing/{listingId}/finalize")
-    public ResponseEntity<BidDTO> finalizeWinningBid(@PathVariable String listingId) {
-        BidDTO bid = bidService.finalizeWinningBid(listingId);
+    public ResponseEntity<BidDTO> finalizeWinningBid(@PathVariable String listingId,
+                                                      Authentication authentication) {
+        String userId = authUtil.getUserId(authentication);
+        BidDTO bid = bidService.finalizeWinningBid(userId, listingId);
         return ResponseEntity.ok(bid);
     }
 

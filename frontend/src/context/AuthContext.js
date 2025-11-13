@@ -17,13 +17,45 @@ export const AuthProvider = ({ children }) => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    const validateToken = async () => {
     const token = localStorage.getItem('token');
     if (token) {
+        try {
+          // Validate token by fetching current user
       api.defaults.headers.common['Authorization'] = `Bearer ${token}`;
+          const response = await api.get('/api/auth/me');
+          if (response.data) {
       setIsAuthenticated(true);
-      // Optionally fetch user details
+            setUser({
+              userId: response.data.userId,
+              email: response.data.email,
+              fullName: response.data.fullName,
+              role: response.data.role,
+            });
+          } else {
+            // Token is invalid, clear it
+            localStorage.removeItem('token');
+            delete api.defaults.headers.common['Authorization'];
+            setIsAuthenticated(false);
+            setUser(null);
+          }
+        } catch (error) {
+          // Token is invalid or expired, clear it
+          console.error('Token validation failed:', error);
+          localStorage.removeItem('token');
+          delete api.defaults.headers.common['Authorization'];
+          setIsAuthenticated(false);
+          setUser(null);
+        }
+      } else {
+        // No token, ensure we're logged out
+        setIsAuthenticated(false);
+        setUser(null);
     }
     setLoading(false);
+    };
+
+    validateToken();
   }, []);
 
   const login = (token, userData) => {

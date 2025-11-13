@@ -121,9 +121,24 @@ public class BidService {
     }
 
     @Transactional
-    public BidDTO finalizeWinningBid(String listingId) {
+    public BidDTO finalizeWinningBid(String userId, String listingId) {
         Listing listing = listingRepository.findById(listingId)
                 .orElseThrow(() -> new ResourceNotFoundException("Listing not found"));
+
+        // Only the listing owner can finalize bids
+        if (!listing.getUserId().equals(userId)) {
+            throw new BadRequestException("Only the listing owner can finalize bids");
+        }
+
+        // Listing must be biddable
+        if (!listing.getIsBiddable()) {
+            throw new BadRequestException("Listing is not biddable");
+        }
+
+        // Check if bidding has ended (if bidEndTime is set)
+        if (listing.getBidEndTime() != null && LocalDateTime.now().isBefore(listing.getBidEndTime())) {
+            throw new BadRequestException("Cannot finalize bid before bidding ends");
+        }
 
         Bid winningBid = bidRepository.findTopByListingIdOrderByBidAmountDescBidTimeAsc(listingId)
                 .orElseThrow(() -> new BadRequestException("No bids found for this listing"));

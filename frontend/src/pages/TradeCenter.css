@@ -51,8 +51,8 @@
   background: white;
   padding: 40px;
   border-radius: 10px;
-  max-width: 600px;
-  width: 90%;
+  max-width: 1200px;
+  width: 95%;
   max-height: 90vh;
   overflow-y: auto;
 }
@@ -298,5 +298,322 @@
   border-radius: 5px;
   margin-bottom: 20px;
   text-align: center;
+}
+
+/* Multi-step form styles */
+.trade-form-step {
+  margin-bottom: 20px;
+}
+
+.trade-form-step h3 {
+  margin-bottom: 10px;
+  color: #333;
+  font-size: 1.2rem;
+}
+
+.trade-form-step p {
+  margin-bottom: 20px;
+  color: #666;
+}
+
+.listing-select {
+  width: 100%;
+  padding: 10px;
+  border: 1px solid #ddd;
+  border-radius: 5px;
+  font-size: 1rem;
+  margin-bottom: 15px;
+}
+
+.listing-select-multiple {
+  width: 100%;
+  padding: 10px;
+  border: 1px solid #ddd;
+  border-radius: 5px;
+  font-size: 1rem;
+  min-height: 150px;
+}
+
+.selected-listing-preview {
+  margin-top: 15px;
+  padding: 15px;
+  background: #f0f8ff;
+  border: 1px solid #007bff;
+  border-radius: 5px;
+}
+
+.selected-listing-preview h4 {
+  margin: 0 0 10px 0;
+  color: #007bff;
+}
+
+.selected-listing-preview p {
+  margin: 5px 0;
+  color: #333;
+}
+
+.trade-summary {
+  margin-top: 20px;
+  padding: 15px;
+  background: #f9f9f9;
+  border-radius: 5px;
+  border: 1px solid #ddd;
+}
+
+.trade-summary h4 {
+  margin: 0 0 15px 0;
+  color: #333;
+  font-size: 1.1rem;
+}
+
+.trade-summary-item {
+  margin-bottom: 15px;
+  padding-bottom: 15px;
+  border-bottom: 1px solid #eee;
+}
+
+.trade-summary-item:last-child {
+  border-bottom: none;
+  margin-bottom: 0;
+  padding-bottom: 0;
+}
+
+.trade-summary-item strong {
+  display: block;
+  margin-bottom: 5px;
+  color: #555;
+}
+
+.trade-summary-item p,
+.trade-summary-item ul {
+  margin: 5px 0 0 0;
+  color: #333;
+}
+
+.trade-summary-item ul {
+  list-style: disc;
+  padding-left: 20px;
+}
+
+.trade-summary-item li {
+  margin: 5px 0;
+}
+
+.loading-message {
+  text-align: center;
+  padding: 20px;
+  color: #666;
+}
+
+.info-message {
+  text-align: center;
+  padding: 20px;
+  background: #e7f3ff;
+  color: #0066cc;
+  border-radius: 5px;
+  margin-bottom: 20px;
+}
+
+.next-btn {
+  flex: 1;
+  padding: 12px;
+  background: #28a745;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  font-weight: bold;
+}
+
+.next-btn:hover {
+  background: #218838;
+}
+
+.back-btn {
+  flex: 1;
+  padding: 12px;
+  background: #6c757d;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  font-weight: bold;
+}
+
+.back-btn:hover {
+  background: #5a6268;
+}
+
+.modal-buttons {
+  display: flex;
+  gap: 10px;
+  margin-top: 20px;
+  flex-wrap: wrap;
+}
+
+.modal-buttons button {
+  flex: 1;
+  min-width: 120px;
+}
+
+/* Card-based listing selection styles */
+.listings-grid-container {
+  margin: 20px 0;
+  max-height: 60vh;
+  overflow-y: auto;
+  padding: 10px;
+  background: #f9f9f9;
+  border-radius: 8px;
+}
+
+.listings-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+  gap: 20px;
+  padding: 10px;
+}
+
+.listing-card-selectable {
+  background: white;
+  border: 2px solid #ddd;
+  border-radius: 10px;
+  overflow: hidden;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  position: relative;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.listing-card-selectable:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+  border-color: #007bff;
+}
+
+.listing-card-selectable.selected {
+  border-color: #28a745;
+  border-width: 3px;
+  box-shadow: 0 4px 20px rgba(40, 167, 69, 0.3);
+  background: #f0fff4;
+}
+
+.listing-card-image {
+  width: 100%;
+  height: 180px;
+  object-fit: cover;
+  display: block;
+}
+
+.listing-card-content {
+  padding: 15px;
+}
+
+.listing-card-content h4 {
+  margin: 0 0 10px 0;
+  color: #333;
+  font-size: 1.1rem;
+  font-weight: 600;
+  line-height: 1.3;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.listing-price {
+  font-size: 1.2rem;
+  font-weight: bold;
+  color: #007bff;
+  margin: 8px 0;
+}
+
+.listing-category {
+  font-size: 0.85rem;
+  color: #666;
+  margin: 5px 0;
+  text-transform: capitalize;
+}
+
+.listing-description {
+  font-size: 0.9rem;
+  color: #555;
+  margin: 10px 0;
+  line-height: 1.4;
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.listing-seller {
+  font-size: 0.85rem;
+  color: #666;
+  margin: 5px 0;
+  font-style: italic;
+}
+
+.listing-trust {
+  font-size: 0.85rem;
+  color: #28a745;
+  margin: 5px 0;
+  font-weight: 500;
+}
+
+.selected-indicator {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  background: #28a745;
+  color: white;
+  padding: 5px 12px;
+  border-radius: 20px;
+  font-size: 0.85rem;
+  font-weight: bold;
+  box-shadow: 0 2px 8px rgba(40, 167, 69, 0.4);
+  z-index: 10;
+}
+
+.selected-count {
+  margin: 15px 0;
+  padding: 12px;
+  background: #e7f3ff;
+  border: 1px solid #007bff;
+  border-radius: 5px;
+  text-align: center;
+  font-weight: 600;
+  color: #007bff;
+  font-size: 1rem;
+}
+
+/* Responsive design for listing cards */
+@media (max-width: 768px) {
+  .listings-grid {
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 15px;
+  }
+
+  .listing-card-image {
+    height: 150px;
+  }
+
+  .listing-card-content {
+    padding: 12px;
+  }
+
+  .listing-card-content h4 {
+    font-size: 1rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .listings-grid {
+    grid-template-columns: 1fr;
+    gap: 15px;
+  }
+
+  .modal-content {
+    padding: 20px;
+    max-width: 95%;
+  }
 }
 
