@@ -113,7 +113,8 @@ public class ListingService {
         if (activeOnly != null && activeOnly) {
             listings = listingRepository.findByUserIdAndIsActive(userId, true);
         } else {
-            listings = listingRepository.findByUserIdAndIsActive(userId, false);
+            // When activeOnly is false or null, return ALL listings (both active and inactive)
+            listings = listingRepository.findByUserId(userId);
         }
         return listings.stream().map(this::toDTO).collect(Collectors.toList());
     }

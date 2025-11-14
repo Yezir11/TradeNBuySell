@@ -12,6 +12,7 @@ import java.util.List;
 
 @Repository
 public interface ListingRepository extends JpaRepository<Listing, String> {
+    List<Listing> findByUserId(String userId);
     List<Listing> findByUserIdAndIsActive(String userId, Boolean isActive);
     Page<Listing> findByIsActiveOrderByCreatedAtDesc(Boolean isActive, Pageable pageable);
     Page<Listing> findByCategoryAndIsActiveOrderByCreatedAtDesc(String category, Boolean isActive, Pageable pageable);

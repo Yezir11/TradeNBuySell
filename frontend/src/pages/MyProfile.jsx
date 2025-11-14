@@ -9,9 +9,12 @@ const MyProfile = () => {
   const { user, loading: authLoading } = useAuth();
   const [profile, setProfile] = useState(null);
   const [listings, setListings] = useState([]);
-  const [ratings, setRatings] = useState([]);
+  const [filteredListings, setFilteredListings] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const [searchQuery, setSearchQuery] = useState('');
+  const [activeFilter, setActiveFilter] = useState('all');
+  const [showMenu, setShowMenu] = useState(null);
 
   useEffect(() => {
     if (!authLoading && user?.userId) {
@@ -22,6 +25,20 @@ const MyProfile = () => {
     }
   }, [authLoading, user]);
 
+  // Close menu when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (showMenu && !event.target.closest('.listing-menu')) {
+        setShowMenu(null);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [showMenu]);
+
   const fetchProfileData = async () => {
     if (!user?.userId) {
       setLoading(false);
@@ -30,23 +47,136 @@ const MyProfile = () => {
 
     try {
       setError('');
-      const [profileRes, listingsRes, ratingsRes] = await Promise.all([
+      const [profileRes, listingsRes] = await Promise.all([
         api.get('/api/auth/profile'),
-        api.get('/api/listings/my-listings?activeOnly=false'),
-        api.get(`/api/ratings/user/${user.userId}`).catch(() => ({ data: [] }))
+        api.get('/api/listings/my-listings?activeOnly=false')
       ]);
       
       setProfile(profileRes.data);
-      setListings(listingsRes.data || []);
-      setRatings(ratingsRes.data || []);
+      const listingsData = listingsRes.data || [];
+      setListings(listingsData);
+      setFilteredListings(listingsData);
     } catch (err) {
       console.error('Failed to fetch profile data:', err);
       setError(err.response?.data?.message || 'Failed to load profile data');
       setListings([]);
-      setRatings([]);
+      setFilteredListings([]);
     } finally {
       setLoading(false);
     }
+  };
+
+  // Filter and search listings
+  useEffect(() => {
+    let filtered = listings;
+
+    // Apply status filter
+    if (activeFilter === 'active') {
+      filtered = filtered.filter(l => l.isActive);
+    } else if (activeFilter === 'inactive') {
+      filtered = filtered.filter(l => !l.isActive);
+    } else if (activeFilter === 'pending') {
+      // Listings that are active but have moderation pending (we'll check if they have pending moderation)
+      filtered = filtered.filter(l => l.isActive);
+    } else if (activeFilter === 'moderated') {
+      // Listings that were moderated (we can check this later if needed)
+      filtered = filtered.filter(l => !l.isActive);
+    }
+
+    // Apply search query
+    if (searchQuery.trim()) {
+      const query = searchQuery.toLowerCase();
+      filtered = filtered.filter(l => 
+        l.title.toLowerCase().includes(query) ||
+        l.description.toLowerCase().includes(query)
+      );
+    }
+
+    setFilteredListings(filtered);
+  }, [listings, activeFilter, searchQuery]);
+
+  const handleDeactivateListing = async (listingId) => {
+    if (window.confirm('Are you sure you want to deactivate this listing?')) {
+      try {
+        await api.delete(`/api/listings/${listingId}`);
+        // Refresh listings
+        fetchProfileData();
+      } catch (err) {
+        console.error('Failed to deactivate listing:', err);
+        alert(err.response?.data?.message || 'Failed to deactivate listing');
+      }
+    }
+  };
+
+  const handleRemoveListing = async (listingId) => {
+    if (window.confirm('Are you sure you want to remove this listing? This action cannot be undone.')) {
+      try {
+        await api.delete(`/api/listings/${listingId}`);
+        // Refresh listings
+        fetchProfileData();
+      } catch (err) {
+        console.error('Failed to remove listing:', err);
+        alert(err.response?.data?.message || 'Failed to remove listing');
+      }
+    }
+  };
+
+  const getStatusColor = (listing) => {
+    if (!listing.isActive) return '#dc3545'; // Red for inactive
+    return '#007bff'; // Blue for active
+  };
+
+  const getStatusText = (listing) => {
+    if (!listing.isActive) return 'INACTIVE';
+    return 'ACTIVE';
+  };
+
+  const getStatusMessage = (listing) => {
+    if (!listing.isActive) {
+      return 'This listing is inactive. If you sold it, you can remove it.';
+    }
+    return 'This listing is currently live';
+  };
+
+  const formatDate = (date) => {
+    if (!date) return '';
+    try {
+      const d = new Date(date);
+      if (isNaN(d.getTime())) return '';
+      const months = ['JAN', 'FEB', 'MAR', 'APR', 'MAY', 'JUN', 'JUL', 'AUG', 'SEP', 'OCT', 'NOV', 'DEC'];
+      return `${months[d.getMonth()]} ${d.getDate()}, ${d.getFullYear().toString().slice(-2)}`;
+    } catch (e) {
+      return '';
+    }
+  };
+
+  const getImageUrl = (imageUrl) => {
+    if (!imageUrl) return null;
+    // If it's already a full URL, return as is
+    if (imageUrl.startsWith('http://') || imageUrl.startsWith('https://')) {
+      return imageUrl;
+    }
+    // If it's a relative path starting with /, prepend the backend URL
+    if (imageUrl.startsWith('/')) {
+      const backendUrl = process.env.REACT_APP_API_URL || 'http://localhost:8080';
+      return `${backendUrl}${imageUrl}`;
+    }
+    // Otherwise, assume it's a relative path and prepend the backend URL with /
+    const backendUrl = process.env.REACT_APP_API_URL || 'http://localhost:8080';
+    return `${backendUrl}/${imageUrl}`;
+  };
+
+  const getDateRange = (listing) => {
+    const fromDate = formatDate(listing.createdAt);
+    let toDate = '';
+    
+    if (listing.bidEndTime) {
+      toDate = formatDate(listing.bidEndTime);
+    } else if (listing.updatedAt && listing.updatedAt !== listing.createdAt) {
+      toDate = formatDate(listing.updatedAt);
+    }
+    
+    return { fromDate, toDate };
   };
 
   if (authLoading || loading) {
@@ -95,8 +225,10 @@ const MyProfile = () => {
     );
   }
 
-  const activeListings = listings.filter(l => l.isActive);
-  const inactiveListings = listings.filter(l => !l.isActive);
+  const activeCount = listings.filter(l => l.isActive).length;
+  const inactiveCount = listings.filter(l => !l.isActive).length;
+  const pendingCount = 0; // Can be implemented later with moderation status
+  const moderatedCount = 0; // Can be implemented later with moderation status
 
   return (
     <>
@@ -141,7 +273,7 @@ const MyProfile = () => {
           <div className="profile-sections">
             <div className="section">
               <div className="section-header">
-                <h2>My Listings ({listings.length})</h2>
+                <h2>My Listings</h2>
                 <Link to="/post-listing" className="new-listing-btn">+ Create New Listing</Link>
               </div>
               
@@ -152,85 +284,232 @@ const MyProfile = () => {
                 </div>
               ) : (
                 <>
-                  {activeListings.length > 0 && (
-                    <div className="listings-section">
-                      <h3>Active Listings ({activeListings.length})</h3>
-                      <div className="listings-grid">
-                        {activeListings.map(listing => (
-                          <Link key={listing.listingId} to={`/listing/${listing.listingId}`} className="listing-card-link">
-                            <div className="listing-card">
-                              {listing.imageUrls && listing.imageUrls.length > 0 ? (
-                                <img src={listing.imageUrls[0]} alt={listing.title} onError={(e) => { e.target.src = '/placeholder-image.jpg'; }} />
-                              ) : (
-                                <div className="listing-image-placeholder">No Image</div>
-                              )}
-                              <div className="listing-info">
-                                <h3>{listing.title}</h3>
-                                <p className="price">₹{listing.price ? parseFloat(listing.price).toFixed(2) : 'Trade Only'}</p>
-                                <p className="status active">Active</p>
-                                {listing.isTradeable && <span className="badge tradeable">Tradeable</span>}
-                                {listing.isBiddable && <span className="badge biddable">Biddable</span>}
-                              </div>
-                            </div>
-                          </Link>
-                        ))}
+                  {/* Search and Filter Section */}
+                  <div className="listings-controls">
+                    <div className="search-container">
+                      <i className="fas fa-search search-icon"></i>
+                      <input
+                        type="text"
+                        className="search-input"
+                        placeholder="Search by Listing Title"
+                        value={searchQuery}
+                        onChange={(e) => setSearchQuery(e.target.value)}
+                      />
+                    </div>
+                    <div className="filter-container">
+                      <span className="filter-label">Filter By:</span>
+                      <div className="filter-buttons">
+                        <button
+                          className={`filter-btn ${activeFilter === 'all' ? 'active' : ''}`}
+                          onClick={() => setActiveFilter('all')}
+                        >
+                          View all ({listings.length})
+                        </button>
+                        <button
+                          className={`filter-btn ${activeFilter === 'active' ? 'active' : ''}`}
+                          onClick={() => setActiveFilter('active')}
+                        >
+                          Active Ads ({activeCount})
+                        </button>
+                        <button
+                          className={`filter-btn ${activeFilter === 'inactive' ? 'active' : ''}`}
+                          onClick={() => setActiveFilter('inactive')}
+                        >
+                          Inactive Ads ({inactiveCount})
+                        </button>
+                        <button
+                          className={`filter-btn ${activeFilter === 'pending' ? 'active' : ''}`}
+                          onClick={() => setActiveFilter('pending')}
+                        >
+                          Pending Ads ({pendingCount})
+                        </button>
+                        <button
+                          className={`filter-btn ${activeFilter === 'moderated' ? 'active' : ''}`}
+                          onClick={() => setActiveFilter('moderated')}
+                        >
+                          Moderated Ads ({moderatedCount})
+                        </button>
                       </div>
                     </div>
-                  )}
+                  </div>
 
-                  {inactiveListings.length > 0 && (
-                    <div className="listings-section">
-                      <h3>Inactive Listings ({inactiveListings.length})</h3>
-                      <div className="listings-grid">
-                        {inactiveListings.map(listing => (
-                          <Link key={listing.listingId} to={`/listing/${listing.listingId}`} className="listing-card-link">
-                            <div className="listing-card">
-                              {listing.imageUrls && listing.imageUrls.length > 0 ? (
-                                <img src={listing.imageUrls[0]} alt={listing.title} onError={(e) => { e.target.src = '/placeholder-image.jpg'; }} />
-                              ) : (
-                                <div className="listing-image-placeholder">No Image</div>
-                              )}
-                              <div className="listing-info">
-                                <h3>{listing.title}</h3>
-                                <p className="price">₹{listing.price ? parseFloat(listing.price).toFixed(2) : 'Trade Only'}</p>
-                                <p className="status inactive">Inactive</p>
+                  {/* Listings List */}
+                  <div className="listings-list">
+                    {filteredListings.length === 0 ? (
+                      <div className="empty-state">
+                        <p>No listings match your search criteria.</p>
+                      </div>
+                    ) : (
+                      filteredListings.map((listing, index) => {
+                        const statusColor = getStatusColor(listing);
+                        const statusText = getStatusText(listing);
+                        const statusMessage = getStatusMessage(listing);
+                        const { fromDate, toDate } = getDateRange(listing);
+                        
+                        // Debug: Log first listing to check data
+                        if (index === 0) {
+                          console.log('First listing data:', {
+                            listingId: listing.listingId,
+                            title: listing.title,
+                            price: listing.price,
+                            imageUrls: listing.imageUrls,
+                            isActive: listing.isActive,
+                            createdAt: listing.createdAt
+                          });
+                        }
+                        
+                        return (
+                          <Link 
+                            key={listing.listingId} 
+                            to={`/listing/${listing.listingId}`}
+                            className="listing-item-link"
+                          >
+                            <div className="listing-item">
+                              <div className="status-bar" style={{ backgroundColor: statusColor }}></div>
+                              <div className="listing-content">
+                                <div className="listing-date-range">
+                                  FROM: {fromDate} {toDate && `TO: ${toDate}`}
+                                </div>
+                                <div className="listing-main">
+                                  <div className="listing-image-container">
+                                    {listing.imageUrls && listing.imageUrls.length > 0 ? (
+                                      <img 
+                                        src={getImageUrl(listing.imageUrls[0])} 
+                                        alt={listing.title || 'Listing image'}
+                                        className="listing-image"
+                                        onError={(e) => { 
+                                          e.target.src = 'https://via.placeholder.com/150x150?text=No+Image';
+                                          e.target.onerror = null;
+                                        }}
+                                      />
+                                    ) : (
+                                      <div className="listing-image-placeholder">No Image</div>
+                                    )}
+                                  </div>
+                                  <div className="listing-details">
+                                    <h3 className="listing-title">{listing.title || 'Untitled Listing'}</h3>
+                                    {listing.description && (
+                                      <p className="listing-description">
+                                        {listing.description.length > 150 
+                                          ? `${listing.description.substring(0, 150)}...` 
+                                          : listing.description}
+                                      </p>
+                                    )}
+                                    <div className="listing-price-badge-container">
+                                      <p className="listing-price">
+                                        {listing.price ? `₹${parseFloat(listing.price).toLocaleString('en-IN')}` : 'Trade Only'}
+                                      </p>
+                                      <button 
+                                        className={`status-badge ${listing.isActive ? 'active' : 'inactive'}`} 
+                                        type="button"
+                                        onClick={(e) => {
+                                          e.preventDefault();
+                                          e.stopPropagation();
+                                        }}
+                                      >
+                                        {statusText}
+                                      </button>
+                                    </div>
+                                    <div className="listing-stats">
+                                      <span>Views: {listing.bidCount || 0}</span>
+                                      <span>Likes: 0</span>
+                                    </div>
+                                    {listing.category && (
+                                      <span className="listing-category-badge">{listing.category}</span>
+                                    )}
+                                  </div>
+                                </div>
+                                <div className="listing-status-message">
+                                  {statusMessage}
+                                </div>
+                                <div className="listing-actions">
+                                  {listing.isActive ? (
+                                    <>
+                                      <button 
+                                        className="action-btn mark-sold-btn"
+                                        onClick={(e) => {
+                                          e.preventDefault();
+                                          e.stopPropagation();
+                                          handleDeactivateListing(listing.listingId);
+                                        }}
+                                      >
+                                        Mark as sold
+                                      </button>
+                                      <button 
+                                        className="action-btn sell-faster-btn"
+                                        onClick={(e) => {
+                                          e.preventDefault();
+                                          e.stopPropagation();
+                                        }}
+                                      >
+                                        Sell faster now
+                                      </button>
+                                    </>
+                                  ) : (
+                                    <button 
+                                      className="action-btn remove-btn"
+                                      onClick={(e) => {
+                                        e.preventDefault();
+                                        e.stopPropagation();
+                                        handleRemoveListing(listing.listingId);
+                                      }}
+                                    >
+                                      Remove
+                                    </button>
+                                  )}
+                                </div>
+                                <div className="listing-menu">
+                                  <button 
+                                    className="menu-icon"
+                                    onClick={(e) => {
+                                      e.preventDefault();
+                                      e.stopPropagation();
+                                      setShowMenu(showMenu === listing.listingId ? null : listing.listingId);
+                                    }}
+                                  >
+                                    <i className="fas fa-ellipsis-v"></i>
+                                  </button>
+                                  {showMenu === listing.listingId && (
+                                    <div className="menu-dropdown" onClick={(e) => e.stopPropagation()}>
+                                      <Link 
+                                        to={`/listing/${listing.listingId}`} 
+                                        className="menu-item"
+                                        onClick={() => setShowMenu(null)}
+                                      >
+                                        View Details
+                                      </Link>
+                                      {listing.isActive ? (
+                                        <button 
+                                          className="menu-item"
+                                          onClick={() => {
+                                            handleDeactivateListing(listing.listingId);
+                                            setShowMenu(null);
+                                          }}
+                                        >
+                                          Deactivate
+                                        </button>
+                                      ) : (
+                                        <button 
+                                          className="menu-item"
+                                          onClick={() => {
+                                            handleRemoveListing(listing.listingId);
+                                            setShowMenu(null);
+                                          }}
+                                        >
+                                          Remove
+                                        </button>
+                                      )}
+                                    </div>
+                                  )}
+                                </div>
                               </div>
                             </div>
                           </Link>
-                        ))}
-                      </div>
-                    </div>
-                  )}
+                        );
+                      })
+                    )}
+                  </div>
                 </>
-              )}
-            </div>
-
-            <div className="section">
-              <h2>My Ratings ({ratings.length})</h2>
-              {ratings.length === 0 ? (
-                <div className="empty-state">
-                  <p>You haven't received any ratings yet.</p>
-                </div>
-              ) : (
-                <div className="ratings-list">
-                  {ratings.map(rating => (
-                    <div key={rating.ratingId} className="rating-item">
-                      <div className="rating-header">
-                        <span className="rating-value">{rating.ratingValue}/5</span>
-                        <span className="from-user">From: {rating.fromUserName || 'Unknown User'}</span>
-                      </div>
-                      {rating.reviewComment && (
-                        <p className="review-comment">"{rating.reviewComment}"</p>
-                      )}
-                      {rating.listingTitle && (
-                        <p className="listing-title">For: {rating.listingTitle}</p>
-                      )}
-                      {rating.timestamp && (
-                        <p className="rating-date">{new Date(rating.timestamp).toLocaleDateString()}</p>
-                      )}
-                    </div>
-                  ))}
-                </div>
               )}
             </div>
           </div>

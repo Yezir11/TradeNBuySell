@@ -6,8 +6,10 @@ import com.tradenbysell.exception.ResourceNotFoundException;
 import com.tradenbysell.model.Listing;
 import com.tradenbysell.model.Rating;
 import com.tradenbysell.model.User;
+import com.tradenbysell.repository.BidRepository;
 import com.tradenbysell.repository.ListingRepository;
 import com.tradenbysell.repository.RatingRepository;
+import com.tradenbysell.repository.TradeRepository;
 import com.tradenbysell.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -27,6 +29,12 @@ public class RatingService {
     @Autowired
     private ListingRepository listingRepository;
 
+    @Autowired
+    private TradeRepository tradeRepository;
+
+    @Autowired
+    private BidRepository bidRepository;
+
     @Transactional
     public RatingDTO createRating(String fromUserId, String toUserId, Integer ratingValue,
                                    String reviewComment, String listingId) {
@@ -34,19 +42,46 @@ public class RatingService {
             throw new BadRequestException("Cannot rate yourself");
         }
 
-        User fromUser = userRepository.findById(fromUserId)
-                .orElseThrow(() -> new ResourceNotFoundException("From user not found"));
+        // Validate that both users exist
+        if (!userRepository.existsById(fromUserId)) {
+            throw new ResourceNotFoundException("From user not found");
+        }
+        if (!userRepository.existsById(toUserId)) {
+            throw new ResourceNotFoundException("To user not found");
+        }
 
-        User toUser = userRepository.findById(toUserId)
-                .orElseThrow(() -> new ResourceNotFoundException("To user not found"));
-
+        Listing listing = null;
         if (listingId != null) {
-            Listing listing = listingRepository.findById(listingId)
+            listing = listingRepository.findById(listingId)
                     .orElseThrow(() -> new ResourceNotFoundException("Listing not found"));
         }
 
         if (ratingValue < 1 || ratingValue > 5) {
             throw new BadRequestException("Rating value must be between 1 and 5");
+        }
+
+        // Validate that users have completed a legitimate transaction
+        boolean hasValidTransaction = false;
+        
+        if (listingId != null && listing != null) {
+            // Check for completed trade for this specific listing
+            if (tradeRepository.haveCompletedTradeForListing(fromUserId, toUserId, listingId)) {
+                hasValidTransaction = true;
+            }
+            // Check if fromUserId has winning bid (purchased via bidding) and toUserId is the seller
+            else if (listing.getUserId().equals(toUserId) && 
+                     bidRepository.hasWinningBidForListing(fromUserId, listingId)) {
+                hasValidTransaction = true;
+            }
+        } else {
+            // If no listing specified, check if they have any completed trade
+            if (tradeRepository.haveCompletedTrade(fromUserId, toUserId)) {
+                hasValidTransaction = true;
+            }
+        }
+
+        if (!hasValidTransaction) {
+            throw new BadRequestException("You can only rate users you have completed a transaction with (trade, purchase, or sale)");
         }
 
         Rating existingRating = ratingRepository.findByFromUserIdAndToUserIdAndListingId(fromUserId, toUserId, listingId).orElse(null);
@@ -98,17 +133,19 @@ public class RatingService {
     private RatingDTO toDTO(Rating rating) {
         RatingDTO dto = new RatingDTO();
         dto.setRatingId(rating.getRatingId());
-        dto.setFromUserId(rating.getFromUserId());
+        // Do not expose fromUserId or fromUserName to keep ratings anonymous
+        // dto.setFromUserId(rating.getFromUserId());
         dto.setToUserId(rating.getToUserId());
         dto.setListingId(rating.getListingId());
         dto.setRatingValue(rating.getRatingValue());
         dto.setReviewComment(rating.getReviewComment());
         dto.setTimestamp(rating.getTimestamp());
 
-        User fromUser = userRepository.findById(rating.getFromUserId()).orElse(null);
-        if (fromUser != null) {
-            dto.setFromUserName(fromUser.getFullName());
-        }
+        // Keep rater anonymous - do not set fromUserName
+        // User fromUser = userRepository.findById(rating.getFromUserId()).orElse(null);
+        // if (fromUser != null) {
+        //     dto.setFromUserName(fromUser.getFullName());
+        // }
 
         User toUser = userRepository.findById(rating.getToUserId()).orElse(null);
         if (toUser != null) {
