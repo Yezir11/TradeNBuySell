@@ -1,0 +1,1244 @@
+================================================
+TradeNBuySell Database Schema and Data Export
+Generated: Thu Nov 13 18:09:28 IST 2025
+================================================
+
+================================================
+TABLE: bids
+================================================
+
+--- TABLE STRUCTURE ---
+Field	Type	Null	Key	Default	Extra
+bid_id	bigint	NO	PRI	NULL	auto_increment
+listing_id	char(36)	NO	MUL	NULL	
+user_id	char(36)	NO	MUL	NULL	
+bid_amount	decimal(15,2)	NO		NULL	
+bid_time	timestamp	YES	MUL	CURRENT_TIMESTAMP	DEFAULT_GENERATED
+is_winning	tinyint(1)	YES	MUL	0	
+
+Total Rows: 6
+
+--- TABLE DATA ---
+bid_id	listing_id	user_id	bid_amount	bid_time	is_winning
+1	kkkkkkkk-kkkk-kkkk-kkkk-kkkkkkkkkkkk	11111111-1111-1111-1111-111111111111	35000.00	2025-11-11 02:16:17	0
+2	kkkkkkkk-kkkk-kkkk-kkkk-kkkkkkkkkkkk	22222222-2222-2222-2222-222222222222	35500.00	2025-11-12 02:16:17	0
+3	kkkkkkkk-kkkk-kkkk-kkkk-kkkkkkkkkkkk	33333333-3333-3333-3333-333333333333	36000.00	2025-11-12 14:16:17	1
+4	llllllll-llll-llll-llll-llllllllllll	44444444-4444-4444-4444-444444444444	25000.00	2025-11-10 02:16:17	0
+5	llllllll-llll-llll-llll-llllllllllll	55555555-5555-5555-5555-555555555555	26000.00	2025-11-11 02:16:17	0
+6	llllllll-llll-llll-llll-llllllllllll	66666666-6666-6666-6666-666666666666	27000.00	2025-11-12 02:16:17	1
+
+
+================================================
+TABLE: categories
+================================================
+
+--- TABLE STRUCTURE ---
+Field	Type	Null	Key	Default	Extra
+category_id	int	NO	PRI	NULL	auto_increment
+name	varchar(100)	NO	UNI	NULL	
+description	text	YES		NULL	
+created_at	timestamp	YES		CURRENT_TIMESTAMP	DEFAULT_GENERATED
+
+Total Rows: 7
+
+--- TABLE DATA ---
+category_id	name	description	created_at
+1	Electronics	Electronics and gadgets	2025-10-31 15:13:21
+2	Books	Academic and recreational books	2025-10-31 15:13:21
+3	Furniture	Room furniture and decor	2025-10-31 15:13:21
+4	Clothing	Apparel and accessories	2025-10-31 15:13:21
+5	Sports	Sports equipment and gear	2025-10-31 15:13:21
+6	Stationery	Study materials and supplies	2025-10-31 15:13:21
+7	Other	Miscellaneous items	2025-10-31 15:13:21
+
+
+================================================
+TABLE: chat_messages
+================================================
+
+--- TABLE STRUCTURE ---
+Field	Type	Null	Key	Default	Extra
+message_id	bigint	NO	PRI	NULL	auto_increment
+sender_id	char(36)	NO	MUL	NULL	
+receiver_id	char(36)	NO	MUL	NULL	
+listing_id	char(36)	YES	MUL	NULL	
+message_text	text	NO		NULL	
+timestamp	timestamp	YES	MUL	CURRENT_TIMESTAMP	DEFAULT_GENERATED
+is_reported	tinyint(1)	YES		0	
+
+Total Rows: 5
+
+--- TABLE DATA ---
+message_id	sender_id	receiver_id	listing_id	message_text	timestamp	is_reported
+1	22222222-2222-2222-2222-222222222222	11111111-1111-1111-1111-111111111111	aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa	Hi, is the MacBook still available?	2025-11-09 02:16:17	0
+2	11111111-1111-1111-1111-111111111111	22222222-2222-2222-2222-222222222222	aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa	Yes, it is! Are you interested?	2025-11-09 02:16:17	0
+3	22222222-2222-2222-2222-222222222222	11111111-1111-1111-1111-111111111111	aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa	Can we negotiate the price?	2025-11-10 02:16:17	0
+4	33333333-3333-3333-3333-333333333333	22222222-2222-2222-2222-222222222222	hhhhhhhh-hhhh-hhhh-hhhh-hhhhhhhhhhhh	Interested in trading for the keyboard.	2025-11-11 02:16:17	0
+5	11111111-1111-1111-1111-111111111111	22222222-2222-2222-2222-222222222222	NULL	hello	2025-11-12 21:39:07	0
+
+
+================================================
+TABLE: feedbacks
+================================================
+
+--- TABLE STRUCTURE ---
+Field	Type	Null	Key	Default	Extra
+feedback_id	bigint	NO	PRI	NULL	auto_increment
+user_id	char(36)	NO	MUL	NULL	
+listing_id	char(36)	YES	MUL	NULL	
+trade_id	char(36)	YES	MUL	NULL	
+type	enum('POST_PURCHASE','POST_TRADE','POST_BID','GENERAL')	NO	MUL	NULL	
+comment	text	NO		NULL	
+timestamp	timestamp	YES	MUL	CURRENT_TIMESTAMP	DEFAULT_GENERATED
+
+Total Rows: 3
+
+--- TABLE DATA ---
+feedback_id	user_id	listing_id	trade_id	type	comment	timestamp
+1	22222222-2222-2222-2222-222222222222	aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa	NULL	POST_PURCHASE	Great product! Very satisfied with the purchase.	2025-11-09 02:16:17
+2	11111111-1111-1111-1111-111111111111	NULL	uuuuuuuu-uuuu-uuuu-uuuu-uuuuuuuuuuuu	POST_TRADE	Smooth trade experience. Recommended!	2025-11-07 02:16:17
+3	33333333-3333-3333-3333-333333333333	kkkkkkkk-kkkk-kkkk-kkkk-kkkkkkkkkkkk	NULL	POST_BID	Excited to participate in this auction!	2025-11-11 02:16:17
+
+
+================================================
+TABLE: listing_images
+================================================
+
+--- TABLE STRUCTURE ---
+Field	Type	Null	Key	Default	Extra
+image_id	bigint	NO	PRI	NULL	auto_increment
+listing_id	char(36)	NO	MUL	NULL	
+image_url	varchar(500)	NO		NULL	
+display_order	int	YES		0	
+created_at	timestamp	YES		CURRENT_TIMESTAMP	DEFAULT_GENERATED
+
+Total Rows: 209
+
+--- TABLE DATA ---
+image_id	listing_id	image_url	display_order	created_at
+15	b0114ff5-b357-431f-bfc7-14755c73de95	/images/b0114ff5-b357-431f-bfc7-14755c73de95.jpg	0	2025-11-13 02:41:25
+16	8cc92b35-1482-43a8-80f8-ba12a3afd41f	/images/8cc92b35-1482-43a8-80f8-ba12a3afd41f.jpg	0	2025-11-13 02:41:25
+17	79df9089-538d-4803-a887-31d3fd3da2a5	/images/79df9089-538d-4803-a887-31d3fd3da2a5.jpg	0	2025-11-13 02:41:25
+18	c36f98b7-5655-4a8a-93fd-83ab2f957bec	/images/c36f98b7-5655-4a8a-93fd-83ab2f957bec.jpg	0	2025-11-13 02:41:25
+19	6a17e3c2-3e05-417e-994e-d3f976a6a3c6	/images/6a17e3c2-3e05-417e-994e-d3f976a6a3c6.jpg	0	2025-11-13 02:41:25
+20	990143e6-b8d5-4ddd-bc36-3e413a36a54d	/images/990143e6-b8d5-4ddd-bc36-3e413a36a54d.jpg	0	2025-11-13 02:41:25
+21	cddea056-5d9a-4714-914e-ffbe22d6c0f4	/images/cddea056-5d9a-4714-914e-ffbe22d6c0f4.jpg	0	2025-11-13 02:41:25
+22	525324d0-b612-41af-92db-9a3b76162f65	/images/525324d0-b612-41af-92db-9a3b76162f65.png	0	2025-11-13 02:41:25
+23	41c8e2c3-6a74-4210-bcaa-51977808b621	/images/41c8e2c3-6a74-4210-bcaa-51977808b621.jpg	0	2025-11-13 02:41:25
+24	fd3dd32a-b08c-49b5-9d5d-8432afaea053	/images/fd3dd32a-b08c-49b5-9d5d-8432afaea053.jpg	0	2025-11-13 02:41:25
+25	88db8a98-fa16-4d1b-b43b-e2fc8bc8aaee	/images/88db8a98-fa16-4d1b-b43b-e2fc8bc8aaee.jpg	0	2025-11-13 02:41:25
+26	c6d56b78-0fa4-4318-8907-4ec01ebd606a	/images/c6d56b78-0fa4-4318-8907-4ec01ebd606a.jpg	0	2025-11-13 02:41:25
+27	c0cc56d6-f3c0-4842-9b1a-74351d81e4f2	/images/c0cc56d6-f3c0-4842-9b1a-74351d81e4f2.jpg	0	2025-11-13 02:41:25
+28	22e9a5df-204e-4379-9310-0793c339bbcb	/images/22e9a5df-204e-4379-9310-0793c339bbcb.png	0	2025-11-13 02:41:25
+29	c02175eb-0745-4c4a-9782-ea3afd993a5c	/images/c02175eb-0745-4c4a-9782-ea3afd993a5c.jpg	0	2025-11-13 02:41:25
+30	9f92b31b-3530-4af2-a0fa-800e48610b44	/images/9f92b31b-3530-4af2-a0fa-800e48610b44.png	0	2025-11-13 02:41:25
+31	d8a6ccdb-176c-4fbf-93c5-b57c183ef8ab	/images/d8a6ccdb-176c-4fbf-93c5-b57c183ef8ab.jpg	0	2025-11-13 02:41:25
+32	05c8d39e-a787-4261-b17c-5ed4cf2275b3	/images/05c8d39e-a787-4261-b17c-5ed4cf2275b3.jpg	0	2025-11-13 02:41:25
+33	1e589da4-7c25-4455-986f-d7b112854c4c	/images/1e589da4-7c25-4455-986f-d7b112854c4c.jpg	0	2025-11-13 02:41:25
+34	27555112-90fd-4738-92d6-a4f207eb4da1	/images/27555112-90fd-4738-92d6-a4f207eb4da1.jpg	0	2025-11-13 02:41:25
+35	3f78168f-416c-41b2-8b17-ed45e243711e	/images/3f78168f-416c-41b2-8b17-ed45e243711e.jpg	0	2025-11-13 02:41:25
+36	8dd054d3-097f-4da6-84a2-34e39defeb14	/images/8dd054d3-097f-4da6-84a2-34e39defeb14.jpg	0	2025-11-13 02:41:25
+37	5125414e-8d06-463b-bb4b-a67cc0f74fba	/images/5125414e-8d06-463b-bb4b-a67cc0f74fba.jpg	0	2025-11-13 02:41:25
+38	a3e05c1d-8607-4ca0-8848-bb430a564615	/images/a3e05c1d-8607-4ca0-8848-bb430a564615.jpg	0	2025-11-13 02:41:25
+39	b0077cf6-a6bd-4c2e-971a-577449431fb6	/images/b0077cf6-a6bd-4c2e-971a-577449431fb6.jpg	0	2025-11-13 02:41:25
+40	85364a9e-7fd9-4d17-99bd-c36c41c568d4	/images/85364a9e-7fd9-4d17-99bd-c36c41c568d4.jpg	0	2025-11-13 02:41:25
+41	ac6b7028-fd10-479b-bccf-1c44160e1673	/images/ac6b7028-fd10-479b-bccf-1c44160e1673.jpg	0	2025-11-13 02:41:25
+42	79eca02d-0c31-4aa8-9b12-82d188a24ee9	/images/79eca02d-0c31-4aa8-9b12-82d188a24ee9.jpg	0	2025-11-13 02:41:25
+43	077cfdd8-8b2a-41bc-8da8-26d786c00c81	/images/077cfdd8-8b2a-41bc-8da8-26d786c00c81.jpg	0	2025-11-13 02:41:25
+44	7694f6f2-7241-4273-9274-f1ea08e355b6	/images/7694f6f2-7241-4273-9274-f1ea08e355b6.jpg	0	2025-11-13 02:41:25
+45	3f6a529b-a1c6-4968-b2ff-14182e8bb66b	/images/3f6a529b-a1c6-4968-b2ff-14182e8bb66b.jpg	0	2025-11-13 02:41:25
+46	b4b1837a-3431-4ba0-abbc-195eadfb81a7	/images/b4b1837a-3431-4ba0-abbc-195eadfb81a7.jpg	0	2025-11-13 02:41:25
+47	513948c6-80e2-47c1-bac6-5340eccbabb5	/images/513948c6-80e2-47c1-bac6-5340eccbabb5.jpg	0	2025-11-13 02:41:25
+48	c9cebc4a-b021-4aea-8f7e-230e16bf28fb	/images/c9cebc4a-b021-4aea-8f7e-230e16bf28fb.jpg	0	2025-11-13 02:41:25
+49	a0edfec1-6e3b-4f84-b26f-d68b9c9a1af8	/images/a0edfec1-6e3b-4f84-b26f-d68b9c9a1af8.jpg	0	2025-11-13 02:41:25
+50	9e6ce13f-6e3d-4e3a-a879-797cf2284e70	/images/9e6ce13f-6e3d-4e3a-a879-797cf2284e70.jpg	0	2025-11-13 02:41:25
+51	5aad55c8-c317-4581-bd80-52834eb94930	/images/5aad55c8-c317-4581-bd80-52834eb94930.jpg	0	2025-11-13 02:41:25
+52	8ad55ac3-bf02-4b0e-96e8-33955c651ab6	/images/8ad55ac3-bf02-4b0e-96e8-33955c651ab6.jpg	0	2025-11-13 02:41:25
+53	4239f504-be2b-4796-a521-319be5a6e561	/images/4239f504-be2b-4796-a521-319be5a6e561.jpg	0	2025-11-13 02:41:25
+54	174acb10-d7db-45ae-976c-5eab73b315aa	/images/174acb10-d7db-45ae-976c-5eab73b315aa.jpg	0	2025-11-13 02:41:25
+55	05db736d-d6b1-4219-aaa9-b3d0f28fe152	/images/05db736d-d6b1-4219-aaa9-b3d0f28fe152.jpg	0	2025-11-13 02:41:25
+56	f48aaa52-edc6-4f0e-915b-3f8b4239bf0c	/images/f48aaa52-edc6-4f0e-915b-3f8b4239bf0c.jpg	0	2025-11-13 02:41:25
+57	65074ab5-b4de-4453-aa7b-f4d0d3f27781	/images/65074ab5-b4de-4453-aa7b-f4d0d3f27781.jpg	0	2025-11-13 02:41:25
+58	884dde26-2bd5-465a-bf26-a12d4dfd9add	/images/884dde26-2bd5-465a-bf26-a12d4dfd9add.jpg	0	2025-11-13 02:41:25
+59	dd8420fa-3e21-44a3-b2b3-510cdba8e8d2	/images/dd8420fa-3e21-44a3-b2b3-510cdba8e8d2.jpg	0	2025-11-13 02:41:25
+60	96254aac-cf47-44f8-ba1c-3b7134fc04e2	/images/96254aac-cf47-44f8-ba1c-3b7134fc04e2.png	0	2025-11-13 02:41:25
+61	aabdb4cd-1ca2-4874-a60a-18fc51a1508f	/images/aabdb4cd-1ca2-4874-a60a-18fc51a1508f.jpg	0	2025-11-13 02:41:25
+62	82d31f04-8949-40a7-b194-7ac2327490d0	/images/82d31f04-8949-40a7-b194-7ac2327490d0.jpg	0	2025-11-13 02:41:25
+63	15f726f9-f0b8-4c49-a6bc-fd2ef03eba75	/images/15f726f9-f0b8-4c49-a6bc-fd2ef03eba75.jpg	0	2025-11-13 02:41:25
+64	b9768fd0-1fe4-41cc-a1de-4e784824dc40	/images/b9768fd0-1fe4-41cc-a1de-4e784824dc40.jpg	0	2025-11-13 02:41:25
+65	820bbe6a-4ecf-4fea-bec3-e1b19384621e	/images/820bbe6a-4ecf-4fea-bec3-e1b19384621e.jpg	0	2025-11-13 02:41:25
+66	2d85b072-de07-45ee-ab8e-3e79dad27330	/images/2d85b072-de07-45ee-ab8e-3e79dad27330.jpg	0	2025-11-13 02:41:25
+67	d62eb3f2-bda5-42c8-a8c3-f46207b35eec	/images/d62eb3f2-bda5-42c8-a8c3-f46207b35eec.jpg	0	2025-11-13 02:41:25
+68	dd4b64e1-d33a-4c4e-8cfe-ccc550aa2189	/images/dd4b64e1-d33a-4c4e-8cfe-ccc550aa2189.jpg	0	2025-11-13 02:41:25
+69	148d4af4-6756-484f-b1a0-90251cca0b2a	/images/148d4af4-6756-484f-b1a0-90251cca0b2a.jpg	0	2025-11-13 02:41:25
+70	d34aec82-4ec1-44b9-bc91-e17ffc955c74	/images/d34aec82-4ec1-44b9-bc91-e17ffc955c74.jpg	0	2025-11-13 02:41:25
+71	8725abec-53e5-40d3-8d65-3b286911647f	/images/8725abec-53e5-40d3-8d65-3b286911647f.jpg	0	2025-11-13 02:41:25
+72	0971b08d-3fa5-4db4-a37d-8e7ba5c82aac	/images/0971b08d-3fa5-4db4-a37d-8e7ba5c82aac.jpg	0	2025-11-13 02:41:25
+73	56ef0222-19f8-4823-b2a9-c1eb5c15e2d4	/images/56ef0222-19f8-4823-b2a9-c1eb5c15e2d4.jpg	0	2025-11-13 02:41:25
+74	4c9a8ef3-7bc1-447d-b6c8-d27f2901268b	/images/4c9a8ef3-7bc1-447d-b6c8-d27f2901268b.jpg	0	2025-11-13 02:41:25
+75	fda0bbf4-1957-4994-b941-281d4ee51f40	/images/fda0bbf4-1957-4994-b941-281d4ee51f40.jpg	0	2025-11-13 02:41:25
+76	6b2764d9-4941-4171-977f-15c52f33ad74	/images/6b2764d9-4941-4171-977f-15c52f33ad74.jpg	0	2025-11-13 02:41:25
+77	fef1645f-d4f4-4404-ad6d-5628efad13b8	/images/fef1645f-d4f4-4404-ad6d-5628efad13b8.jpg	0	2025-11-13 02:41:25
+78	962fc449-95f1-4f66-b2e8-8475d2d53efe	/images/962fc449-95f1-4f66-b2e8-8475d2d53efe.jpg	0	2025-11-13 02:41:25
+79	85128af2-db26-4377-959a-9eebd891906d	/images/85128af2-db26-4377-959a-9eebd891906d.jpg	0	2025-11-13 02:41:25
+80	50467d39-6b9b-487a-9e82-d8a37b26eeef	/images/50467d39-6b9b-487a-9e82-d8a37b26eeef.jpg	0	2025-11-13 02:41:25
+81	459d0f37-ad06-498a-aeb6-76bec28855f0	/images/459d0f37-ad06-498a-aeb6-76bec28855f0.jpg	0	2025-11-13 02:41:25
+82	8e9c9823-9b1c-4709-9fc6-d37a51999a80	/images/8e9c9823-9b1c-4709-9fc6-d37a51999a80.jpg	0	2025-11-13 02:41:25
+83	ad2f8e3e-c919-4e0c-b0fc-426191dbd814	/images/ad2f8e3e-c919-4e0c-b0fc-426191dbd814.jpg	0	2025-11-13 02:41:25
+84	0e1e6311-136c-4bdc-a3a6-522f78ec9d67	/images/0e1e6311-136c-4bdc-a3a6-522f78ec9d67.jpg	0	2025-11-13 02:41:25
+85	57ef4a37-08dc-48bd-93c2-ca1545ef66d0	/images/57ef4a37-08dc-48bd-93c2-ca1545ef66d0.jpg	0	2025-11-13 02:41:25
+86	26711d73-f5c8-4e1b-8819-b419bf5abc12	/images/26711d73-f5c8-4e1b-8819-b419bf5abc12.jpg	0	2025-11-13 02:41:25
+87	3b4b5484-9ec8-43a7-887a-17f7f6f8c852	/images/3b4b5484-9ec8-43a7-887a-17f7f6f8c852.jpg	0	2025-11-13 02:41:25
+88	3bb95d2c-f3a1-431f-bead-4b4485098ac9	/images/3bb95d2c-f3a1-431f-bead-4b4485098ac9.jpg	0	2025-11-13 02:41:25
+89	0a30279a-704b-451d-bb6b-2f369e580a7d	/images/0a30279a-704b-451d-bb6b-2f369e580a7d.png	0	2025-11-13 02:41:25
+90	3915fed4-6ea0-4045-9e35-bccd3cd994b0	/images/3915fed4-6ea0-4045-9e35-bccd3cd994b0.jpg	0	2025-11-13 02:41:25
+91	2e37f809-cf50-4ade-9b6b-c232eb08681d	/images/2e37f809-cf50-4ade-9b6b-c232eb08681d.jpg	0	2025-11-13 02:41:25
+92	6cb1d447-2193-4735-bdba-e28273512daf	/images/6cb1d447-2193-4735-bdba-e28273512daf.jpg	0	2025-11-13 02:41:25
+93	5c6fe4e6-c35f-467f-a3a9-684db93ace10	/images/5c6fe4e6-c35f-467f-a3a9-684db93ace10.png	0	2025-11-13 02:41:25
+94	c4b0abba-b57f-408e-ab4d-912fae1d8995	/images/c4b0abba-b57f-408e-ab4d-912fae1d8995.jpg	0	2025-11-13 02:41:25
+95	64e0ab0a-46ae-4f25-88c5-06ed8e610e03	/images/64e0ab0a-46ae-4f25-88c5-06ed8e610e03.png	0	2025-11-13 02:41:25
+96	25d376be-4ab6-4bfe-a92e-164310debd39	/images/25d376be-4ab6-4bfe-a92e-164310debd39.jpg	0	2025-11-13 02:41:25
+97	c825689a-4840-4b8e-b189-c1241d6d0731	/images/c825689a-4840-4b8e-b189-c1241d6d0731.jpg	0	2025-11-13 02:41:25
+98	c63c5ace-379f-4a68-9985-7b3d450e066c	/images/c63c5ace-379f-4a68-9985-7b3d450e066c.jpg	0	2025-11-13 02:41:25
+99	a06ed7c0-60d6-4270-9d24-fa89bce8564f	/images/a06ed7c0-60d6-4270-9d24-fa89bce8564f.jpg	0	2025-11-13 02:41:25
+100	4aa407c8-735e-4890-8e89-0e6ea9723c12	/images/4aa407c8-735e-4890-8e89-0e6ea9723c12.jpg	0	2025-11-13 02:41:25
+101	f7287238-2115-4e97-b42a-695930cc26ae	/images/f7287238-2115-4e97-b42a-695930cc26ae.jpg	0	2025-11-13 02:41:25
+102	e51ae0f9-75ba-456f-837a-9e3ed0fa2356	/images/e51ae0f9-75ba-456f-837a-9e3ed0fa2356.jpg	0	2025-11-13 02:41:25
+103	72728efb-34b0-4a0e-ade1-4481ea5fc6c4	/images/72728efb-34b0-4a0e-ade1-4481ea5fc6c4.jpg	0	2025-11-13 02:41:25
+104	99319d5d-2e1f-4af1-b49e-ec1dfdcd1e9c	/images/99319d5d-2e1f-4af1-b49e-ec1dfdcd1e9c.jpg	0	2025-11-13 02:41:25
+105	f3cb7640-5eee-4737-a7fb-522ccf864e2e	/images/f3cb7640-5eee-4737-a7fb-522ccf864e2e.jpg	0	2025-11-13 02:41:25
+106	c1bbf9b6-cf5d-4ea6-8f99-33dc301c3b09	/images/c1bbf9b6-cf5d-4ea6-8f99-33dc301c3b09.jpg	0	2025-11-13 02:41:25
+107	e5fea7e1-b078-4d99-b0f6-ce482b39514d	/images/e5fea7e1-b078-4d99-b0f6-ce482b39514d.jpg	0	2025-11-13 02:41:25
+108	469dee78-b02f-4ca1-b923-18fd6e4f72ce	/images/469dee78-b02f-4ca1-b923-18fd6e4f72ce.jpg	0	2025-11-13 02:41:25
+109	4cc6d155-32fb-4c4c-9c34-a50d40d7aa83	/images/4cc6d155-32fb-4c4c-9c34-a50d40d7aa83.webp	0	2025-11-13 02:41:25
+110	998b1608-5f37-455a-a8ee-8e2d65f5e497	/images/998b1608-5f37-455a-a8ee-8e2d65f5e497.jpg	0	2025-11-13 02:41:25
+111	983ebb2a-e198-482c-86e4-f09a0dc863f5	/images/983ebb2a-e198-482c-86e4-f09a0dc863f5.jpg	0	2025-11-13 02:41:25
+112	37513e0f-9be4-44fe-9c1f-fe19d5ba63fd	/images/37513e0f-9be4-44fe-9c1f-fe19d5ba63fd.png	0	2025-11-13 02:41:25
+113	020cf695-4f82-469d-86dc-b4f42ce47f2e	/images/020cf695-4f82-469d-86dc-b4f42ce47f2e.jpg	0	2025-11-13 02:41:25
+114	efda43e5-42c1-4514-8dff-6ea537662f56	/images/efda43e5-42c1-4514-8dff-6ea537662f56.jpg	0	2025-11-13 02:41:25
+115	c928c1c7-0025-4676-8cf1-8014e746f4b8	/images/c928c1c7-0025-4676-8cf1-8014e746f4b8.jpg	0	2025-11-13 02:41:25
+116	54a3beda-df66-4f80-8b9a-20460e243b8d	/images/54a3beda-df66-4f80-8b9a-20460e243b8d.jpg	0	2025-11-13 02:41:25
+117	70218e6b-c608-4594-8660-521ae557d8d1	/images/70218e6b-c608-4594-8660-521ae557d8d1.jpg	0	2025-11-13 02:41:25
+118	8870236a-83ae-47e5-95cd-a8c70aa8f772	/images/8870236a-83ae-47e5-95cd-a8c70aa8f772.jpg	0	2025-11-13 02:41:25
+119	65881fba-8209-4af4-bc79-a15fb6258e34	/images/65881fba-8209-4af4-bc79-a15fb6258e34.jpg	0	2025-11-13 02:41:25
+120	73052601-2a40-4182-b8fc-03bc49724a35	/images/73052601-2a40-4182-b8fc-03bc49724a35.webp	0	2025-11-13 02:41:25
+121	d642f110-830b-4523-9e7f-1940d6ce32c2	/images/d642f110-830b-4523-9e7f-1940d6ce32c2.jpg	0	2025-11-13 02:41:25
+122	55b999f8-83d6-4014-9c91-889e1c469e4a	/images/55b999f8-83d6-4014-9c91-889e1c469e4a.jpg	0	2025-11-13 02:41:25
+123	48cb2db2-5a69-4c66-8dad-a50c2af0a1a6	/images/48cb2db2-5a69-4c66-8dad-a50c2af0a1a6.png	0	2025-11-13 02:41:25
+124	8af57c2b-1ae1-411d-afb8-12e351485f8a	/images/8af57c2b-1ae1-411d-afb8-12e351485f8a.jpg	0	2025-11-13 02:41:25
+125	3d17b256-9953-4856-a178-ba844ec573a2	/images/3d17b256-9953-4856-a178-ba844ec573a2.jpg	0	2025-11-13 02:41:25
+126	44d14bdb-ced9-4c4b-a76c-392996ade2f8	/images/44d14bdb-ced9-4c4b-a76c-392996ade2f8.jpg	0	2025-11-13 02:41:25
+127	b1ccb2d4-a5ee-4c8e-aee6-da667bcd7aaf	/images/b1ccb2d4-a5ee-4c8e-aee6-da667bcd7aaf.png	0	2025-11-13 02:41:25
+128	aa08a93c-91a9-4213-ac50-97e98026f0fd	/images/aa08a93c-91a9-4213-ac50-97e98026f0fd.jpg	0	2025-11-13 02:41:25
+129	c27d8c62-8df1-4740-b3b9-5673cfcb6ba6	/images/c27d8c62-8df1-4740-b3b9-5673cfcb6ba6.jpg	0	2025-11-13 02:41:25
+130	7fc14294-e0e5-476b-a8ab-e838ef2839c7	/images/7fc14294-e0e5-476b-a8ab-e838ef2839c7.jpg	0	2025-11-13 02:41:25
+131	29f4906a-d531-4867-bdad-ad448423e62a	/images/29f4906a-d531-4867-bdad-ad448423e62a.jpg	0	2025-11-13 02:41:25
+132	cc61d7ac-7cad-4c19-a7e8-4c3a95ff6303	/images/cc61d7ac-7cad-4c19-a7e8-4c3a95ff6303.jpg	0	2025-11-13 02:41:25
+133	a84b1aaa-286a-41b6-a178-c6fda90a5aef	/images/a84b1aaa-286a-41b6-a178-c6fda90a5aef.jpg	0	2025-11-13 02:41:25
+134	76f4532e-2bad-4e4a-92ab-32c5a5924db7	/images/76f4532e-2bad-4e4a-92ab-32c5a5924db7.jpg	0	2025-11-13 02:41:25
+135	dc99f23b-054f-4de9-bc29-124644f0ef5b	/images/dc99f23b-054f-4de9-bc29-124644f0ef5b.jpg	0	2025-11-13 02:41:25
+136	56748169-7726-43a9-ad6e-b10cabcc8217	/images/56748169-7726-43a9-ad6e-b10cabcc8217.png	0	2025-11-13 02:41:25
+137	b7c19e70-1025-46f7-b5a6-bc6412cc13b1	/images/b7c19e70-1025-46f7-b5a6-bc6412cc13b1.jpg	0	2025-11-13 02:41:25
+138	c493d7a1-45d8-43e3-b202-b4f74dc64d0c	/images/c493d7a1-45d8-43e3-b202-b4f74dc64d0c.jpg	0	2025-11-13 02:41:25
+139	234a49f0-3135-48d8-8ef8-9cfe73e8bb87	/images/234a49f0-3135-48d8-8ef8-9cfe73e8bb87.jpg	0	2025-11-13 02:41:25
+140	a970d4b6-2120-4ad8-97d4-a9c3ba645280	/images/a970d4b6-2120-4ad8-97d4-a9c3ba645280.jpg	0	2025-11-13 02:41:25
+141	8164b52d-5ac1-4a4c-a1c7-95f3cd6dcc8d	/images/8164b52d-5ac1-4a4c-a1c7-95f3cd6dcc8d.jpg	0	2025-11-13 02:41:25
+142	ed520522-7172-4bdf-aebd-59cbc0ea1040	/images/ed520522-7172-4bdf-aebd-59cbc0ea1040.jpg	0	2025-11-13 02:41:25
+143	f2cebe42-3a31-4cd6-864a-a2d105bc8958	/images/f2cebe42-3a31-4cd6-864a-a2d105bc8958.jpg	0	2025-11-13 02:41:25
+144	79604029-fe20-478f-9aae-fbc3bc8f11af	/images/79604029-fe20-478f-9aae-fbc3bc8f11af.webp	0	2025-11-13 02:41:25
+145	0f1e885f-15f7-4b32-8f87-267cf39c8b79	/images/0f1e885f-15f7-4b32-8f87-267cf39c8b79.jpg	0	2025-11-13 02:41:25
+146	bced0bad-8bd1-4336-a53e-aa973bc7a9a8	/images/bced0bad-8bd1-4336-a53e-aa973bc7a9a8.jpg	0	2025-11-13 02:41:25
+147	a071fe11-35d3-4086-8065-293e9e289fa0	/images/a071fe11-35d3-4086-8065-293e9e289fa0.jpg	0	2025-11-13 02:41:25
+148	fc5f4fda-735f-45c7-885a-0b7576870834	/images/fc5f4fda-735f-45c7-885a-0b7576870834.png	0	2025-11-13 02:41:25
+149	dc3fe4da-1654-407a-83d6-c9f04d940ae4	/images/dc3fe4da-1654-407a-83d6-c9f04d940ae4.jpg	0	2025-11-13 02:41:25
+150	0d39b2fc-cdc0-4219-8914-a1402f6543b2	/images/0d39b2fc-cdc0-4219-8914-a1402f6543b2.jpg	0	2025-11-13 02:41:25
+151	f5d88ed4-0cdd-4fa4-91f4-d957d2dd958d	/images/f5d88ed4-0cdd-4fa4-91f4-d957d2dd958d.jpg	0	2025-11-13 02:41:25
+152	025b0b6f-085f-4fc2-972d-e194b3841f24	/images/025b0b6f-085f-4fc2-972d-e194b3841f24.jpg	0	2025-11-13 02:41:25
+153	31e2cc7f-a598-442e-99b0-284aa66e0cae	/images/31e2cc7f-a598-442e-99b0-284aa66e0cae.jpg	0	2025-11-13 02:41:25
+154	a6a98656-550d-43cf-a163-80fb3a42031a	/images/a6a98656-550d-43cf-a163-80fb3a42031a.png	0	2025-11-13 02:41:25
+155	3dad849f-75d4-46e8-9516-4ed8266cfc4e	/images/3dad849f-75d4-46e8-9516-4ed8266cfc4e.jpg	0	2025-11-13 02:41:25
+156	2fb0d078-acbb-40c0-a8b1-0ead63276571	/images/2fb0d078-acbb-40c0-a8b1-0ead63276571.jpg	0	2025-11-13 02:41:25
+157	b36ef886-d374-4846-8791-c6b30c3cb702	/images/b36ef886-d374-4846-8791-c6b30c3cb702.png	0	2025-11-13 02:41:25
+158	bab1b346-95e1-41a0-8562-b1885f3a709c	/images/bab1b346-95e1-41a0-8562-b1885f3a709c.jpg	0	2025-11-13 02:41:25
+159	bbd1a5d8-9d7b-4dea-9ef9-ade340c5b150	/images/bbd1a5d8-9d7b-4dea-9ef9-ade340c5b150.jpg	0	2025-11-13 02:41:25
+160	dccfc240-f2d5-4671-83cb-81f746ef764f	/images/dccfc240-f2d5-4671-83cb-81f746ef764f.jpg	0	2025-11-13 02:41:25
+161	f8871b35-7b40-4c84-bd17-4753cf2cee8f	/images/f8871b35-7b40-4c84-bd17-4753cf2cee8f.jpg	0	2025-11-13 02:41:25
+162	631b10bd-77d9-4e98-9076-2424edbbdb97	/images/631b10bd-77d9-4e98-9076-2424edbbdb97.jpg	0	2025-11-13 02:41:25
+163	acfe80fa-74cf-4957-bcc7-67aa91b0c060	/images/acfe80fa-74cf-4957-bcc7-67aa91b0c060.jpg	0	2025-11-13 02:41:25
+164	0337b153-c6c0-45cf-8745-82681b240d4d	/images/0337b153-c6c0-45cf-8745-82681b240d4d.png	0	2025-11-13 02:41:25
+165	3e18f9be-9aad-44b9-b9a8-d6f93555be70	/images/3e18f9be-9aad-44b9-b9a8-d6f93555be70.png	0	2025-11-13 02:41:25
+166	8b59dcd9-322b-49b8-bba5-2b91898ac24d	/images/8b59dcd9-322b-49b8-bba5-2b91898ac24d.webp	0	2025-11-13 02:41:25
+167	d5ca28bc-ff9c-48c7-9e55-246734485a00	/images/d5ca28bc-ff9c-48c7-9e55-246734485a00.jpg	0	2025-11-13 02:41:25
+168	5e00eb2d-bae4-4f98-913a-c2f4f0d3b1c7	/images/5e00eb2d-bae4-4f98-913a-c2f4f0d3b1c7.jpg	0	2025-11-13 02:41:25
+169	e7865ed4-d6c1-4f36-94c1-32207bc5498c	/images/e7865ed4-d6c1-4f36-94c1-32207bc5498c.jpg	0	2025-11-13 02:41:25
+170	d57c2878-c52a-48ab-93cb-4eeafc0a17e7	/images/d57c2878-c52a-48ab-93cb-4eeafc0a17e7.jpg	0	2025-11-13 02:41:25
+171	d29c3beb-5cde-4892-87ab-18660962c284	/images/d29c3beb-5cde-4892-87ab-18660962c284.jpg	0	2025-11-13 02:41:25
+172	4ffd8cd0-93ac-4eda-b470-511c5e57420f	/images/4ffd8cd0-93ac-4eda-b470-511c5e57420f.jpg	0	2025-11-13 02:41:25
+173	67213905-aab8-4084-ae7a-e47fbd2ce5c4	/images/67213905-aab8-4084-ae7a-e47fbd2ce5c4.webp	0	2025-11-13 02:41:25
+174	f81f78c0-5b89-434f-952a-cabd81e6ffcb	/images/f81f78c0-5b89-434f-952a-cabd81e6ffcb.jpg	0	2025-11-13 02:41:25
+175	ee2d2e61-1cc1-4da1-82d0-bbd69f857221	/images/ee2d2e61-1cc1-4da1-82d0-bbd69f857221.jpg	0	2025-11-13 02:41:25
+176	453048e5-f1a1-48af-acc0-ccad39dbdabd	/images/453048e5-f1a1-48af-acc0-ccad39dbdabd.jpg	0	2025-11-13 02:41:25
+177	d0b90236-09b2-4cb6-a512-242ef9770720	/images/d0b90236-09b2-4cb6-a512-242ef9770720.jpg	0	2025-11-13 02:41:25
+178	27a198a2-bbd6-4826-8392-b33715fd4f9e	/images/27a198a2-bbd6-4826-8392-b33715fd4f9e.jpg	0	2025-11-13 02:41:25
+179	25c651c1-d865-4bdd-bc4d-b31ac2330eb1	/images/25c651c1-d865-4bdd-bc4d-b31ac2330eb1.jpg	0	2025-11-13 02:41:25
+180	226beb04-4f24-4919-8b7b-99cf23029e1a	/images/226beb04-4f24-4919-8b7b-99cf23029e1a.jpg	0	2025-11-13 02:41:25
+181	2cc4d48f-eeff-49b5-8331-21ced5588979	/images/2cc4d48f-eeff-49b5-8331-21ced5588979.jpg	0	2025-11-13 02:41:25
+182	d1d3f8eb-e745-4193-bb4e-899913ca01f9	/images/d1d3f8eb-e745-4193-bb4e-899913ca01f9.jpg	0	2025-11-13 02:41:25
+183	9a591e53-f71d-4745-b19f-d3a41df58ed0	/images/9a591e53-f71d-4745-b19f-d3a41df58ed0.jpg	0	2025-11-13 02:41:25
+184	4f60d49c-ed93-4572-8996-21686884ed92	/images/4f60d49c-ed93-4572-8996-21686884ed92.jpg	0	2025-11-13 02:41:25
+185	cf2e4120-758d-49ea-856f-eb1ab3ce4b2c	/images/cf2e4120-758d-49ea-856f-eb1ab3ce4b2c.jpg	0	2025-11-13 02:41:25
+186	7095d3da-5b32-492e-8cef-a50d096c37bd	/images/7095d3da-5b32-492e-8cef-a50d096c37bd.jpg	0	2025-11-13 02:41:25
+187	865fab91-93dc-4e34-80a5-740119baa324	/images/865fab91-93dc-4e34-80a5-740119baa324.webp	0	2025-11-13 02:41:25
+188	04254252-9e56-41b7-91f2-ef60b768f8eb	/images/04254252-9e56-41b7-91f2-ef60b768f8eb.jpg	0	2025-11-13 02:41:25
+189	d36a0010-ffac-4ca1-8a49-34fd441b4454	/images/d36a0010-ffac-4ca1-8a49-34fd441b4454.jpg	0	2025-11-13 02:41:25
+190	9f965eea-e286-4e7a-8b48-8721aefccae1	/images/9f965eea-e286-4e7a-8b48-8721aefccae1.jpg	0	2025-11-13 02:41:25
+191	1564a25e-5bb0-46f0-9ae7-1f7361d7877a	/images/1564a25e-5bb0-46f0-9ae7-1f7361d7877a.jpg	0	2025-11-13 02:41:25
+192	89914d15-fcbd-496e-98eb-8fa8201c990a	/images/89914d15-fcbd-496e-98eb-8fa8201c990a.jpg	0	2025-11-13 02:41:25
+193	1e63154a-2733-41c9-a27d-3cbf184f320b	/images/1e63154a-2733-41c9-a27d-3cbf184f320b.jpg	0	2025-11-13 02:41:25
+194	57731dbd-05f7-422d-92cc-1699e5174eca	/images/57731dbd-05f7-422d-92cc-1699e5174eca.webp	0	2025-11-13 02:41:25
+195	d4ab0861-2394-4b8e-9b5c-316759ee5dcf	/images/d4ab0861-2394-4b8e-9b5c-316759ee5dcf.jpg	0	2025-11-13 02:41:25
+196	d678d27c-c58f-4cf6-ae4c-e77d95dd29ba	/images/d678d27c-c58f-4cf6-ae4c-e77d95dd29ba.webp	0	2025-11-13 02:41:25
+197	197d226f-27ad-4a6d-a269-f1766f3c8b5f	/images/197d226f-27ad-4a6d-a269-f1766f3c8b5f.webp	0	2025-11-13 02:41:25
+198	27753b55-6a87-4390-b870-e6b2d84cfb27	/images/27753b55-6a87-4390-b870-e6b2d84cfb27.jpg	0	2025-11-13 02:41:25
+199	7d7572c4-635e-4299-907c-5ad70f2916c1	/images/7d7572c4-635e-4299-907c-5ad70f2916c1.png	0	2025-11-13 02:41:25
+200	9678c897-7b14-4813-9880-9da18cc7f9a0	/images/9678c897-7b14-4813-9880-9da18cc7f9a0.jpg	0	2025-11-13 02:41:25
+201	ae29467e-b381-4ef2-987d-bf308b720aef	/images/ae29467e-b381-4ef2-987d-bf308b720aef.jpg	0	2025-11-13 02:41:25
+202	a9ac72d0-121e-41fd-88b8-c18f459842b5	/images/a9ac72d0-121e-41fd-88b8-c18f459842b5.jpg	0	2025-11-13 02:41:25
+203	283c5334-7e43-4daa-aca7-38425c192173	/images/283c5334-7e43-4daa-aca7-38425c192173.jpg	0	2025-11-13 02:41:25
+204	715fa656-071c-4dce-a39e-7654e38e75cd	/images/715fa656-071c-4dce-a39e-7654e38e75cd.png	0	2025-11-13 02:41:25
+205	1c1c7d53-1d9e-447b-843a-d3c28b0bedeb	/images/1c1c7d53-1d9e-447b-843a-d3c28b0bedeb.jpg	0	2025-11-13 02:41:25
+206	a04fe3ba-f5d2-4988-adcd-a11fbe5bfc90	/images/a04fe3ba-f5d2-4988-adcd-a11fbe5bfc90.jpg	0	2025-11-13 02:41:25
+207	3e5a6a25-dd48-4094-9bee-32b64abb6456	/images/3e5a6a25-dd48-4094-9bee-32b64abb6456.jpg	0	2025-11-13 02:41:25
+208	95793f4e-407d-4d4c-b104-7de9b3e2bd84	/images/95793f4e-407d-4d4c-b104-7de9b3e2bd84.jpg	0	2025-11-13 02:41:25
+209	907e201e-bf72-47d5-a44f-5757402ca08d	/images/907e201e-bf72-47d5-a44f-5757402ca08d.jpg	0	2025-11-13 02:41:25
+210	55319765-037c-4ff4-bafc-067c955bde65	/images/55319765-037c-4ff4-bafc-067c955bde65.jpg	0	2025-11-13 02:41:25
+211	90155a57-9c8a-43e6-8401-e1e96e91c97c	/images/90155a57-9c8a-43e6-8401-e1e96e91c97c.jpg	0	2025-11-13 02:41:25
+212	aeb52808-403c-4882-9d91-5be57ae92fad	/images/aeb52808-403c-4882-9d91-5be57ae92fad.jpg	0	2025-11-13 02:41:25
+213	dcf3c448-ea72-43fd-9ec8-a5eeadafd076	/images/dcf3c448-ea72-43fd-9ec8-a5eeadafd076.jpg	0	2025-11-13 02:41:25
+214	c5e5ab53-8056-425a-b04b-e1deeca636f0	/images/c5e5ab53-8056-425a-b04b-e1deeca636f0.jpg	0	2025-11-13 02:41:25
+215	87285c58-7b50-41be-b9c8-0bed19008ea9	/images/87285c58-7b50-41be-b9c8-0bed19008ea9.jpg	0	2025-11-13 02:41:25
+216	ccf50418-bf94-4d48-83a2-c27c27ba2781	/images/ccf50418-bf94-4d48-83a2-c27c27ba2781.jpg	0	2025-11-13 02:41:25
+217	59533e52-6411-49e6-ae46-b8f8fafc7c3a	/images/59533e52-6411-49e6-ae46-b8f8fafc7c3a.jpg	0	2025-11-13 02:41:25
+218	db630c1f-e71c-47e8-941e-843f1591b7f9	/images/db630c1f-e71c-47e8-941e-843f1591b7f9.jpg	0	2025-11-13 02:41:25
+219	bd32e2fa-10b0-48e8-96e3-70784b57ddf8	/images/bd32e2fa-10b0-48e8-96e3-70784b57ddf8.jpg	0	2025-11-13 02:41:25
+220	7a5f4c0a-5dcb-4f9d-949e-d577f856107e	/images/7a5f4c0a-5dcb-4f9d-949e-d577f856107e.jpg	0	2025-11-13 02:41:25
+221	898d7a7c-ed53-463c-8bf3-d19cbf362153	/images/898d7a7c-ed53-463c-8bf3-d19cbf362153.jpg	0	2025-11-13 02:41:25
+222	fc7299ad-7420-49ec-94f8-54fbb815d3ce	/images/fc7299ad-7420-49ec-94f8-54fbb815d3ce.jpg	0	2025-11-13 02:41:25
+223	3d2b4bcd-9115-4ab0-a0a5-bc25bdcfa74e	/images/3d2b4bcd-9115-4ab0-a0a5-bc25bdcfa74e.jpg	0	2025-11-13 02:41:25
+
+
+================================================
+TABLE: listing_tags
+================================================
+
+--- TABLE STRUCTURE ---
+Field	Type	Null	Key	Default	Extra
+listing_id	char(36)	NO	PRI	NULL	
+tag	varchar(50)	NO	PRI	NULL	
+
+Total Rows: 418
+
+--- TABLE DATA ---
+listing_id	tag
+020cf695-4f82-469d-86dc-b4f42ce47f2e	electronics
+025b0b6f-085f-4fc2-972d-e194b3841f24	electronics
+0337b153-c6c0-45cf-8745-82681b240d4d	electronics
+05c8d39e-a787-4261-b17c-5ed4cf2275b3	electronics
+05db736d-d6b1-4219-aaa9-b3d0f28fe152	electronics
+077cfdd8-8b2a-41bc-8da8-26d786c00c81	electronics
+0971b08d-3fa5-4db4-a37d-8e7ba5c82aac	electronics
+148d4af4-6756-484f-b1a0-90251cca0b2a	electronics
+1564a25e-5bb0-46f0-9ae7-1f7361d7877a	electronics
+15f726f9-f0b8-4c49-a6bc-fd2ef03eba75	electronics
+174acb10-d7db-45ae-976c-5eab73b315aa	electronics
+1e589da4-7c25-4455-986f-d7b112854c4c	electronics
+1e63154a-2733-41c9-a27d-3cbf184f320b	electronics
+22e9a5df-204e-4379-9310-0793c339bbcb	electronics
+25d376be-4ab6-4bfe-a92e-164310debd39	electronics
+29f4906a-d531-4867-bdad-ad448423e62a	electronics
+2d85b072-de07-45ee-ab8e-3e79dad27330	electronics
+2fb0d078-acbb-40c0-a8b1-0ead63276571	electronics
+3915fed4-6ea0-4045-9e35-bccd3cd994b0	electronics
+3b4b5484-9ec8-43a7-887a-17f7f6f8c852	electronics
+3bb95d2c-f3a1-431f-bead-4b4485098ac9	electronics
+3e18f9be-9aad-44b9-b9a8-d6f93555be70	electronics
+3e5a6a25-dd48-4094-9bee-32b64abb6456	electronics
+41c8e2c3-6a74-4210-bcaa-51977808b621	electronics
+4239f504-be2b-4796-a521-319be5a6e561	electronics
+459d0f37-ad06-498a-aeb6-76bec28855f0	electronics
+4c9a8ef3-7bc1-447d-b6c8-d27f2901268b	electronics
+4cc6d155-32fb-4c4c-9c34-a50d40d7aa83	electronics
+4f60d49c-ed93-4572-8996-21686884ed92	electronics
+50467d39-6b9b-487a-9e82-d8a37b26eeef	electronics
+513948c6-80e2-47c1-bac6-5340eccbabb5	electronics
+55b999f8-83d6-4014-9c91-889e1c469e4a	electronics
+59533e52-6411-49e6-ae46-b8f8fafc7c3a	electronics
+5aad55c8-c317-4581-bd80-52834eb94930	electronics
+631b10bd-77d9-4e98-9076-2424edbbdb97	electronics
+64e0ab0a-46ae-4f25-88c5-06ed8e610e03	electronics
+6b2764d9-4941-4171-977f-15c52f33ad74	electronics
+6cb1d447-2193-4735-bdba-e28273512daf	electronics
+73052601-2a40-4182-b8fc-03bc49724a35	electronics
+7694f6f2-7241-4273-9274-f1ea08e355b6	electronics
+79604029-fe20-478f-9aae-fbc3bc8f11af	electronics
+79df9089-538d-4803-a887-31d3fd3da2a5	electronics
+7a5f4c0a-5dcb-4f9d-949e-d577f856107e	electronics
+7fc14294-e0e5-476b-a8ab-e838ef2839c7	electronics
+85364a9e-7fd9-4d17-99bd-c36c41c568d4	electronics
+865fab91-93dc-4e34-80a5-740119baa324	electronics
+8870236a-83ae-47e5-95cd-a8c70aa8f772	electronics
+88db8a98-fa16-4d1b-b43b-e2fc8bc8aaee	electronics
+898d7a7c-ed53-463c-8bf3-d19cbf362153	electronics
+89914d15-fcbd-496e-98eb-8fa8201c990a	electronics
+8ad55ac3-bf02-4b0e-96e8-33955c651ab6	electronics
+8af57c2b-1ae1-411d-afb8-12e351485f8a	electronics
+8dd054d3-097f-4da6-84a2-34e39defeb14	electronics
+90155a57-9c8a-43e6-8401-e1e96e91c97c	electronics
+990143e6-b8d5-4ddd-bc36-3e413a36a54d	electronics
+99319d5d-2e1f-4af1-b49e-ec1dfdcd1e9c	electronics
+9e6ce13f-6e3d-4e3a-a879-797cf2284e70	electronics
+a0edfec1-6e3b-4f84-b26f-d68b9c9a1af8	electronics
+a6a98656-550d-43cf-a163-80fb3a42031a	electronics
+a84b1aaa-286a-41b6-a178-c6fda90a5aef	electronics
+a970d4b6-2120-4ad8-97d4-a9c3ba645280	electronics
+a9ac72d0-121e-41fd-88b8-c18f459842b5	electronics
+acfe80fa-74cf-4957-bcc7-67aa91b0c060	electronics
+aeb52808-403c-4882-9d91-5be57ae92fad	electronics
+b0114ff5-b357-431f-bfc7-14755c73de95	electronics
+b4b1837a-3431-4ba0-abbc-195eadfb81a7	electronics
+b9768fd0-1fe4-41cc-a1de-4e784824dc40	electronics
+bab1b346-95e1-41a0-8562-b1885f3a709c	electronics
+bbd1a5d8-9d7b-4dea-9ef9-ade340c5b150	electronics
+c1bbf9b6-cf5d-4ea6-8f99-33dc301c3b09	electronics
+c27d8c62-8df1-4740-b3b9-5673cfcb6ba6	electronics
+c4b0abba-b57f-408e-ab4d-912fae1d8995	electronics
+c63c5ace-379f-4a68-9985-7b3d450e066c	electronics
+c6d56b78-0fa4-4318-8907-4ec01ebd606a	electronics
+c825689a-4840-4b8e-b189-c1241d6d0731	electronics
+c928c1c7-0025-4676-8cf1-8014e746f4b8	electronics
+d1d3f8eb-e745-4193-bb4e-899913ca01f9	electronics
+d29c3beb-5cde-4892-87ab-18660962c284	electronics
+d5ca28bc-ff9c-48c7-9e55-246734485a00	electronics
+d642f110-830b-4523-9e7f-1940d6ce32c2	electronics
+d8a6ccdb-176c-4fbf-93c5-b57c183ef8ab	electronics
+db630c1f-e71c-47e8-941e-843f1591b7f9	electronics
+dc3fe4da-1654-407a-83d6-c9f04d940ae4	electronics
+dccfc240-f2d5-4671-83cb-81f746ef764f	electronics
+e51ae0f9-75ba-456f-837a-9e3ed0fa2356	electronics
+e5fea7e1-b078-4d99-b0f6-ce482b39514d	electronics
+ed520522-7172-4bdf-aebd-59cbc0ea1040	electronics
+f48aaa52-edc6-4f0e-915b-3f8b4239bf0c	electronics
+f5d88ed4-0cdd-4fa4-91f4-d957d2dd958d	electronics
+f7287238-2115-4e97-b42a-695930cc26ae	electronics
+f8871b35-7b40-4c84-bd17-4753cf2cee8f	electronics
+fc7299ad-7420-49ec-94f8-54fbb815d3ce	electronics
+fd3dd32a-b08c-49b5-9d5d-8432afaea053	electronics
+0e1e6311-136c-4bdc-a3a6-522f78ec9d67	fashion
+283c5334-7e43-4daa-aca7-38425c192173	fashion
+48cb2db2-5a69-4c66-8dad-a50c2af0a1a6	fashion
+4aa407c8-735e-4890-8e89-0e6ea9723c12	fashion
+55319765-037c-4ff4-bafc-067c955bde65	fashion
+57ef4a37-08dc-48bd-93c2-ca1545ef66d0	fashion
+70218e6b-c608-4594-8660-521ae557d8d1	fashion
+76f4532e-2bad-4e4a-92ab-32c5a5924db7	fashion
+95793f4e-407d-4d4c-b104-7de9b3e2bd84	fashion
+ad2f8e3e-c919-4e0c-b0fc-426191dbd814	fashion
+c02175eb-0745-4c4a-9782-ea3afd993a5c	fashion
+ccf50418-bf94-4d48-83a2-c27c27ba2781	fashion
+cddea056-5d9a-4714-914e-ffbe22d6c0f4	fashion
+f2cebe42-3a31-4cd6-864a-a2d105bc8958	fashion
+04254252-9e56-41b7-91f2-ef60b768f8eb	furniture
+1c1c7d53-1d9e-447b-843a-d3c28b0bedeb	furniture
+234a49f0-3135-48d8-8ef8-9cfe73e8bb87	furniture
+25c651c1-d865-4bdd-bc4d-b31ac2330eb1	furniture
+26711d73-f5c8-4e1b-8819-b419bf5abc12	furniture
+3f6a529b-a1c6-4968-b2ff-14182e8bb66b	furniture
+3f78168f-416c-41b2-8b17-ed45e243711e	furniture
+44d14bdb-ced9-4c4b-a76c-392996ade2f8	furniture
+469dee78-b02f-4ca1-b923-18fd6e4f72ce	furniture
+4ffd8cd0-93ac-4eda-b470-511c5e57420f	furniture
+5125414e-8d06-463b-bb4b-a67cc0f74fba	furniture
+56748169-7726-43a9-ad6e-b10cabcc8217	furniture
+57731dbd-05f7-422d-92cc-1699e5174eca	furniture
+5e00eb2d-bae4-4f98-913a-c2f4f0d3b1c7	furniture
+65881fba-8209-4af4-bc79-a15fb6258e34	furniture
+7095d3da-5b32-492e-8cef-a50d096c37bd	furniture
+72728efb-34b0-4a0e-ade1-4481ea5fc6c4	furniture
+79eca02d-0c31-4aa8-9b12-82d188a24ee9	furniture
+85128af2-db26-4377-959a-9eebd891906d	furniture
+87285c58-7b50-41be-b9c8-0bed19008ea9	furniture
+884dde26-2bd5-465a-bf26-a12d4dfd9add	furniture
+8cc92b35-1482-43a8-80f8-ba12a3afd41f	furniture
+962fc449-95f1-4f66-b2e8-8475d2d53efe	furniture
+9a591e53-f71d-4745-b19f-d3a41df58ed0	furniture
+9f965eea-e286-4e7a-8b48-8721aefccae1	furniture
+a06ed7c0-60d6-4270-9d24-fa89bce8564f	furniture
+a3e05c1d-8607-4ca0-8848-bb430a564615	furniture
+c0cc56d6-f3c0-4842-9b1a-74351d81e4f2	furniture
+c493d7a1-45d8-43e3-b202-b4f74dc64d0c	furniture
+c5e5ab53-8056-425a-b04b-e1deeca636f0	furniture
+cf2e4120-758d-49ea-856f-eb1ab3ce4b2c	furniture
+d57c2878-c52a-48ab-93cb-4eeafc0a17e7	furniture
+dcf3c448-ea72-43fd-9ec8-a5eeadafd076	furniture
+dd4b64e1-d33a-4c4e-8cfe-ccc550aa2189	furniture
+e7865ed4-d6c1-4f36-94c1-32207bc5498c	furniture
+ee2d2e61-1cc1-4da1-82d0-bbd69f857221	furniture
+f3cb7640-5eee-4737-a7fb-522ccf864e2e	furniture
+f81f78c0-5b89-434f-952a-cabd81e6ffcb	furniture
+fc5f4fda-735f-45c7-885a-0b7576870834	furniture
+020cf695-4f82-469d-86dc-b4f42ce47f2e	item
+025b0b6f-085f-4fc2-972d-e194b3841f24	item
+0337b153-c6c0-45cf-8745-82681b240d4d	item
+04254252-9e56-41b7-91f2-ef60b768f8eb	item
+05c8d39e-a787-4261-b17c-5ed4cf2275b3	item
+05db736d-d6b1-4219-aaa9-b3d0f28fe152	item
+077cfdd8-8b2a-41bc-8da8-26d786c00c81	item
+0971b08d-3fa5-4db4-a37d-8e7ba5c82aac	item
+0a30279a-704b-451d-bb6b-2f369e580a7d	item
+0d39b2fc-cdc0-4219-8914-a1402f6543b2	item
+0e1e6311-136c-4bdc-a3a6-522f78ec9d67	item
+0f1e885f-15f7-4b32-8f87-267cf39c8b79	item
+148d4af4-6756-484f-b1a0-90251cca0b2a	item
+1564a25e-5bb0-46f0-9ae7-1f7361d7877a	item
+15f726f9-f0b8-4c49-a6bc-fd2ef03eba75	item
+174acb10-d7db-45ae-976c-5eab73b315aa	item
+197d226f-27ad-4a6d-a269-f1766f3c8b5f	item
+1c1c7d53-1d9e-447b-843a-d3c28b0bedeb	item
+1e589da4-7c25-4455-986f-d7b112854c4c	item
+1e63154a-2733-41c9-a27d-3cbf184f320b	item
+226beb04-4f24-4919-8b7b-99cf23029e1a	item
+22e9a5df-204e-4379-9310-0793c339bbcb	item
+234a49f0-3135-48d8-8ef8-9cfe73e8bb87	item
+25c651c1-d865-4bdd-bc4d-b31ac2330eb1	item
+25d376be-4ab6-4bfe-a92e-164310debd39	item
+26711d73-f5c8-4e1b-8819-b419bf5abc12	item
+27555112-90fd-4738-92d6-a4f207eb4da1	item
+27753b55-6a87-4390-b870-e6b2d84cfb27	item
+27a198a2-bbd6-4826-8392-b33715fd4f9e	item
+283c5334-7e43-4daa-aca7-38425c192173	item
+29f4906a-d531-4867-bdad-ad448423e62a	item
+2cc4d48f-eeff-49b5-8331-21ced5588979	item
+2d85b072-de07-45ee-ab8e-3e79dad27330	item
+2e37f809-cf50-4ade-9b6b-c232eb08681d	item
+2fb0d078-acbb-40c0-a8b1-0ead63276571	item
+31e2cc7f-a598-442e-99b0-284aa66e0cae	item
+37513e0f-9be4-44fe-9c1f-fe19d5ba63fd	item
+3915fed4-6ea0-4045-9e35-bccd3cd994b0	item
+3b4b5484-9ec8-43a7-887a-17f7f6f8c852	item
+3bb95d2c-f3a1-431f-bead-4b4485098ac9	item
+3d17b256-9953-4856-a178-ba844ec573a2	item
+3d2b4bcd-9115-4ab0-a0a5-bc25bdcfa74e	item
+3dad849f-75d4-46e8-9516-4ed8266cfc4e	item
+3e18f9be-9aad-44b9-b9a8-d6f93555be70	item
+3e5a6a25-dd48-4094-9bee-32b64abb6456	item
+3f6a529b-a1c6-4968-b2ff-14182e8bb66b	item
+3f78168f-416c-41b2-8b17-ed45e243711e	item
+41c8e2c3-6a74-4210-bcaa-51977808b621	item
+4239f504-be2b-4796-a521-319be5a6e561	item
+44d14bdb-ced9-4c4b-a76c-392996ade2f8	item
+453048e5-f1a1-48af-acc0-ccad39dbdabd	item
+459d0f37-ad06-498a-aeb6-76bec28855f0	item
+469dee78-b02f-4ca1-b923-18fd6e4f72ce	item
+48cb2db2-5a69-4c66-8dad-a50c2af0a1a6	item
+4aa407c8-735e-4890-8e89-0e6ea9723c12	item
+4c9a8ef3-7bc1-447d-b6c8-d27f2901268b	item
+4cc6d155-32fb-4c4c-9c34-a50d40d7aa83	item
+4f60d49c-ed93-4572-8996-21686884ed92	item
+4ffd8cd0-93ac-4eda-b470-511c5e57420f	item
+50467d39-6b9b-487a-9e82-d8a37b26eeef	item
+5125414e-8d06-463b-bb4b-a67cc0f74fba	item
+513948c6-80e2-47c1-bac6-5340eccbabb5	item
+525324d0-b612-41af-92db-9a3b76162f65	item
+54a3beda-df66-4f80-8b9a-20460e243b8d	item
+55319765-037c-4ff4-bafc-067c955bde65	item
+55b999f8-83d6-4014-9c91-889e1c469e4a	item
+56748169-7726-43a9-ad6e-b10cabcc8217	item
+56ef0222-19f8-4823-b2a9-c1eb5c15e2d4	item
+57731dbd-05f7-422d-92cc-1699e5174eca	item
+57ef4a37-08dc-48bd-93c2-ca1545ef66d0	item
+59533e52-6411-49e6-ae46-b8f8fafc7c3a	item
+5aad55c8-c317-4581-bd80-52834eb94930	item
+5c6fe4e6-c35f-467f-a3a9-684db93ace10	item
+5e00eb2d-bae4-4f98-913a-c2f4f0d3b1c7	item
+631b10bd-77d9-4e98-9076-2424edbbdb97	item
+64e0ab0a-46ae-4f25-88c5-06ed8e610e03	item
+65074ab5-b4de-4453-aa7b-f4d0d3f27781	item
+65881fba-8209-4af4-bc79-a15fb6258e34	item
+67213905-aab8-4084-ae7a-e47fbd2ce5c4	item
+6a17e3c2-3e05-417e-994e-d3f976a6a3c6	item
+6b2764d9-4941-4171-977f-15c52f33ad74	item
+6cb1d447-2193-4735-bdba-e28273512daf	item
+70218e6b-c608-4594-8660-521ae557d8d1	item
+7095d3da-5b32-492e-8cef-a50d096c37bd	item
+715fa656-071c-4dce-a39e-7654e38e75cd	item
+72728efb-34b0-4a0e-ade1-4481ea5fc6c4	item
+73052601-2a40-4182-b8fc-03bc49724a35	item
+7694f6f2-7241-4273-9274-f1ea08e355b6	item
+76f4532e-2bad-4e4a-92ab-32c5a5924db7	item
+79604029-fe20-478f-9aae-fbc3bc8f11af	item
+79df9089-538d-4803-a887-31d3fd3da2a5	item
+79eca02d-0c31-4aa8-9b12-82d188a24ee9	item
+7a5f4c0a-5dcb-4f9d-949e-d577f856107e	item
+7d7572c4-635e-4299-907c-5ad70f2916c1	item
+7fc14294-e0e5-476b-a8ab-e838ef2839c7	item
+8164b52d-5ac1-4a4c-a1c7-95f3cd6dcc8d	item
+820bbe6a-4ecf-4fea-bec3-e1b19384621e	item
+82d31f04-8949-40a7-b194-7ac2327490d0	item
+85128af2-db26-4377-959a-9eebd891906d	item
+85364a9e-7fd9-4d17-99bd-c36c41c568d4	item
+865fab91-93dc-4e34-80a5-740119baa324	item
+8725abec-53e5-40d3-8d65-3b286911647f	item
+87285c58-7b50-41be-b9c8-0bed19008ea9	item
+884dde26-2bd5-465a-bf26-a12d4dfd9add	item
+8870236a-83ae-47e5-95cd-a8c70aa8f772	item
+88db8a98-fa16-4d1b-b43b-e2fc8bc8aaee	item
+898d7a7c-ed53-463c-8bf3-d19cbf362153	item
+89914d15-fcbd-496e-98eb-8fa8201c990a	item
+8ad55ac3-bf02-4b0e-96e8-33955c651ab6	item
+8af57c2b-1ae1-411d-afb8-12e351485f8a	item
+8b59dcd9-322b-49b8-bba5-2b91898ac24d	item
+8cc92b35-1482-43a8-80f8-ba12a3afd41f	item
+8dd054d3-097f-4da6-84a2-34e39defeb14	item
+8e9c9823-9b1c-4709-9fc6-d37a51999a80	item
+90155a57-9c8a-43e6-8401-e1e96e91c97c	item
+907e201e-bf72-47d5-a44f-5757402ca08d	item
+95793f4e-407d-4d4c-b104-7de9b3e2bd84	item
+96254aac-cf47-44f8-ba1c-3b7134fc04e2	item
+962fc449-95f1-4f66-b2e8-8475d2d53efe	item
+9678c897-7b14-4813-9880-9da18cc7f9a0	item
+983ebb2a-e198-482c-86e4-f09a0dc863f5	item
+990143e6-b8d5-4ddd-bc36-3e413a36a54d	item
+99319d5d-2e1f-4af1-b49e-ec1dfdcd1e9c	item
+998b1608-5f37-455a-a8ee-8e2d65f5e497	item
+9a591e53-f71d-4745-b19f-d3a41df58ed0	item
+9e6ce13f-6e3d-4e3a-a879-797cf2284e70	item
+9f92b31b-3530-4af2-a0fa-800e48610b44	item
+9f965eea-e286-4e7a-8b48-8721aefccae1	item
+a04fe3ba-f5d2-4988-adcd-a11fbe5bfc90	item
+a06ed7c0-60d6-4270-9d24-fa89bce8564f	item
+a071fe11-35d3-4086-8065-293e9e289fa0	item
+a0edfec1-6e3b-4f84-b26f-d68b9c9a1af8	item
+a3e05c1d-8607-4ca0-8848-bb430a564615	item
+a6a98656-550d-43cf-a163-80fb3a42031a	item
+a84b1aaa-286a-41b6-a178-c6fda90a5aef	item
+a970d4b6-2120-4ad8-97d4-a9c3ba645280	item
+a9ac72d0-121e-41fd-88b8-c18f459842b5	item
+aa08a93c-91a9-4213-ac50-97e98026f0fd	item
+aabdb4cd-1ca2-4874-a60a-18fc51a1508f	item
+ac6b7028-fd10-479b-bccf-1c44160e1673	item
+acfe80fa-74cf-4957-bcc7-67aa91b0c060	item
+ad2f8e3e-c919-4e0c-b0fc-426191dbd814	item
+ae29467e-b381-4ef2-987d-bf308b720aef	item
+aeb52808-403c-4882-9d91-5be57ae92fad	item
+b0077cf6-a6bd-4c2e-971a-577449431fb6	item
+b0114ff5-b357-431f-bfc7-14755c73de95	item
+b1ccb2d4-a5ee-4c8e-aee6-da667bcd7aaf	item
+b36ef886-d374-4846-8791-c6b30c3cb702	item
+b4b1837a-3431-4ba0-abbc-195eadfb81a7	item
+b7c19e70-1025-46f7-b5a6-bc6412cc13b1	item
+b9768fd0-1fe4-41cc-a1de-4e784824dc40	item
+bab1b346-95e1-41a0-8562-b1885f3a709c	item
+bbd1a5d8-9d7b-4dea-9ef9-ade340c5b150	item
+bced0bad-8bd1-4336-a53e-aa973bc7a9a8	item
+bd32e2fa-10b0-48e8-96e3-70784b57ddf8	item
+c02175eb-0745-4c4a-9782-ea3afd993a5c	item
+c0cc56d6-f3c0-4842-9b1a-74351d81e4f2	item
+c1bbf9b6-cf5d-4ea6-8f99-33dc301c3b09	item
+c27d8c62-8df1-4740-b3b9-5673cfcb6ba6	item
+c36f98b7-5655-4a8a-93fd-83ab2f957bec	item
+c493d7a1-45d8-43e3-b202-b4f74dc64d0c	item
+c4b0abba-b57f-408e-ab4d-912fae1d8995	item
+c5e5ab53-8056-425a-b04b-e1deeca636f0	item
+c63c5ace-379f-4a68-9985-7b3d450e066c	item
+c6d56b78-0fa4-4318-8907-4ec01ebd606a	item
+c825689a-4840-4b8e-b189-c1241d6d0731	item
+c928c1c7-0025-4676-8cf1-8014e746f4b8	item
+c9cebc4a-b021-4aea-8f7e-230e16bf28fb	item
+cc61d7ac-7cad-4c19-a7e8-4c3a95ff6303	item
+ccf50418-bf94-4d48-83a2-c27c27ba2781	item
+cddea056-5d9a-4714-914e-ffbe22d6c0f4	item
+cf2e4120-758d-49ea-856f-eb1ab3ce4b2c	item
+d0b90236-09b2-4cb6-a512-242ef9770720	item
+d1d3f8eb-e745-4193-bb4e-899913ca01f9	item
+d29c3beb-5cde-4892-87ab-18660962c284	item
+d34aec82-4ec1-44b9-bc91-e17ffc955c74	item
+d36a0010-ffac-4ca1-8a49-34fd441b4454	item
+d4ab0861-2394-4b8e-9b5c-316759ee5dcf	item
+d57c2878-c52a-48ab-93cb-4eeafc0a17e7	item
+d5ca28bc-ff9c-48c7-9e55-246734485a00	item
+d62eb3f2-bda5-42c8-a8c3-f46207b35eec	item
+d642f110-830b-4523-9e7f-1940d6ce32c2	item
+d678d27c-c58f-4cf6-ae4c-e77d95dd29ba	item
+d8a6ccdb-176c-4fbf-93c5-b57c183ef8ab	item
+db630c1f-e71c-47e8-941e-843f1591b7f9	item
+dc3fe4da-1654-407a-83d6-c9f04d940ae4	item
+dc99f23b-054f-4de9-bc29-124644f0ef5b	item
+dccfc240-f2d5-4671-83cb-81f746ef764f	item
+dcf3c448-ea72-43fd-9ec8-a5eeadafd076	item
+dd4b64e1-d33a-4c4e-8cfe-ccc550aa2189	item
+dd8420fa-3e21-44a3-b2b3-510cdba8e8d2	item
+e51ae0f9-75ba-456f-837a-9e3ed0fa2356	item
+e5fea7e1-b078-4d99-b0f6-ce482b39514d	item
+e7865ed4-d6c1-4f36-94c1-32207bc5498c	item
+ed520522-7172-4bdf-aebd-59cbc0ea1040	item
+ee2d2e61-1cc1-4da1-82d0-bbd69f857221	item
+efda43e5-42c1-4514-8dff-6ea537662f56	item
+f2cebe42-3a31-4cd6-864a-a2d105bc8958	item
+f3cb7640-5eee-4737-a7fb-522ccf864e2e	item
+f48aaa52-edc6-4f0e-915b-3f8b4239bf0c	item
+f5d88ed4-0cdd-4fa4-91f4-d957d2dd958d	item
+f7287238-2115-4e97-b42a-695930cc26ae	item
+f81f78c0-5b89-434f-952a-cabd81e6ffcb	item
+f8871b35-7b40-4c84-bd17-4753cf2cee8f	item
+fc5f4fda-735f-45c7-885a-0b7576870834	item
+fc7299ad-7420-49ec-94f8-54fbb815d3ce	item
+fd3dd32a-b08c-49b5-9d5d-8432afaea053	item
+fda0bbf4-1957-4994-b941-281d4ee51f40	item
+fef1645f-d4f4-4404-ad6d-5628efad13b8	item
+0a30279a-704b-451d-bb6b-2f369e580a7d	sports
+0d39b2fc-cdc0-4219-8914-a1402f6543b2	sports
+0f1e885f-15f7-4b32-8f87-267cf39c8b79	sports
+197d226f-27ad-4a6d-a269-f1766f3c8b5f	sports
+226beb04-4f24-4919-8b7b-99cf23029e1a	sports
+27555112-90fd-4738-92d6-a4f207eb4da1	sports
+27753b55-6a87-4390-b870-e6b2d84cfb27	sports
+27a198a2-bbd6-4826-8392-b33715fd4f9e	sports
+2cc4d48f-eeff-49b5-8331-21ced5588979	sports
+2e37f809-cf50-4ade-9b6b-c232eb08681d	sports
+31e2cc7f-a598-442e-99b0-284aa66e0cae	sports
+37513e0f-9be4-44fe-9c1f-fe19d5ba63fd	sports
+3d17b256-9953-4856-a178-ba844ec573a2	sports
+3d2b4bcd-9115-4ab0-a0a5-bc25bdcfa74e	sports
+3dad849f-75d4-46e8-9516-4ed8266cfc4e	sports
+453048e5-f1a1-48af-acc0-ccad39dbdabd	sports
+525324d0-b612-41af-92db-9a3b76162f65	sports
+54a3beda-df66-4f80-8b9a-20460e243b8d	sports
+56ef0222-19f8-4823-b2a9-c1eb5c15e2d4	sports
+5c6fe4e6-c35f-467f-a3a9-684db93ace10	sports
+65074ab5-b4de-4453-aa7b-f4d0d3f27781	sports
+67213905-aab8-4084-ae7a-e47fbd2ce5c4	sports
+6a17e3c2-3e05-417e-994e-d3f976a6a3c6	sports
+715fa656-071c-4dce-a39e-7654e38e75cd	sports
+7d7572c4-635e-4299-907c-5ad70f2916c1	sports
+8164b52d-5ac1-4a4c-a1c7-95f3cd6dcc8d	sports
+820bbe6a-4ecf-4fea-bec3-e1b19384621e	sports
+82d31f04-8949-40a7-b194-7ac2327490d0	sports
+8725abec-53e5-40d3-8d65-3b286911647f	sports
+8b59dcd9-322b-49b8-bba5-2b91898ac24d	sports
+8e9c9823-9b1c-4709-9fc6-d37a51999a80	sports
+907e201e-bf72-47d5-a44f-5757402ca08d	sports
+96254aac-cf47-44f8-ba1c-3b7134fc04e2	sports
+9678c897-7b14-4813-9880-9da18cc7f9a0	sports
+983ebb2a-e198-482c-86e4-f09a0dc863f5	sports
+998b1608-5f37-455a-a8ee-8e2d65f5e497	sports
+9f92b31b-3530-4af2-a0fa-800e48610b44	sports
+a04fe3ba-f5d2-4988-adcd-a11fbe5bfc90	sports
+a071fe11-35d3-4086-8065-293e9e289fa0	sports
+aa08a93c-91a9-4213-ac50-97e98026f0fd	sports
+aabdb4cd-1ca2-4874-a60a-18fc51a1508f	sports
+ac6b7028-fd10-479b-bccf-1c44160e1673	sports
+ae29467e-b381-4ef2-987d-bf308b720aef	sports
+b0077cf6-a6bd-4c2e-971a-577449431fb6	sports
+b1ccb2d4-a5ee-4c8e-aee6-da667bcd7aaf	sports
+b36ef886-d374-4846-8791-c6b30c3cb702	sports
+b7c19e70-1025-46f7-b5a6-bc6412cc13b1	sports
+bced0bad-8bd1-4336-a53e-aa973bc7a9a8	sports
+bd32e2fa-10b0-48e8-96e3-70784b57ddf8	sports
+c36f98b7-5655-4a8a-93fd-83ab2f957bec	sports
+c9cebc4a-b021-4aea-8f7e-230e16bf28fb	sports
+cc61d7ac-7cad-4c19-a7e8-4c3a95ff6303	sports
+d0b90236-09b2-4cb6-a512-242ef9770720	sports
+d34aec82-4ec1-44b9-bc91-e17ffc955c74	sports
+d36a0010-ffac-4ca1-8a49-34fd441b4454	sports
+d4ab0861-2394-4b8e-9b5c-316759ee5dcf	sports
+d62eb3f2-bda5-42c8-a8c3-f46207b35eec	sports
+d678d27c-c58f-4cf6-ae4c-e77d95dd29ba	sports
+dc99f23b-054f-4de9-bc29-124644f0ef5b	sports
+dd8420fa-3e21-44a3-b2b3-510cdba8e8d2	sports
+efda43e5-42c1-4514-8dff-6ea537662f56	sports
+fda0bbf4-1957-4994-b941-281d4ee51f40	sports
+fef1645f-d4f4-4404-ad6d-5628efad13b8	sports
+
+
+================================================
+TABLE: listings
+================================================
+
+--- TABLE STRUCTURE ---
+Field	Type	Null	Key	Default	Extra
+listing_id	char(36)	NO	PRI	NULL	
+user_id	char(36)	NO	MUL	NULL	
+title	varchar(255)	NO		NULL	
+description	text	NO		NULL	
+price	decimal(15,2)	YES		NULL	
+is_tradeable	tinyint(1)	YES	MUL	0	
+is_biddable	tinyint(1)	YES	MUL	0	
+starting_price	decimal(15,2)	YES		NULL	
+bid_increment	decimal(15,2)	YES		NULL	
+bid_start_time	timestamp	YES		NULL	
+bid_end_time	timestamp	YES		NULL	
+is_active	tinyint(1)	YES	MUL	1	
+category	varchar(100)	YES	MUL	NULL	
+created_at	timestamp	YES	MUL	CURRENT_TIMESTAMP	DEFAULT_GENERATED
+updated_at	timestamp	YES		CURRENT_TIMESTAMP	DEFAULT_GENERATED on update CURRENT_TIMESTAMP
+
+Total Rows: 209
+
+--- TABLE DATA ---
+listing_id	user_id	title	description	price	is_tradeable	is_biddable	starting_price	bid_increment	bid_start_time	bid_end_time	is_active	category	created_at	updated_at
+020cf695-4f82-469d-86dc-b4f42ce47f2e	11111111-1111-1111-1111-111111111111	Professional Monitor	Electronics item for sale. Good condition. Price negotiable. Contact for more details.	34149.81	0	0	NULL	NULL	NULL	NULL	1	Electronics	2025-11-09 02:41:25	2025-11-13 02:41:25
+025b0b6f-085f-4fc2-972d-e194b3841f24	55555555-5555-5555-5555-555555555555	Air Cooler in Excellent Condition	Electronics item for sale. Good condition. Price negotiable. Contact for more details.	30762.36	0	0	NULL	NULL	NULL	NULL	1	Electronics	2025-11-10 02:41:25	2025-11-13 02:41:25
+0337b153-c6c0-45cf-8745-82681b240d4d	22222222-2222-2222-2222-222222222222	Premium Electronics Item	Electronics item for sale. Good condition. Price negotiable. Contact for more details.	8613.91	0	0	NULL	NULL	NULL	NULL	1	Electronics	2025-10-31 02:41:25	2025-11-13 02:41:25
+04254252-9e56-41b7-91f2-ef60b768f8eb	55555555-5555-5555-5555-555555555555	Modern Chair	Furniture item for sale. Well-maintained. Price negotiable. Contact for more details.	1912.08	0	0	NULL	NULL	NULL	NULL	1	Furniture	2025-11-06 02:41:25	2025-11-13 02:41:25
+05c8d39e-a787-4261-b17c-5ed4cf2275b3	55555555-5555-5555-5555-555555555555	Premium Electronics Item	Electronics item for sale. Good condition. Price negotiable. Contact for more details.	9626.38	0	1	NULL	NULL	NULL	NULL	1	Electronics	2025-10-30 02:41:25	2025-11-13 02:41:25
+05db736d-d6b1-4219-aaa9-b3d0f28fe152	11111111-1111-1111-1111-111111111111	Professional Headphones	Electronics item for sale. Good condition. Price negotiable. Contact for more details.	26283.93	0	0	NULL	NULL	NULL	NULL	1	Electronics	2025-11-07 02:41:25	2025-11-13 02:41:25
+077cfdd8-8b2a-41bc-8da8-26d786c00c81	44444444-4444-4444-4444-444444444444	Premium Monitor	Electronics item for sale. Good condition. Price negotiable. Contact for more details.	3312.00	0	0	NULL	NULL	NULL	NULL	1	Electronics	2025-11-12 02:41:25	2025-11-13 02:41:25
+0971b08d-3fa5-4db4-a37d-8e7ba5c82aac	11111111-1111-1111-1111-111111111111	High-Quality Headphones	Electronics item for sale. Good condition. Price negotiable. Contact for more details.	49954.88	0	0	NULL	NULL	NULL	NULL	1	Electronics	2025-11-03 02:41:25	2025-11-13 02:41:25
+0a30279a-704b-451d-bb6b-2f369e580a7d	77777777-7777-7777-7777-777777777777	Quality Cycle Bike	Sports equipment for sale. Good condition. Price negotiable. Contact for more details.	13565.37	0	0	NULL	NULL	NULL	NULL	1	Sports	2025-10-15 02:41:25	2025-11-13 02:41:25
+0d39b2fc-cdc0-4219-8914-a1402f6543b2	66666666-6666-6666-6666-666666666666	Cycle for Sale	Sports equipment for sale. Good condition. Price negotiable. Contact for more details.	13329.88	1	1	NULL	NULL	NULL	NULL	1	Sports	2025-10-16 02:41:25	2025-11-13 02:41:25
+0e1e6311-136c-4bdc-a3a6-522f78ec9d67	99999999-9999-9999-9999-999999999999	Quality Footwear	Fashion item for sale. Like new condition. Price negotiable. Contact for more details.	645.85	1	0	NULL	NULL	NULL	NULL	1	Fashion	2025-10-24 02:41:25	2025-11-13 02:41:25
+0f1e885f-15f7-4b32-8f87-267cf39c8b79	77777777-7777-7777-7777-777777777777	Professional Sports Equipment	Sports equipment for sale. Good condition. Price negotiable. Contact for more details.	3822.70	0	0	NULL	NULL	NULL	NULL	1	Sports	2025-11-02 02:41:25	2025-11-13 02:41:25
+148d4af4-6756-484f-b1a0-90251cca0b2a	88888888-8888-8888-8888-888888888888	Headphones in Excellent Condition	Electronics item for sale. Good condition. Price negotiable. Contact for more details.	21409.03	1	0	NULL	NULL	NULL	NULL	1	Electronics	2025-10-22 02:41:25	2025-11-13 02:41:25
+1564a25e-5bb0-46f0-9ae7-1f7361d7877a	88888888-8888-8888-8888-888888888888	Professional Headphones	Electronics item for sale. Good condition. Price negotiable. Contact for more details.	24509.14	1	0	NULL	NULL	NULL	NULL	1	Electronics	2025-10-31 02:41:25	2025-11-13 02:41:25
+15f726f9-f0b8-4c49-a6bc-fd2ef03eba75	55555555-5555-5555-5555-555555555555	High-Quality Electronics Item	Electronics item for sale. Good condition. Price negotiable. Contact for more details.	28039.41	0	0	NULL	NULL	NULL	NULL	1	Electronics	2025-11-06 02:41:25	2025-11-13 02:41:25
+174acb10-d7db-45ae-976c-5eab73b315aa	22222222-2222-2222-2222-222222222222	Premium Air Cooler	Electronics item for sale. Good condition. Price negotiable. Contact for more details.	33883.05	0	0	NULL	NULL	NULL	NULL	1	Electronics	2025-10-17 02:41:25	2025-11-13 02:41:25
+197d226f-27ad-4a6d-a269-f1766f3c8b5f	66666666-6666-6666-6666-666666666666	Professional Bicycle	Sports equipment for sale. Good condition. Price negotiable. Contact for more details.	13052.62	0	0	NULL	NULL	NULL	NULL	1	Sports	2025-10-29 02:41:25	2025-11-13 02:41:25
+1c1c7d53-1d9e-447b-843a-d3c28b0bedeb	44444444-4444-4444-4444-444444444444	Comfortable Desk	Furniture item for sale. Well-maintained. Price negotiable. Contact for more details.	1576.96	0	0	NULL	NULL	NULL	NULL	1	Furniture	2025-11-09 02:41:25	2025-11-13 02:41:25
+1e589da4-7c25-4455-986f-d7b112854c4c	33333333-3333-3333-3333-333333333333	High-Quality Mobile Phone	Electronics item for sale. Good condition. Price negotiable. Contact for more details.	38137.44	0	1	NULL	NULL	NULL	NULL	1	Electronics	2025-10-27 02:41:25	2025-11-13 02:41:25
+1e63154a-2733-41c9-a27d-3cbf184f320b	88888888-8888-8888-8888-888888888888	Electronics Item in Excellent Condition	Electronics item for sale. Good condition. Price negotiable. Contact for more details.	24526.62	0	0	NULL	NULL	NULL	NULL	1	Electronics	2025-11-11 02:41:25	2025-11-13 02:41:25
+226beb04-4f24-4919-8b7b-99cf23029e1a	66666666-6666-6666-6666-666666666666	Sports Equipment in Great Condition	Sports equipment for sale. Good condition. Price negotiable. Contact for more details.	8458.33	1	0	NULL	NULL	NULL	NULL	1	Sports	2025-10-31 02:41:25	2025-11-13 02:41:25
+22e9a5df-204e-4379-9310-0793c339bbcb	33333333-3333-3333-3333-333333333333	High-Quality Monitor	Electronics item for sale. Good condition. Price negotiable. Contact for more details.	7753.03	0	0	NULL	NULL	NULL	NULL	1	Electronics	2025-10-29 02:41:25	2025-11-13 02:41:25
+234a49f0-3135-48d8-8ef8-9cfe73e8bb87	55555555-5555-5555-5555-555555555555	Comfortable Mattress	Furniture item for sale. Well-maintained. Price negotiable. Contact for more details.	3051.01	0	0	NULL	NULL	NULL	NULL	1	Furniture	2025-10-22 02:41:25	2025-11-13 02:41:25
+25c651c1-d865-4bdd-bc4d-b31ac2330eb1	77777777-7777-7777-7777-777777777777	Stylish Desk	Furniture item for sale. Well-maintained. Price negotiable. Contact for more details.	1929.01	0	0	NULL	NULL	NULL	NULL	1	Furniture	2025-10-30 02:41:25	2025-11-13 02:41:25
+25d376be-4ab6-4bfe-a92e-164310debd39	99999999-9999-9999-9999-999999999999	Air Cooler in Excellent Condition	Electronics item for sale. Good condition. Price negotiable. Contact for more details.	39601.30	0	0	NULL	NULL	NULL	NULL	1	Electronics	2025-10-26 02:41:25	2025-11-13 02:41:25
+26711d73-f5c8-4e1b-8819-b419bf5abc12	44444444-4444-4444-4444-444444444444	Stylish Desk	Furniture item for sale. Well-maintained. Price negotiable. Contact for more details.	3626.67	0	0	NULL	NULL	NULL	NULL	1	Furniture	2025-11-05 02:41:25	2025-11-13 02:41:25
+27555112-90fd-4738-92d6-a4f207eb4da1	44444444-4444-4444-4444-444444444444	Athletic Bicycle	Sports equipment for sale. Good condition. Price negotiable. Contact for more details.	8509.10	0	0	NULL	NULL	NULL	NULL	1	Sports	2025-10-16 02:41:25	2025-11-13 02:41:25
+27753b55-6a87-4390-b870-e6b2d84cfb27	11111111-1111-1111-1111-111111111111	Quality Cycle	Sports equipment for sale. Good condition. Price negotiable. Contact for more details.	3604.72	0	0	NULL	NULL	NULL	NULL	1	Sports	2025-11-01 02:41:25	2025-11-13 02:41:25
+27a198a2-bbd6-4826-8392-b33715fd4f9e	44444444-4444-4444-4444-444444444444	Professional Sports Equipment	Sports equipment for sale. Good condition. Price negotiable. Contact for more details.	7431.07	0	0	NULL	NULL	NULL	NULL	1	Sports	2025-10-14 02:41:25	2025-11-13 02:41:25
+283c5334-7e43-4daa-aca7-38425c192173	77777777-7777-7777-7777-777777777777	Fashionable Sneakers	Fashion item for sale. Like new condition. Price negotiable. Contact for more details.	6212.00	0	0	NULL	NULL	NULL	NULL	1	Fashion	2025-11-09 02:41:25	2025-11-13 02:41:25
+29f4906a-d531-4867-bdad-ad448423e62a	77777777-7777-7777-7777-777777777777	High-Quality Mobile Phone	Electronics item for sale. Good condition. Price negotiable. Contact for more details.	7804.86	0	0	NULL	NULL	NULL	NULL	1	Electronics	2025-10-31 02:41:25	2025-11-13 02:41:25
+2cc4d48f-eeff-49b5-8331-21ced5588979	66666666-6666-6666-6666-666666666666	Sports Equipment in Great Condition	Sports equipment for sale. Good condition. Price negotiable. Contact for more details.	7767.68	0	0	NULL	NULL	NULL	NULL	1	Sports	2025-10-18 02:41:25	2025-11-13 02:41:25
+2d85b072-de07-45ee-ab8e-3e79dad27330	77777777-7777-7777-7777-777777777777	Modern Headphones	Electronics item for sale. Good condition. Price negotiable. Contact for more details.	6314.28	0	0	NULL	NULL	NULL	NULL	1	Electronics	2025-10-16 02:41:25	2025-11-13 02:41:25
+2e37f809-cf50-4ade-9b6b-c232eb08681d	55555555-5555-5555-5555-555555555555	Athletic Sports Equipment	Sports equipment for sale. Good condition. Price negotiable. Contact for more details.	14686.31	1	0	NULL	NULL	NULL	NULL	1	Sports	2025-10-22 02:41:25	2025-11-13 02:41:25
+2fb0d078-acbb-40c0-a8b1-0ead63276571	66666666-6666-6666-6666-666666666666	Modern Air Cooler	Electronics item for sale. Good condition. Price negotiable. Contact for more details.	49943.04	0	0	NULL	NULL	NULL	NULL	1	Electronics	2025-11-07 02:41:25	2025-11-13 02:41:25
+31e2cc7f-a598-442e-99b0-284aa66e0cae	88888888-8888-8888-8888-888888888888	Professional Sports Equipment	Sports equipment for sale. Good condition. Price negotiable. Contact for more details.	1092.53	1	0	NULL	NULL	NULL	NULL	1	Sports	2025-11-01 02:41:25	2025-11-13 02:41:25
+37513e0f-9be4-44fe-9c1f-fe19d5ba63fd	99999999-9999-9999-9999-999999999999	Athletic Cycle	Sports equipment for sale. Good condition. Price negotiable. Contact for more details.	12142.06	0	0	NULL	NULL	NULL	NULL	1	Sports	2025-11-02 02:41:25	2025-11-13 02:41:25
+3915fed4-6ea0-4045-9e35-bccd3cd994b0	55555555-5555-5555-5555-555555555555	Modern Headphones	Electronics item for sale. Good condition. Price negotiable. Contact for more details.	33738.50	0	0	NULL	NULL	NULL	NULL	1	Electronics	2025-11-02 02:41:25	2025-11-13 02:41:25
+3b4b5484-9ec8-43a7-887a-17f7f6f8c852	33333333-3333-3333-3333-333333333333	Premium Electronics Item	Electronics item for sale. Good condition. Price negotiable. Contact for more details.	31126.55	0	0	NULL	NULL	NULL	NULL	1	Electronics	2025-10-19 02:41:25	2025-11-13 02:41:25
+3bb95d2c-f3a1-431f-bead-4b4485098ac9	88888888-8888-8888-8888-888888888888	Modern Monitor	Electronics item for sale. Good condition. Price negotiable. Contact for more details.	38822.30	0	0	NULL	NULL	NULL	NULL	1	Electronics	2025-10-14 02:41:25	2025-11-13 02:41:25
+3d17b256-9953-4856-a178-ba844ec573a2	55555555-5555-5555-5555-555555555555	Quality Cycle Bike	Sports equipment for sale. Good condition. Price negotiable. Contact for more details.	10661.43	1	0	NULL	NULL	NULL	NULL	1	Sports	2025-10-20 02:41:25	2025-11-13 02:41:25
+3d2b4bcd-9115-4ab0-a0a5-bc25bdcfa74e	11111111-1111-1111-1111-111111111111	Professional Bike	Sports equipment for sale. Good condition. Price negotiable. Contact for more details.	9274.67	0	0	NULL	NULL	NULL	NULL	1	Sports	2025-10-24 02:41:25	2025-11-13 02:41:25
+3dad849f-75d4-46e8-9516-4ed8266cfc4e	22222222-2222-2222-2222-222222222222	Bicycle in Great Condition	Sports equipment for sale. Good condition. Price negotiable. Contact for more details.	12137.60	1	0	NULL	NULL	NULL	NULL	1	Sports	2025-11-03 02:41:25	2025-11-13 02:41:25
+3e18f9be-9aad-44b9-b9a8-d6f93555be70	22222222-2222-2222-2222-222222222222	Modern Monitor	Electronics item for sale. Good condition. Price negotiable. Contact for more details.	40151.69	0	0	NULL	NULL	NULL	NULL	1	Electronics	2025-11-06 02:41:25	2025-11-13 02:41:25
+3e5a6a25-dd48-4094-9bee-32b64abb6456	55555555-5555-5555-5555-555555555555	Professional Air Cooler	Electronics item for sale. Good condition. Price negotiable. Contact for more details.	20736.36	1	0	NULL	NULL	NULL	NULL	1	Electronics	2025-11-07 02:41:25	2025-11-13 02:41:25
+3f6a529b-a1c6-4968-b2ff-14182e8bb66b	22222222-2222-2222-2222-222222222222	Comfortable Chair	Furniture item for sale. Well-maintained. Price negotiable. Contact for more details.	7279.36	0	0	NULL	NULL	NULL	NULL	1	Furniture	2025-11-02 02:41:25	2025-11-13 02:41:25
+3f78168f-416c-41b2-8b17-ed45e243711e	44444444-4444-4444-4444-444444444444	Stylish Chair	Furniture item for sale. Well-maintained. Price negotiable. Contact for more details.	8548.15	0	0	NULL	NULL	NULL	NULL	1	Furniture	2025-11-10 02:41:25	2025-11-13 02:41:25
+41c8e2c3-6a74-4210-bcaa-51977808b621	11111111-1111-1111-1111-111111111111	Professional Electronics Item	Electronics item for sale. Good condition. Price negotiable. Contact for more details.	42237.49	1	0	NULL	NULL	NULL	NULL	1	Electronics	2025-11-12 02:41:25	2025-11-13 02:41:25
+4239f504-be2b-4796-a521-319be5a6e561	33333333-3333-3333-3333-333333333333	Premium Headphones	Electronics item for sale. Good condition. Price negotiable. Contact for more details.	40911.94	0	0	NULL	NULL	NULL	NULL	1	Electronics	2025-11-09 02:41:25	2025-11-13 02:41:25
+44d14bdb-ced9-4c4b-a76c-392996ade2f8	77777777-7777-7777-7777-777777777777	Comfortable Chair	Furniture item for sale. Well-maintained. Price negotiable. Contact for more details.	4145.72	0	0	NULL	NULL	NULL	NULL	1	Furniture	2025-10-15 02:41:25	2025-11-13 02:41:25
+453048e5-f1a1-48af-acc0-ccad39dbdabd	11111111-1111-1111-1111-111111111111	Athletic Cycle Bike	Sports equipment for sale. Good condition. Price negotiable. Contact for more details.	8326.97	1	0	NULL	NULL	NULL	NULL	1	Sports	2025-10-28 02:41:25	2025-11-13 02:41:25
+459d0f37-ad06-498a-aeb6-76bec28855f0	88888888-8888-8888-8888-888888888888	Professional Headphones	Electronics item for sale. Good condition. Price negotiable. Contact for more details.	29642.91	0	0	NULL	NULL	NULL	NULL	1	Electronics	2025-10-30 02:41:25	2025-11-13 02:41:25
+469dee78-b02f-4ca1-b923-18fd6e4f72ce	11111111-1111-1111-1111-111111111111	Quality Mattress	Furniture item for sale. Well-maintained. Price negotiable. Contact for more details.	8191.61	0	0	NULL	NULL	NULL	NULL	1	Furniture	2025-10-30 02:41:25	2025-11-13 02:41:25
+48cb2db2-5a69-4c66-8dad-a50c2af0a1a6	44444444-4444-4444-4444-444444444444	Trendy Shoes	Fashion item for sale. Like new condition. Price negotiable. Contact for more details.	1742.70	1	0	NULL	NULL	NULL	NULL	1	Fashion	2025-11-06 02:41:25	2025-11-13 02:41:25
+4aa407c8-735e-4890-8e89-0e6ea9723c12	44444444-4444-4444-4444-444444444444	Trendy Sneaker	Fashion item for sale. Like new condition. Price negotiable. Contact for more details.	6225.35	0	0	NULL	NULL	NULL	NULL	1	Fashion	2025-11-06 02:41:25	2025-11-13 02:41:25
+4c9a8ef3-7bc1-447d-b6c8-d27f2901268b	66666666-6666-6666-6666-666666666666	Professional Headphones	Electronics item for sale. Good condition. Price negotiable. Contact for more details.	12963.33	0	0	NULL	NULL	NULL	NULL	1	Electronics	2025-11-05 02:41:25	2025-11-13 02:41:25
+4cc6d155-32fb-4c4c-9c34-a50d40d7aa83	99999999-9999-9999-9999-999999999999	High-Quality Mobile Phone	Electronics item for sale. Good condition. Price negotiable. Contact for more details.	16090.21	0	0	NULL	NULL	NULL	NULL	1	Electronics	2025-11-11 02:41:25	2025-11-13 02:41:25
+4f60d49c-ed93-4572-8996-21686884ed92	22222222-2222-2222-2222-222222222222	Modern Monitor	Electronics item for sale. Good condition. Price negotiable. Contact for more details.	28974.82	0	0	NULL	NULL	NULL	NULL	1	Electronics	2025-11-03 02:41:25	2025-11-13 02:41:25
+4ffd8cd0-93ac-4eda-b470-511c5e57420f	66666666-6666-6666-6666-666666666666	Modern Chair	Furniture item for sale. Well-maintained. Price negotiable. Contact for more details.	4910.27	0	0	NULL	NULL	NULL	NULL	1	Furniture	2025-10-21 02:41:25	2025-11-13 02:41:25
+50467d39-6b9b-487a-9e82-d8a37b26eeef	99999999-9999-9999-9999-999999999999	High-Quality Electronics Item	Electronics item for sale. Good condition. Price negotiable. Contact for more details.	41659.66	0	0	NULL	NULL	NULL	NULL	1	Electronics	2025-11-01 02:41:25	2025-11-13 02:41:25
+5125414e-8d06-463b-bb4b-a67cc0f74fba	33333333-3333-3333-3333-333333333333	Modern Furniture Item	Furniture item for sale. Well-maintained. Price negotiable. Contact for more details.	8538.63	0	0	NULL	NULL	NULL	NULL	1	Furniture	2025-10-28 02:41:25	2025-11-13 02:41:25
+513948c6-80e2-47c1-bac6-5340eccbabb5	99999999-9999-9999-9999-999999999999	Monitor in Excellent Condition	Electronics item for sale. Good condition. Price negotiable. Contact for more details.	24807.58	0	0	NULL	NULL	NULL	NULL	1	Electronics	2025-10-21 02:41:25	2025-11-13 02:41:25
+525324d0-b612-41af-92db-9a3b76162f65	77777777-7777-7777-7777-777777777777	Athletic Bicycle	Sports equipment for sale. Good condition. Price negotiable. Contact for more details.	1627.08	0	0	NULL	NULL	NULL	NULL	1	Sports	2025-10-24 02:41:25	2025-11-13 02:41:25
+54a3beda-df66-4f80-8b9a-20460e243b8d	44444444-4444-4444-4444-444444444444	Professional Bicycle	Sports equipment for sale. Good condition. Price negotiable. Contact for more details.	1835.77	0	0	NULL	NULL	NULL	NULL	1	Sports	2025-11-05 02:41:25	2025-11-13 02:41:25
+55319765-037c-4ff4-bafc-067c955bde65	11111111-1111-1111-1111-111111111111	Footwear in Good Condition	Fashion item for sale. Like new condition. Price negotiable. Contact for more details.	3913.07	1	0	NULL	NULL	NULL	NULL	1	Fashion	2025-10-27 02:41:25	2025-11-13 02:41:25
+55b999f8-83d6-4014-9c91-889e1c469e4a	88888888-8888-8888-8888-888888888888	Electronics Item in Excellent Condition	Electronics item for sale. Good condition. Price negotiable. Contact for more details.	2786.47	0	0	NULL	NULL	NULL	NULL	1	Electronics	2025-10-27 02:41:25	2025-11-13 02:41:25
+56748169-7726-43a9-ad6e-b10cabcc8217	99999999-9999-9999-9999-999999999999	Modern Furniture Item	Furniture item for sale. Well-maintained. Price negotiable. Contact for more details.	7282.06	0	0	NULL	NULL	NULL	NULL	1	Furniture	2025-11-03 02:41:25	2025-11-13 02:41:25
+56ef0222-19f8-4823-b2a9-c1eb5c15e2d4	66666666-6666-6666-6666-666666666666	Cycle Bike for Sale	Sports equipment for sale. Good condition. Price negotiable. Contact for more details.	5044.65	0	0	NULL	NULL	NULL	NULL	1	Sports	2025-10-19 02:41:25	2025-11-13 02:41:25
+57731dbd-05f7-422d-92cc-1699e5174eca	33333333-3333-3333-3333-333333333333	Comfortable Chair	Furniture item for sale. Well-maintained. Price negotiable. Contact for more details.	3808.11	0	0	NULL	NULL	NULL	NULL	1	Furniture	2025-10-18 02:41:25	2025-11-13 02:41:25
+57ef4a37-08dc-48bd-93c2-ca1545ef66d0	88888888-8888-8888-8888-888888888888	Quality Sneakers	Fashion item for sale. Like new condition. Price negotiable. Contact for more details.	7486.60	0	0	NULL	NULL	NULL	NULL	1	Fashion	2025-10-23 02:41:25	2025-11-13 02:41:25
+59533e52-6411-49e6-ae46-b8f8fafc7c3a	77777777-7777-7777-7777-777777777777	Air Cooler in Excellent Condition	Electronics item for sale. Good condition. Price negotiable. Contact for more details.	29200.65	1	0	NULL	NULL	NULL	NULL	1	Electronics	2025-10-21 02:41:25	2025-11-13 02:41:25
+5aad55c8-c317-4581-bd80-52834eb94930	11111111-1111-1111-1111-111111111111	Mobile Phone in Excellent Condition	Electronics item for sale. Good condition. Price negotiable. Contact for more details.	14146.43	0	0	NULL	NULL	NULL	NULL	1	Electronics	2025-10-30 02:41:25	2025-11-13 02:41:25
+5c6fe4e6-c35f-467f-a3a9-684db93ace10	99999999-9999-9999-9999-999999999999	Bicycle for Sale	Sports equipment for sale. Good condition. Price negotiable. Contact for more details.	8942.65	0	0	NULL	NULL	NULL	NULL	1	Sports	2025-10-21 02:41:25	2025-11-13 02:41:25
+5e00eb2d-bae4-4f98-913a-c2f4f0d3b1c7	66666666-6666-6666-6666-666666666666	Modern Desk	Furniture item for sale. Well-maintained. Price negotiable. Contact for more details.	4696.04	0	0	NULL	NULL	NULL	NULL	1	Furniture	2025-10-26 02:41:25	2025-11-13 02:41:25
+631b10bd-77d9-4e98-9076-2424edbbdb97	11111111-1111-1111-1111-111111111111	Professional Monitor	Electronics item for sale. Good condition. Price negotiable. Contact for more details.	18220.50	0	0	NULL	NULL	NULL	NULL	1	Electronics	2025-11-03 02:41:25	2025-11-13 02:41:25
+64e0ab0a-46ae-4f25-88c5-06ed8e610e03	22222222-2222-2222-2222-222222222222	Modern Electronics Item	Electronics item for sale. Good condition. Price negotiable. Contact for more details.	27808.46	1	0	NULL	NULL	NULL	NULL	1	Electronics	2025-11-02 02:41:25	2025-11-13 02:41:25
+65074ab5-b4de-4453-aa7b-f4d0d3f27781	22222222-2222-2222-2222-222222222222	Professional Bike	Sports equipment for sale. Good condition. Price negotiable. Contact for more details.	7610.93	1	0	NULL	NULL	NULL	NULL	1	Sports	2025-10-16 02:41:25	2025-11-13 02:41:25
+65881fba-8209-4af4-bc79-a15fb6258e34	33333333-3333-3333-3333-333333333333	Stylish Furniture Item	Furniture item for sale. Well-maintained. Price negotiable. Contact for more details.	8552.96	0	0	NULL	NULL	NULL	NULL	1	Furniture	2025-11-11 02:41:25	2025-11-13 02:41:25
+67213905-aab8-4084-ae7a-e47fbd2ce5c4	77777777-7777-7777-7777-777777777777	Athletic Sports Equipment	Sports equipment for sale. Good condition. Price negotiable. Contact for more details.	14930.39	0	0	NULL	NULL	NULL	NULL	1	Sports	2025-10-17 02:41:25	2025-11-13 02:41:25
+6a17e3c2-3e05-417e-994e-d3f976a6a3c6	55555555-5555-5555-5555-555555555555	Quality Bike	Sports equipment for sale. Good condition. Price negotiable. Contact for more details.	5539.94	0	0	NULL	NULL	NULL	NULL	1	Sports	2025-10-29 02:41:25	2025-11-13 02:41:25
+6b2764d9-4941-4171-977f-15c52f33ad74	99999999-9999-9999-9999-999999999999	High-Quality Mobile Phone	Electronics item for sale. Good condition. Price negotiable. Contact for more details.	25468.39	0	0	NULL	NULL	NULL	NULL	1	Electronics	2025-11-10 02:41:25	2025-11-13 02:41:25
+6cb1d447-2193-4735-bdba-e28273512daf	99999999-9999-9999-9999-999999999999	Professional Electronics Item	Electronics item for sale. Good condition. Price negotiable. Contact for more details.	15824.70	0	0	NULL	NULL	NULL	NULL	1	Electronics	2025-10-30 02:41:25	2025-11-13 02:41:25
+70218e6b-c608-4594-8660-521ae557d8d1	44444444-4444-4444-4444-444444444444	Stylish Footwear	Fashion item for sale. Like new condition. Price negotiable. Contact for more details.	3174.02	0	0	NULL	NULL	NULL	NULL	1	Fashion	2025-10-18 02:41:25	2025-11-13 02:41:25
+7095d3da-5b32-492e-8cef-a50d096c37bd	44444444-4444-4444-4444-444444444444	Desk in Good Condition	Furniture item for sale. Well-maintained. Price negotiable. Contact for more details.	6372.44	1	1	NULL	NULL	NULL	NULL	1	Furniture	2025-10-30 02:41:25	2025-11-13 02:41:25
+715fa656-071c-4dce-a39e-7654e38e75cd	77777777-7777-7777-7777-777777777777	Quality Bike	Sports equipment for sale. Good condition. Price negotiable. Contact for more details.	6923.58	0	1	NULL	NULL	NULL	NULL	1	Sports	2025-11-08 02:41:25	2025-11-13 02:41:25
+72728efb-34b0-4a0e-ade1-4481ea5fc6c4	44444444-4444-4444-4444-444444444444	Comfortable Chair	Furniture item for sale. Well-maintained. Price negotiable. Contact for more details.	5468.24	0	0	NULL	NULL	NULL	NULL	1	Furniture	2025-10-18 02:41:25	2025-11-13 02:41:25
+73052601-2a40-4182-b8fc-03bc49724a35	55555555-5555-5555-5555-555555555555	Electronics Item in Excellent Condition	Electronics item for sale. Good condition. Price negotiable. Contact for more details.	31325.33	1	0	NULL	NULL	NULL	NULL	1	Electronics	2025-11-03 02:41:25	2025-11-13 02:41:25
+7694f6f2-7241-4273-9274-f1ea08e355b6	11111111-1111-1111-1111-111111111111	Premium Monitor	Electronics item for sale. Good condition. Price negotiable. Contact for more details.	35172.91	1	0	NULL	NULL	NULL	NULL	1	Electronics	2025-10-29 02:41:25	2025-11-13 02:41:25
+76f4532e-2bad-4e4a-92ab-32c5a5924db7	55555555-5555-5555-5555-555555555555	Stylish Shoes	Fashion item for sale. Like new condition. Price negotiable. Contact for more details.	1639.12	0	0	NULL	NULL	NULL	NULL	1	Fashion	2025-10-15 02:41:25	2025-11-13 02:41:25
+79604029-fe20-478f-9aae-fbc3bc8f11af	55555555-5555-5555-5555-555555555555	Professional Headphones	Electronics item for sale. Good condition. Price negotiable. Contact for more details.	19209.08	1	0	NULL	NULL	NULL	NULL	1	Electronics	2025-10-17 02:41:25	2025-11-13 02:41:25
+79df9089-538d-4803-a887-31d3fd3da2a5	44444444-4444-4444-4444-444444444444	Professional Headphones	Electronics item for sale. Good condition. Price negotiable. Contact for more details.	3775.90	0	0	NULL	NULL	NULL	NULL	1	Electronics	2025-10-14 02:41:25	2025-11-13 02:41:25
+79eca02d-0c31-4aa8-9b12-82d188a24ee9	88888888-8888-8888-8888-888888888888	Modern Mattress	Furniture item for sale. Well-maintained. Price negotiable. Contact for more details.	8512.19	0	0	NULL	NULL	NULL	NULL	1	Furniture	2025-11-10 02:41:25	2025-11-13 02:41:25
+7a5f4c0a-5dcb-4f9d-949e-d577f856107e	33333333-3333-3333-3333-333333333333	Modern Electronics Item	Electronics item for sale. Good condition. Price negotiable. Contact for more details.	13777.97	0	0	NULL	NULL	NULL	NULL	1	Electronics	2025-10-15 02:41:25	2025-11-13 02:41:25
+7d7572c4-635e-4299-907c-5ad70f2916c1	77777777-7777-7777-7777-777777777777	Cycle Bike in Great Condition	Sports equipment for sale. Good condition. Price negotiable. Contact for more details.	12285.76	0	0	NULL	NULL	NULL	NULL	1	Sports	2025-10-14 02:41:25	2025-11-13 02:41:25
+7fc14294-e0e5-476b-a8ab-e838ef2839c7	55555555-5555-5555-5555-555555555555	Premium Mobile Phone	Electronics item for sale. Good condition. Price negotiable. Contact for more details.	8825.41	0	0	NULL	NULL	NULL	NULL	1	Electronics	2025-11-05 02:41:25	2025-11-13 02:41:25
+8164b52d-5ac1-4a4c-a1c7-95f3cd6dcc8d	33333333-3333-3333-3333-333333333333	Athletic Cycle Bike	Sports equipment for sale. Good condition. Price negotiable. Contact for more details.	14233.76	0	0	NULL	NULL	NULL	NULL	1	Sports	2025-10-19 02:41:25	2025-11-13 02:41:25
+820bbe6a-4ecf-4fea-bec3-e1b19384621e	99999999-9999-9999-9999-999999999999	Bike for Sale	Sports equipment for sale. Good condition. Price negotiable. Contact for more details.	6656.96	0	0	NULL	NULL	NULL	NULL	1	Sports	2025-11-05 02:41:25	2025-11-13 02:41:25
+82d31f04-8949-40a7-b194-7ac2327490d0	77777777-7777-7777-7777-777777777777	Professional Cycle Bike	Sports equipment for sale. Good condition. Price negotiable. Contact for more details.	10160.52	0	0	NULL	NULL	NULL	NULL	1	Sports	2025-10-18 02:41:25	2025-11-13 02:41:25
+85128af2-db26-4377-959a-9eebd891906d	22222222-2222-2222-2222-222222222222	Stylish Furniture Item	Furniture item for sale. Well-maintained. Price negotiable. Contact for more details.	8010.05	0	0	NULL	NULL	NULL	NULL	1	Furniture	2025-10-17 02:41:25	2025-11-13 02:41:25
+85364a9e-7fd9-4d17-99bd-c36c41c568d4	44444444-4444-4444-4444-444444444444	Professional Electronics Item	Electronics item for sale. Good condition. Price negotiable. Contact for more details.	1376.92	0	1	NULL	NULL	NULL	NULL	1	Electronics	2025-11-02 02:41:25	2025-11-13 02:41:25
+865fab91-93dc-4e34-80a5-740119baa324	66666666-6666-6666-6666-666666666666	Electronics Item in Excellent Condition	Electronics item for sale. Good condition. Price negotiable. Contact for more details.	7501.06	0	0	NULL	NULL	NULL	NULL	1	Electronics	2025-10-14 02:41:25	2025-11-13 02:41:25
+8725abec-53e5-40d3-8d65-3b286911647f	66666666-6666-6666-6666-666666666666	Bike for Sale	Sports equipment for sale. Good condition. Price negotiable. Contact for more details.	9360.60	0	0	NULL	NULL	NULL	NULL	1	Sports	2025-10-30 02:41:25	2025-11-13 02:41:25
+87285c58-7b50-41be-b9c8-0bed19008ea9	99999999-9999-9999-9999-999999999999	Comfortable Desk	Furniture item for sale. Well-maintained. Price negotiable. Contact for more details.	1298.84	0	0	NULL	NULL	NULL	NULL	1	Furniture	2025-11-12 02:41:25	2025-11-13 02:41:25
+884dde26-2bd5-465a-bf26-a12d4dfd9add	33333333-3333-3333-3333-333333333333	Stylish Mattress	Furniture item for sale. Well-maintained. Price negotiable. Contact for more details.	5308.23	1	0	NULL	NULL	NULL	NULL	1	Furniture	2025-11-12 02:41:25	2025-11-13 02:41:25
+8870236a-83ae-47e5-95cd-a8c70aa8f772	88888888-8888-8888-8888-888888888888	Premium Mobile Phone	Electronics item for sale. Good condition. Price negotiable. Contact for more details.	14856.30	0	0	NULL	NULL	NULL	NULL	1	Electronics	2025-11-07 02:41:25	2025-11-13 02:41:25
+88db8a98-fa16-4d1b-b43b-e2fc8bc8aaee	66666666-6666-6666-6666-666666666666	Electronics Item in Excellent Condition	Electronics item for sale. Good condition. Price negotiable. Contact for more details.	33993.03	0	0	NULL	NULL	NULL	NULL	1	Electronics	2025-10-28 02:41:25	2025-11-13 02:41:25
+898d7a7c-ed53-463c-8bf3-d19cbf362153	66666666-6666-6666-6666-666666666666	Electronics Item in Excellent Condition	Electronics item for sale. Good condition. Price negotiable. Contact for more details.	35501.97	0	0	NULL	NULL	NULL	NULL	1	Electronics	2025-10-18 02:41:25	2025-11-13 02:41:25
+89914d15-fcbd-496e-98eb-8fa8201c990a	99999999-9999-9999-9999-999999999999	Professional Electronics Item	Electronics item for sale. Good condition. Price negotiable. Contact for more details.	4137.54	0	0	NULL	NULL	NULL	NULL	1	Electronics	2025-10-19 02:41:25	2025-11-13 02:41:25
+8ad55ac3-bf02-4b0e-96e8-33955c651ab6	77777777-7777-7777-7777-777777777777	Modern Headphones	Electronics item for sale. Good condition. Price negotiable. Contact for more details.	32860.92	0	0	NULL	NULL	NULL	NULL	1	Electronics	2025-10-31 02:41:25	2025-11-13 02:41:25
+8af57c2b-1ae1-411d-afb8-12e351485f8a	77777777-7777-7777-7777-777777777777	Modern Monitor	Electronics item for sale. Good condition. Price negotiable. Contact for more details.	49849.04	0	0	NULL	NULL	NULL	NULL	1	Electronics	2025-10-31 02:41:25	2025-11-13 02:41:25
+8b59dcd9-322b-49b8-bba5-2b91898ac24d	88888888-8888-8888-8888-888888888888	Bicycle in Great Condition	Sports equipment for sale. Good condition. Price negotiable. Contact for more details.	13740.75	0	0	NULL	NULL	NULL	NULL	1	Sports	2025-10-20 02:41:25	2025-11-13 02:41:25
+8cc92b35-1482-43a8-80f8-ba12a3afd41f	11111111-1111-1111-1111-111111111111	Modern Furniture Item	Furniture item for sale. Well-maintained. Price negotiable. Contact for more details.	5213.71	1	0	NULL	NULL	NULL	NULL	1	Furniture	2025-11-12 02:41:25	2025-11-13 02:41:25
+8dd054d3-097f-4da6-84a2-34e39defeb14	77777777-7777-7777-7777-777777777777	Modern Mobile Phone	Electronics item for sale. Good condition. Price negotiable. Contact for more details.	27107.60	0	0	NULL	NULL	NULL	NULL	1	Electronics	2025-11-07 02:41:25	2025-11-13 02:41:25
+8e9c9823-9b1c-4709-9fc6-d37a51999a80	33333333-3333-3333-3333-333333333333	Quality Bike	Sports equipment for sale. Good condition. Price negotiable. Contact for more details.	4756.02	0	0	NULL	NULL	NULL	NULL	1	Sports	2025-11-12 02:41:25	2025-11-13 02:41:25
+90155a57-9c8a-43e6-8401-e1e96e91c97c	55555555-5555-5555-5555-555555555555	Mobile Phone in Excellent Condition	Electronics item for sale. Good condition. Price negotiable. Contact for more details.	7780.97	1	0	NULL	NULL	NULL	NULL	1	Electronics	2025-10-25 02:41:25	2025-11-13 02:41:25
+907e201e-bf72-47d5-a44f-5757402ca08d	44444444-4444-4444-4444-444444444444	Bike for Sale	Sports equipment for sale. Good condition. Price negotiable. Contact for more details.	9577.87	0	0	NULL	NULL	NULL	NULL	1	Sports	2025-10-26 02:41:25	2025-11-13 02:41:25
+95793f4e-407d-4d4c-b104-7de9b3e2bd84	33333333-3333-3333-3333-333333333333	Quality Sneakers	Fashion item for sale. Like new condition. Price negotiable. Contact for more details.	7677.08	0	0	NULL	NULL	NULL	NULL	1	Fashion	2025-10-16 02:41:25	2025-11-13 02:41:25
+96254aac-cf47-44f8-ba1c-3b7134fc04e2	66666666-6666-6666-6666-666666666666	Athletic Cycle	Sports equipment for sale. Good condition. Price negotiable. Contact for more details.	3994.13	0	0	NULL	NULL	NULL	NULL	1	Sports	2025-11-03 02:41:25	2025-11-13 02:41:25
+962fc449-95f1-4f66-b2e8-8475d2d53efe	99999999-9999-9999-9999-999999999999	Modern Table	Furniture item for sale. Well-maintained. Price negotiable. Contact for more details.	7114.96	1	0	NULL	NULL	NULL	NULL	1	Furniture	2025-10-21 02:41:25	2025-11-13 02:41:25
+9678c897-7b14-4813-9880-9da18cc7f9a0	99999999-9999-9999-9999-999999999999	Bike for Sale	Sports equipment for sale. Good condition. Price negotiable. Contact for more details.	4350.14	0	0	NULL	NULL	NULL	NULL	1	Sports	2025-10-20 02:41:25	2025-11-13 02:41:25
+983ebb2a-e198-482c-86e4-f09a0dc863f5	66666666-6666-6666-6666-666666666666	Professional Bike	Sports equipment for sale. Good condition. Price negotiable. Contact for more details.	9975.12	1	0	NULL	NULL	NULL	NULL	1	Sports	2025-11-06 02:41:25	2025-11-13 02:41:25
+990143e6-b8d5-4ddd-bc36-3e413a36a54d	33333333-3333-3333-3333-333333333333	Premium Electronics Item	Electronics item for sale. Good condition. Price negotiable. Contact for more details.	24707.57	0	0	NULL	NULL	NULL	NULL	1	Electronics	2025-11-11 02:41:25	2025-11-13 02:41:25
+99319d5d-2e1f-4af1-b49e-ec1dfdcd1e9c	88888888-8888-8888-8888-888888888888	Premium Monitor	Electronics item for sale. Good condition. Price negotiable. Contact for more details.	2665.75	0	0	NULL	NULL	NULL	NULL	1	Electronics	2025-10-15 02:41:25	2025-11-13 02:41:25
+998b1608-5f37-455a-a8ee-8e2d65f5e497	88888888-8888-8888-8888-888888888888	Professional Sports Equipment	Sports equipment for sale. Good condition. Price negotiable. Contact for more details.	1298.05	0	1	NULL	NULL	NULL	NULL	1	Sports	2025-10-21 02:41:25	2025-11-13 02:41:25
+9a591e53-f71d-4745-b19f-d3a41df58ed0	66666666-6666-6666-6666-666666666666	Comfortable Mattress	Furniture item for sale. Well-maintained. Price negotiable. Contact for more details.	2773.31	0	0	NULL	NULL	NULL	NULL	1	Furniture	2025-11-12 02:41:25	2025-11-13 02:41:25
+9e6ce13f-6e3d-4e3a-a879-797cf2284e70	99999999-9999-9999-9999-999999999999	Premium Mobile Phone	Electronics item for sale. Good condition. Price negotiable. Contact for more details.	2925.20	1	0	NULL	NULL	NULL	NULL	1	Electronics	2025-10-31 02:41:25	2025-11-13 02:41:25
+9f92b31b-3530-4af2-a0fa-800e48610b44	11111111-1111-1111-1111-111111111111	Bike in Great Condition	Sports equipment for sale. Good condition. Price negotiable. Contact for more details.	11574.75	0	1	NULL	NULL	NULL	NULL	1	Sports	2025-11-11 02:41:25	2025-11-13 02:41:25
+9f965eea-e286-4e7a-8b48-8721aefccae1	22222222-2222-2222-2222-222222222222	Modern Furniture Item	Furniture item for sale. Well-maintained. Price negotiable. Contact for more details.	3635.44	0	1	NULL	NULL	NULL	NULL	1	Furniture	2025-10-28 02:41:25	2025-11-13 02:41:25
+a04fe3ba-f5d2-4988-adcd-a11fbe5bfc90	66666666-6666-6666-6666-666666666666	Cycle for Sale	Sports equipment for sale. Good condition. Price negotiable. Contact for more details.	9394.13	0	0	NULL	NULL	NULL	NULL	1	Sports	2025-10-18 02:41:25	2025-11-13 02:41:25
+a06ed7c0-60d6-4270-9d24-fa89bce8564f	55555555-5555-5555-5555-555555555555	Modern Furniture Item	Furniture item for sale. Well-maintained. Price negotiable. Contact for more details.	2737.63	0	0	NULL	NULL	NULL	NULL	1	Furniture	2025-10-18 02:41:25	2025-11-13 02:41:25
+a071fe11-35d3-4086-8065-293e9e289fa0	33333333-3333-3333-3333-333333333333	Bicycle in Great Condition	Sports equipment for sale. Good condition. Price negotiable. Contact for more details.	6413.83	0	0	NULL	NULL	NULL	NULL	1	Sports	2025-10-16 02:41:25	2025-11-13 02:41:25
+a0edfec1-6e3b-4f84-b26f-d68b9c9a1af8	77777777-7777-7777-7777-777777777777	Professional Electronics Item	Electronics item for sale. Good condition. Price negotiable. Contact for more details.	12868.29	0	0	NULL	NULL	NULL	NULL	1	Electronics	2025-10-26 02:41:25	2025-11-13 02:41:25
+a3e05c1d-8607-4ca0-8848-bb430a564615	33333333-3333-3333-3333-333333333333	Modern Desk	Furniture item for sale. Well-maintained. Price negotiable. Contact for more details.	4564.58	0	0	NULL	NULL	NULL	NULL	1	Furniture	2025-10-28 02:41:25	2025-11-13 02:41:25
+a6a98656-550d-43cf-a163-80fb3a42031a	88888888-8888-8888-8888-888888888888	Premium Air Cooler	Electronics item for sale. Good condition. Price negotiable. Contact for more details.	22331.39	0	0	NULL	NULL	NULL	NULL	1	Electronics	2025-10-30 02:41:25	2025-11-13 02:41:25
+a84b1aaa-286a-41b6-a178-c6fda90a5aef	11111111-1111-1111-1111-111111111111	Premium Headphones	Electronics item for sale. Good condition. Price negotiable. Contact for more details.	22438.64	0	0	NULL	NULL	NULL	NULL	1	Electronics	2025-10-18 02:41:25	2025-11-13 02:41:25
+a970d4b6-2120-4ad8-97d4-a9c3ba645280	88888888-8888-8888-8888-888888888888	High-Quality Air Cooler	Electronics item for sale. Good condition. Price negotiable. Contact for more details.	6733.15	0	0	NULL	NULL	NULL	NULL	1	Electronics	2025-11-02 02:41:25	2025-11-13 02:41:25
+a9ac72d0-121e-41fd-88b8-c18f459842b5	55555555-5555-5555-5555-555555555555	Modern Electronics Item	Electronics item for sale. Good condition. Price negotiable. Contact for more details.	2858.29	0	1	NULL	NULL	NULL	NULL	1	Electronics	2025-11-07 02:41:25	2025-11-13 02:41:25
+aa08a93c-91a9-4213-ac50-97e98026f0fd	55555555-5555-5555-5555-555555555555	Cycle Bike in Great Condition	Sports equipment for sale. Good condition. Price negotiable. Contact for more details.	13042.98	0	0	NULL	NULL	NULL	NULL	1	Sports	2025-11-11 02:41:25	2025-11-13 02:41:25
+aabdb4cd-1ca2-4874-a60a-18fc51a1508f	11111111-1111-1111-1111-111111111111	Sports Equipment for Sale	Sports equipment for sale. Good condition. Price negotiable. Contact for more details.	10825.67	0	0	NULL	NULL	NULL	NULL	1	Sports	2025-11-05 02:41:25	2025-11-13 02:41:25
+ac6b7028-fd10-479b-bccf-1c44160e1673	11111111-1111-1111-1111-111111111111	Athletic Cycle	Sports equipment for sale. Good condition. Price negotiable. Contact for more details.	12584.90	1	0	NULL	NULL	NULL	NULL	1	Sports	2025-11-12 02:41:25	2025-11-13 02:41:25
+acfe80fa-74cf-4957-bcc7-67aa91b0c060	44444444-4444-4444-4444-444444444444	Professional Mobile Phone	Electronics item for sale. Good condition. Price negotiable. Contact for more details.	36538.90	1	1	NULL	NULL	NULL	NULL	1	Electronics	2025-11-04 02:41:25	2025-11-13 02:41:25
+ad2f8e3e-c919-4e0c-b0fc-426191dbd814	88888888-8888-8888-8888-888888888888	Fashionable Fashion Item	Fashion item for sale. Like new condition. Price negotiable. Contact for more details.	727.29	0	0	NULL	NULL	NULL	NULL	1	Fashion	2025-10-25 02:41:25	2025-11-13 02:41:25
+ae29467e-b381-4ef2-987d-bf308b720aef	66666666-6666-6666-6666-666666666666	Athletic Cycle Bike	Sports equipment for sale. Good condition. Price negotiable. Contact for more details.	3786.03	0	0	NULL	NULL	NULL	NULL	1	Sports	2025-11-06 02:41:25	2025-11-13 02:41:25
+aeb52808-403c-4882-9d91-5be57ae92fad	77777777-7777-7777-7777-777777777777	Modern Electronics Item	Electronics item for sale. Good condition. Price negotiable. Contact for more details.	15956.69	0	0	NULL	NULL	NULL	NULL	1	Electronics	2025-11-11 02:41:25	2025-11-13 02:41:25
+b0077cf6-a6bd-4c2e-971a-577449431fb6	77777777-7777-7777-7777-777777777777	Athletic Cycle	Sports equipment for sale. Good condition. Price negotiable. Contact for more details.	11938.64	0	0	NULL	NULL	NULL	NULL	1	Sports	2025-10-30 02:41:25	2025-11-13 02:41:25
+b0114ff5-b357-431f-bfc7-14755c73de95	11111111-1111-1111-1111-111111111111	Electronics Item in Excellent Condition	Electronics item for sale. Good condition. Price negotiable. Contact for more details.	49647.93	0	0	NULL	NULL	NULL	NULL	1	Electronics	2025-10-19 02:41:25	2025-11-13 02:41:25
+b1ccb2d4-a5ee-4c8e-aee6-da667bcd7aaf	88888888-8888-8888-8888-888888888888	Quality Cycle Bike	Sports equipment for sale. Good condition. Price negotiable. Contact for more details.	12911.61	0	0	NULL	NULL	NULL	NULL	1	Sports	2025-11-02 02:41:25	2025-11-13 02:41:25
+b36ef886-d374-4846-8791-c6b30c3cb702	22222222-2222-2222-2222-222222222222	Athletic Bicycle	Sports equipment for sale. Good condition. Price negotiable. Contact for more details.	8346.80	0	1	NULL	NULL	NULL	NULL	1	Sports	2025-10-16 02:41:25	2025-11-13 02:41:25
+b4b1837a-3431-4ba0-abbc-195eadfb81a7	33333333-3333-3333-3333-333333333333	High-Quality Air Cooler	Electronics item for sale. Good condition. Price negotiable. Contact for more details.	28723.09	0	0	NULL	NULL	NULL	NULL	1	Electronics	2025-10-23 02:41:25	2025-11-13 02:41:25
+b7c19e70-1025-46f7-b5a6-bc6412cc13b1	22222222-2222-2222-2222-222222222222	Cycle Bike in Great Condition	Sports equipment for sale. Good condition. Price negotiable. Contact for more details.	13151.77	0	0	NULL	NULL	NULL	NULL	1	Sports	2025-10-27 02:41:25	2025-11-13 02:41:25
+b9768fd0-1fe4-41cc-a1de-4e784824dc40	11111111-1111-1111-1111-111111111111	Professional Monitor	Electronics item for sale. Good condition. Price negotiable. Contact for more details.	3394.70	0	0	NULL	NULL	NULL	NULL	1	Electronics	2025-10-20 02:41:25	2025-11-13 02:41:25
+bab1b346-95e1-41a0-8562-b1885f3a709c	99999999-9999-9999-9999-999999999999	High-Quality Monitor	Electronics item for sale. Good condition. Price negotiable. Contact for more details.	32037.78	0	1	NULL	NULL	NULL	NULL	1	Electronics	2025-11-11 02:41:25	2025-11-13 02:41:25
+bbd1a5d8-9d7b-4dea-9ef9-ade340c5b150	99999999-9999-9999-9999-999999999999	High-Quality Monitor	Electronics item for sale. Good condition. Price negotiable. Contact for more details.	3901.67	0	0	NULL	NULL	NULL	NULL	1	Electronics	2025-11-05 02:41:25	2025-11-13 02:41:25
+bced0bad-8bd1-4336-a53e-aa973bc7a9a8	44444444-4444-4444-4444-444444444444	Cycle for Sale	Sports equipment for sale. Good condition. Price negotiable. Contact for more details.	8868.37	0	0	NULL	NULL	NULL	NULL	1	Sports	2025-10-16 02:41:25	2025-11-13 02:41:25
+bd32e2fa-10b0-48e8-96e3-70784b57ddf8	66666666-6666-6666-6666-666666666666	Bicycle in Great Condition	Sports equipment for sale. Good condition. Price negotiable. Contact for more details.	1759.99	0	0	NULL	NULL	NULL	NULL	1	Sports	2025-10-31 02:41:25	2025-11-13 02:41:25
+c02175eb-0745-4c4a-9782-ea3afd993a5c	66666666-6666-6666-6666-666666666666	Trendy Footwear	Fashion item for sale. Like new condition. Price negotiable. Contact for more details.	1331.93	0	0	NULL	NULL	NULL	NULL	1	Fashion	2025-11-08 02:41:25	2025-11-13 02:41:25
+c0cc56d6-f3c0-4842-9b1a-74351d81e4f2	99999999-9999-9999-9999-999999999999	Modern Desk	Furniture item for sale. Well-maintained. Price negotiable. Contact for more details.	1917.16	0	0	NULL	NULL	NULL	NULL	1	Furniture	2025-11-03 02:41:25	2025-11-13 02:41:25
+c1bbf9b6-cf5d-4ea6-8f99-33dc301c3b09	55555555-5555-5555-5555-555555555555	Professional Electronics Item	Electronics item for sale. Good condition. Price negotiable. Contact for more details.	28126.86	0	0	NULL	NULL	NULL	NULL	1	Electronics	2025-10-24 02:41:25	2025-11-13 02:41:25
+c27d8c62-8df1-4740-b3b9-5673cfcb6ba6	11111111-1111-1111-1111-111111111111	Monitor in Excellent Condition	Electronics item for sale. Good condition. Price negotiable. Contact for more details.	32808.75	0	0	NULL	NULL	NULL	NULL	1	Electronics	2025-10-26 02:41:25	2025-11-13 02:41:25
+c36f98b7-5655-4a8a-93fd-83ab2f957bec	22222222-2222-2222-2222-222222222222	Athletic Cycle Bike	Sports equipment for sale. Good condition. Price negotiable. Contact for more details.	3584.42	0	0	NULL	NULL	NULL	NULL	1	Sports	2025-10-30 02:41:25	2025-11-13 02:41:25
+c493d7a1-45d8-43e3-b202-b4f74dc64d0c	22222222-2222-2222-2222-222222222222	Desk in Good Condition	Furniture item for sale. Well-maintained. Price negotiable. Contact for more details.	2260.70	0	0	NULL	NULL	NULL	NULL	1	Furniture	2025-10-22 02:41:25	2025-11-13 02:41:25
+c4b0abba-b57f-408e-ab4d-912fae1d8995	99999999-9999-9999-9999-999999999999	Professional Monitor	Electronics item for sale. Good condition. Price negotiable. Contact for more details.	37725.92	0	0	NULL	NULL	NULL	NULL	1	Electronics	2025-10-30 02:41:25	2025-11-13 02:41:25
+c5e5ab53-8056-425a-b04b-e1deeca636f0	77777777-7777-7777-7777-777777777777	Desk in Good Condition	Furniture item for sale. Well-maintained. Price negotiable. Contact for more details.	4275.87	0	0	NULL	NULL	NULL	NULL	1	Furniture	2025-10-31 02:41:25	2025-11-13 02:41:25
+c63c5ace-379f-4a68-9985-7b3d450e066c	55555555-5555-5555-5555-555555555555	Professional Air Cooler	Electronics item for sale. Good condition. Price negotiable. Contact for more details.	8230.71	0	0	NULL	NULL	NULL	NULL	1	Electronics	2025-10-28 02:41:25	2025-11-13 02:41:25
+c6d56b78-0fa4-4318-8907-4ec01ebd606a	22222222-2222-2222-2222-222222222222	High-Quality Headphones	Electronics item for sale. Good condition. Price negotiable. Contact for more details.	22173.90	1	0	NULL	NULL	NULL	NULL	1	Electronics	2025-10-14 02:41:25	2025-11-13 02:41:25
+c825689a-4840-4b8e-b189-c1241d6d0731	66666666-6666-6666-6666-666666666666	Premium Air Cooler	Electronics item for sale. Good condition. Price negotiable. Contact for more details.	42017.12	0	1	NULL	NULL	NULL	NULL	1	Electronics	2025-10-30 02:41:25	2025-11-13 02:41:25
+c928c1c7-0025-4676-8cf1-8014e746f4b8	66666666-6666-6666-6666-666666666666	Modern Mobile Phone	Electronics item for sale. Good condition. Price negotiable. Contact for more details.	20661.34	0	0	NULL	NULL	NULL	NULL	1	Electronics	2025-10-29 02:41:25	2025-11-13 02:41:25
+c9cebc4a-b021-4aea-8f7e-230e16bf28fb	77777777-7777-7777-7777-777777777777	Professional Sports Equipment	Sports equipment for sale. Good condition. Price negotiable. Contact for more details.	6052.15	0	0	NULL	NULL	NULL	NULL	1	Sports	2025-10-28 02:41:25	2025-11-13 02:41:25
+cc61d7ac-7cad-4c19-a7e8-4c3a95ff6303	88888888-8888-8888-8888-888888888888	Bicycle for Sale	Sports equipment for sale. Good condition. Price negotiable. Contact for more details.	12907.88	0	0	NULL	NULL	NULL	NULL	1	Sports	2025-11-11 02:41:25	2025-11-13 02:41:25
+ccf50418-bf94-4d48-83a2-c27c27ba2781	33333333-3333-3333-3333-333333333333	Trendy Sneaker	Fashion item for sale. Like new condition. Price negotiable. Contact for more details.	2775.94	0	0	NULL	NULL	NULL	NULL	1	Fashion	2025-10-30 02:41:25	2025-11-13 02:41:25
+cddea056-5d9a-4714-914e-ffbe22d6c0f4	66666666-6666-6666-6666-666666666666	Quality Sneaker	Fashion item for sale. Like new condition. Price negotiable. Contact for more details.	3364.32	1	0	NULL	NULL	NULL	NULL	1	Fashion	2025-10-15 02:41:25	2025-11-13 02:41:25
+cf2e4120-758d-49ea-856f-eb1ab3ce4b2c	99999999-9999-9999-9999-999999999999	Mattress in Good Condition	Furniture item for sale. Well-maintained. Price negotiable. Contact for more details.	7224.72	0	0	NULL	NULL	NULL	NULL	1	Furniture	2025-10-22 02:41:25	2025-11-13 02:41:25
+d0b90236-09b2-4cb6-a512-242ef9770720	77777777-7777-7777-7777-777777777777	Quality Bicycle	Sports equipment for sale. Good condition. Price negotiable. Contact for more details.	11926.12	0	0	NULL	NULL	NULL	NULL	1	Sports	2025-10-21 02:41:25	2025-11-13 02:41:25
+d1d3f8eb-e745-4193-bb4e-899913ca01f9	11111111-1111-1111-1111-111111111111	High-Quality Monitor	Electronics item for sale. Good condition. Price negotiable. Contact for more details.	33606.50	0	1	NULL	NULL	NULL	NULL	1	Electronics	2025-11-03 02:41:25	2025-11-13 02:41:25
+d29c3beb-5cde-4892-87ab-18660962c284	55555555-5555-5555-5555-555555555555	Professional Mobile Phone	Electronics item for sale. Good condition. Price negotiable. Contact for more details.	35816.40	0	0	NULL	NULL	NULL	NULL	1	Electronics	2025-11-01 02:41:25	2025-11-13 02:41:25
+d34aec82-4ec1-44b9-bc91-e17ffc955c74	33333333-3333-3333-3333-333333333333	Professional Sports Equipment	Sports equipment for sale. Good condition. Price negotiable. Contact for more details.	5567.74	0	1	NULL	NULL	NULL	NULL	1	Sports	2025-11-01 02:41:25	2025-11-13 02:41:25
+d36a0010-ffac-4ca1-8a49-34fd441b4454	33333333-3333-3333-3333-333333333333	Quality Bike	Sports equipment for sale. Good condition. Price negotiable. Contact for more details.	12545.33	0	0	NULL	NULL	NULL	NULL	1	Sports	2025-10-25 02:41:25	2025-11-13 02:41:25
+d4ab0861-2394-4b8e-9b5c-316759ee5dcf	88888888-8888-8888-8888-888888888888	Professional Bicycle	Sports equipment for sale. Good condition. Price negotiable. Contact for more details.	14948.88	0	0	NULL	NULL	NULL	NULL	1	Sports	2025-11-07 02:41:25	2025-11-13 02:41:25
+d57c2878-c52a-48ab-93cb-4eeafc0a17e7	44444444-4444-4444-4444-444444444444	Comfortable Table	Furniture item for sale. Well-maintained. Price negotiable. Contact for more details.	6437.64	0	0	NULL	NULL	NULL	NULL	1	Furniture	2025-11-10 02:41:25	2025-11-13 02:41:25
+d5ca28bc-ff9c-48c7-9e55-246734485a00	33333333-3333-3333-3333-333333333333	Air Cooler in Excellent Condition	Electronics item for sale. Good condition. Price negotiable. Contact for more details.	22475.02	0	0	NULL	NULL	NULL	NULL	1	Electronics	2025-11-06 02:41:25	2025-11-13 02:41:25
+d62eb3f2-bda5-42c8-a8c3-f46207b35eec	22222222-2222-2222-2222-222222222222	Professional Sports Equipment	Sports equipment for sale. Good condition. Price negotiable. Contact for more details.	13682.34	0	0	NULL	NULL	NULL	NULL	1	Sports	2025-11-04 02:41:25	2025-11-13 02:41:25
+d642f110-830b-4523-9e7f-1940d6ce32c2	66666666-6666-6666-6666-666666666666	Modern Monitor	Electronics item for sale. Good condition. Price negotiable. Contact for more details.	24050.84	0	0	NULL	NULL	NULL	NULL	1	Electronics	2025-11-06 02:41:25	2025-11-13 02:41:25
+d678d27c-c58f-4cf6-ae4c-e77d95dd29ba	11111111-1111-1111-1111-111111111111	Athletic Cycle	Sports equipment for sale. Good condition. Price negotiable. Contact for more details.	604.95	0	0	NULL	NULL	NULL	NULL	1	Sports	2025-10-31 02:41:25	2025-11-13 02:41:25
+d8a6ccdb-176c-4fbf-93c5-b57c183ef8ab	66666666-6666-6666-6666-666666666666	Modern Mobile Phone	Electronics item for sale. Good condition. Price negotiable. Contact for more details.	18517.48	0	0	NULL	NULL	NULL	NULL	1	Electronics	2025-11-01 02:41:25	2025-11-13 02:41:25
+db630c1f-e71c-47e8-941e-843f1591b7f9	44444444-4444-4444-4444-444444444444	High-Quality Mobile Phone	Electronics item for sale. Good condition. Price negotiable. Contact for more details.	45587.00	0	0	NULL	NULL	NULL	NULL	1	Electronics	2025-10-30 02:41:25	2025-11-13 02:41:25
+dc3fe4da-1654-407a-83d6-c9f04d940ae4	11111111-1111-1111-1111-111111111111	Premium Monitor	Electronics item for sale. Good condition. Price negotiable. Contact for more details.	42269.32	0	0	NULL	NULL	NULL	NULL	1	Electronics	2025-10-25 02:41:25	2025-11-13 02:41:25
+dc99f23b-054f-4de9-bc29-124644f0ef5b	33333333-3333-3333-3333-333333333333	Athletic Cycle	Sports equipment for sale. Good condition. Price negotiable. Contact for more details.	1978.60	0	0	NULL	NULL	NULL	NULL	1	Sports	2025-11-08 02:41:25	2025-11-13 02:41:25
+dccfc240-f2d5-4671-83cb-81f746ef764f	11111111-1111-1111-1111-111111111111	Modern Mobile Phone	Electronics item for sale. Good condition. Price negotiable. Contact for more details.	36539.42	0	0	NULL	NULL	NULL	NULL	1	Electronics	2025-10-19 02:41:25	2025-11-13 02:41:25
+dcf3c448-ea72-43fd-9ec8-a5eeadafd076	88888888-8888-8888-8888-888888888888	Chair in Good Condition	Furniture item for sale. Well-maintained. Price negotiable. Contact for more details.	4112.03	1	0	NULL	NULL	NULL	NULL	1	Furniture	2025-10-28 02:41:25	2025-11-13 02:41:25
+dd4b64e1-d33a-4c4e-8cfe-ccc550aa2189	33333333-3333-3333-3333-333333333333	Chair in Good Condition	Furniture item for sale. Well-maintained. Price negotiable. Contact for more details.	7247.14	0	0	NULL	NULL	NULL	NULL	1	Furniture	2025-10-19 02:41:25	2025-11-13 02:41:25
+dd8420fa-3e21-44a3-b2b3-510cdba8e8d2	55555555-5555-5555-5555-555555555555	Cycle in Great Condition	Sports equipment for sale. Good condition. Price negotiable. Contact for more details.	7380.70	0	0	NULL	NULL	NULL	NULL	1	Sports	2025-11-04 02:41:25	2025-11-13 02:41:25
+e51ae0f9-75ba-456f-837a-9e3ed0fa2356	88888888-8888-8888-8888-888888888888	Professional Monitor	Electronics item for sale. Good condition. Price negotiable. Contact for more details.	5774.96	1	0	NULL	NULL	NULL	NULL	1	Electronics	2025-11-10 02:41:25	2025-11-13 02:41:25
+e5fea7e1-b078-4d99-b0f6-ce482b39514d	44444444-4444-4444-4444-444444444444	Professional Air Cooler	Electronics item for sale. Good condition. Price negotiable. Contact for more details.	48437.39	0	0	NULL	NULL	NULL	NULL	1	Electronics	2025-10-26 02:41:25	2025-11-13 02:41:25
+e7865ed4-d6c1-4f36-94c1-32207bc5498c	22222222-2222-2222-2222-222222222222	Furniture Item in Good Condition	Furniture item for sale. Well-maintained. Price negotiable. Contact for more details.	7333.46	0	0	NULL	NULL	NULL	NULL	1	Furniture	2025-10-29 02:41:25	2025-11-13 02:41:25
+ed520522-7172-4bdf-aebd-59cbc0ea1040	55555555-5555-5555-5555-555555555555	Electronics Item in Excellent Condition	Electronics item for sale. Good condition. Price negotiable. Contact for more details.	35129.64	0	0	NULL	NULL	NULL	NULL	1	Electronics	2025-10-14 02:41:25	2025-11-13 02:41:25
+ee2d2e61-1cc1-4da1-82d0-bbd69f857221	77777777-7777-7777-7777-777777777777	Comfortable Chair	Furniture item for sale. Well-maintained. Price negotiable. Contact for more details.	7041.71	0	0	NULL	NULL	NULL	NULL	1	Furniture	2025-10-24 02:41:25	2025-11-13 02:41:25
+efda43e5-42c1-4514-8dff-6ea537662f56	11111111-1111-1111-1111-111111111111	Cycle Bike for Sale	Sports equipment for sale. Good condition. Price negotiable. Contact for more details.	1508.05	0	0	NULL	NULL	NULL	NULL	1	Sports	2025-10-20 02:41:25	2025-11-13 02:41:25
+f2cebe42-3a31-4cd6-864a-a2d105bc8958	88888888-8888-8888-8888-888888888888	Quality Sneaker	Fashion item for sale. Like new condition. Price negotiable. Contact for more details.	6947.25	0	0	NULL	NULL	NULL	NULL	1	Fashion	2025-11-08 02:41:25	2025-11-13 02:41:25
+f3cb7640-5eee-4737-a7fb-522ccf864e2e	88888888-8888-8888-8888-888888888888	Comfortable Chair	Furniture item for sale. Well-maintained. Price negotiable. Contact for more details.	8574.64	0	0	NULL	NULL	NULL	NULL	1	Furniture	2025-10-19 02:41:25	2025-11-13 02:41:25
+f48aaa52-edc6-4f0e-915b-3f8b4239bf0c	11111111-1111-1111-1111-111111111111	Monitor in Excellent Condition	Electronics item for sale. Good condition. Price negotiable. Contact for more details.	23750.47	0	0	NULL	NULL	NULL	NULL	1	Electronics	2025-11-09 02:41:25	2025-11-13 02:41:25
+f5d88ed4-0cdd-4fa4-91f4-d957d2dd958d	55555555-5555-5555-5555-555555555555	Monitor in Excellent Condition	Electronics item for sale. Good condition. Price negotiable. Contact for more details.	3944.28	0	0	NULL	NULL	NULL	NULL	1	Electronics	2025-10-15 02:41:25	2025-11-13 02:41:25
+f7287238-2115-4e97-b42a-695930cc26ae	55555555-5555-5555-5555-555555555555	Modern Headphones	Electronics item for sale. Good condition. Price negotiable. Contact for more details.	20697.79	0	0	NULL	NULL	NULL	NULL	1	Electronics	2025-10-24 02:41:25	2025-11-13 02:41:25
+f81f78c0-5b89-434f-952a-cabd81e6ffcb	44444444-4444-4444-4444-444444444444	Comfortable Furniture Item	Furniture item for sale. Well-maintained. Price negotiable. Contact for more details.	5482.92	0	0	NULL	NULL	NULL	NULL	1	Furniture	2025-11-06 02:41:25	2025-11-13 02:41:25
+f8871b35-7b40-4c84-bd17-4753cf2cee8f	66666666-6666-6666-6666-666666666666	Modern Electronics Item	Electronics item for sale. Good condition. Price negotiable. Contact for more details.	25362.89	0	0	NULL	NULL	NULL	NULL	1	Electronics	2025-10-22 02:41:25	2025-11-13 02:41:25
+fc5f4fda-735f-45c7-885a-0b7576870834	22222222-2222-2222-2222-222222222222	Modern Furniture Item	Furniture item for sale. Well-maintained. Price negotiable. Contact for more details.	8271.68	0	0	NULL	NULL	NULL	NULL	1	Furniture	2025-11-01 02:41:25	2025-11-13 02:41:25
+fc7299ad-7420-49ec-94f8-54fbb815d3ce	44444444-4444-4444-4444-444444444444	Professional Mobile Phone	Electronics item for sale. Good condition. Price negotiable. Contact for more details.	42365.79	0	0	NULL	NULL	NULL	NULL	1	Electronics	2025-11-04 02:41:25	2025-11-13 02:41:25
+fd3dd32a-b08c-49b5-9d5d-8432afaea053	33333333-3333-3333-3333-333333333333	Electronics Item in Excellent Condition	Electronics item for sale. Good condition. Price negotiable. Contact for more details.	4326.62	0	1	NULL	NULL	NULL	NULL	1	Electronics	2025-10-22 02:41:25	2025-11-13 02:41:25
+fda0bbf4-1957-4994-b941-281d4ee51f40	22222222-2222-2222-2222-222222222222	Cycle Bike in Great Condition	Sports equipment for sale. Good condition. Price negotiable. Contact for more details.	5979.72	0	0	NULL	NULL	NULL	NULL	1	Sports	2025-11-09 02:41:25	2025-11-13 02:41:25
+fef1645f-d4f4-4404-ad6d-5628efad13b8	11111111-1111-1111-1111-111111111111	Bicycle for Sale	Sports equipment for sale. Good condition. Price negotiable. Contact for more details.	12298.59	0	0	NULL	NULL	NULL	NULL	1	Sports	2025-10-19 02:41:25	2025-11-13 02:41:25
+
+
+================================================
+TABLE: moderation_logs
+================================================
+
+--- TABLE STRUCTURE ---
+Field	Type	Null	Key	Default	Extra
+log_id	char(36)	NO	PRI	NULL	
+listing_id	char(36)	YES	MUL	NULL	
+user_id	char(36)	NO	MUL	NULL	
+predicted_label	varchar(50)	NO	MUL	NULL	
+confidence	decimal(5,4)	NO		NULL	
+should_flag	tinyint(1)	YES	MUL	0	
+admin_action	enum('APPROVED','REJECTED','PENDING','BLACKLISTED')	YES	MUL	PENDING	
+admin_id	char(36)	YES	MUL	NULL	
+moderation_reason	text	YES		NULL	
+image_heatmap	longtext	YES		NULL	
+text_explanation	json	YES		NULL	
+created_at	timestamp	YES	MUL	CURRENT_TIMESTAMP	DEFAULT_GENERATED
+updated_at	timestamp	YES		CURRENT_TIMESTAMP	DEFAULT_GENERATED on update CURRENT_TIMESTAMP
+
+Total Rows: 3
+
+--- TABLE DATA ---
+log_id	listing_id	user_id	predicted_label	confidence	should_flag	admin_action	admin_id	moderation_reason	image_heatmap	text_explanation	created_at	updated_at
+ml000000-0000-0000-0000-000000000001	oooooooo-oooo-oooo-oooo-oooooooooooo	22222222-2222-2222-2222-222222222222	weapon	0.8500	1	PENDING	NULL	NULL	NULL	NULL	2025-11-12 02:16:17	2025-11-13 02:16:17
+ml000000-0000-0000-0000-000000000002	aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa	11111111-1111-1111-1111-111111111111	safe	0.9500	0	APPROVED	00000000-0000-0000-0000-000000000001	Content reviewed and approved by admin	NULL	NULL	2025-11-08 02:16:17	2025-11-13 02:16:17
+ml000000-0000-0000-0000-000000000003	NULL	22222222-2222-2222-2222-222222222222	drugs	0.9200	1	REJECTED	00000000-0000-0000-0000-000000000001	Content violates platform policies	NULL	NULL	2025-11-10 02:16:17	2025-11-13 02:16:17
+
+
+================================================
+TABLE: ratings
+================================================
+
+--- TABLE STRUCTURE ---
+Field	Type	Null	Key	Default	Extra
+rating_id	bigint	NO	PRI	NULL	auto_increment
+from_user_id	char(36)	NO	MUL	NULL	
+to_user_id	char(36)	NO	MUL	NULL	
+listing_id	char(36)	YES	MUL	NULL	
+rating_value	int	NO		NULL	
+review_comment	text	YES		NULL	
+timestamp	timestamp	YES		CURRENT_TIMESTAMP	DEFAULT_GENERATED
+
+Total Rows: 27
+
+--- TABLE DATA ---
+rating_id	from_user_id	to_user_id	listing_id	rating_value	review_comment	timestamp
+1	22222222-2222-2222-2222-222222222222	11111111-1111-1111-1111-111111111111	aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa	5	Great seller! Item as described.	2025-11-03 02:16:17
+2	33333333-3333-3333-3333-333333333333	11111111-1111-1111-1111-111111111111	NULL	4	Reliable trader. Recommended!	2025-11-04 02:16:17
+3	44444444-4444-4444-4444-444444444444	11111111-1111-1111-1111-111111111111	NULL	5	Good experience.	2025-11-05 02:16:17
+4	55555555-5555-5555-5555-555555555555	11111111-1111-1111-1111-111111111111	NULL	4	Smooth transaction.	2025-11-06 02:16:17
+5	66666666-6666-6666-6666-666666666666	11111111-1111-1111-1111-111111111111	NULL	5	Excellent!	2025-11-07 02:16:17
+6	77777777-7777-7777-7777-777777777777	11111111-1111-1111-1111-111111111111	NULL	4	Very good.	2025-11-08 02:16:17
+7	88888888-8888-8888-8888-888888888888	11111111-1111-1111-1111-111111111111	NULL	5	Great!	2025-11-09 02:16:17
+8	99999999-9999-9999-9999-999999999999	11111111-1111-1111-1111-111111111111	NULL	4	Recommended.	2025-11-10 02:16:17
+9	11111111-1111-1111-1111-111111111111	22222222-2222-2222-2222-222222222222	bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb	5	Excellent product quality!	2025-11-05 02:16:17
+10	33333333-3333-3333-3333-333333333333	22222222-2222-2222-2222-222222222222	NULL	5	Very professional.	2025-11-06 02:16:17
+11	44444444-4444-4444-4444-444444444444	22222222-2222-2222-2222-222222222222	NULL	5	Highly recommended!	2025-11-07 02:16:17
+12	55555555-5555-5555-5555-555555555555	22222222-2222-2222-2222-222222222222	NULL	4	Good seller.	2025-11-08 02:16:17
+13	66666666-6666-6666-6666-666666666666	22222222-2222-2222-2222-222222222222	NULL	5	Excellent!	2025-11-09 02:16:17
+14	77777777-7777-7777-7777-777777777777	22222222-2222-2222-2222-222222222222	NULL	5	Great experience!	2025-11-10 02:16:17
+15	88888888-8888-8888-8888-888888888888	22222222-2222-2222-2222-222222222222	NULL	4	Very good.	2025-11-11 02:16:17
+16	11111111-1111-1111-1111-111111111111	33333333-3333-3333-3333-333333333333	cccccccc-cccc-cccc-cccc-cccccccccccc	5	Perfect condition!	2025-11-06 02:16:17
+17	22222222-2222-2222-2222-222222222222	33333333-3333-3333-3333-333333333333	NULL	5	Great seller, fast response.	2025-11-07 02:16:17
+18	44444444-4444-4444-4444-444444444444	33333333-3333-3333-3333-333333333333	NULL	5	Excellent service!	2025-11-08 02:16:17
+19	55555555-5555-5555-5555-555555555555	33333333-3333-3333-3333-333333333333	NULL	5	Perfect!	2025-11-09 02:16:17
+20	66666666-6666-6666-6666-666666666666	33333333-3333-3333-3333-333333333333	NULL	5	Excellent!	2025-11-10 02:16:17
+21	77777777-7777-7777-7777-777777777777	33333333-3333-3333-3333-333333333333	NULL	5	Highly recommended!	2025-11-11 02:16:17
+22	88888888-8888-8888-8888-888888888888	33333333-3333-3333-3333-333333333333	NULL	5	Great!	2025-11-12 02:16:17
+23	99999999-9999-9999-9999-999999999999	33333333-3333-3333-3333-333333333333	NULL	4	Very good.	2025-11-13 02:16:17
+24	11111111-1111-1111-1111-111111111111	44444444-4444-4444-4444-444444444444	dddddddd-dddd-dddd-dddd-dddddddddddd	4	Good item.	2025-11-08 02:16:17
+25	22222222-2222-2222-2222-222222222222	55555555-5555-5555-5555-555555555555	NULL	4	Fair condition.	2025-11-09 02:16:17
+26	33333333-3333-3333-3333-333333333333	66666666-6666-6666-6666-666666666666	NULL	4	As described.	2025-11-10 02:16:17
+27	44444444-4444-4444-4444-444444444444	77777777-7777-7777-7777-777777777777	NULL	4	Satisfactory.	2025-11-11 02:16:17
+
+
+================================================
+TABLE: reports
+================================================
+
+--- TABLE STRUCTURE ---
+Field	Type	Null	Key	Default	Extra
+report_id	bigint	NO	PRI	NULL	auto_increment
+reporter_id	char(36)	NO	MUL	NULL	
+reported_type	enum('LISTING','USER','MESSAGE')	NO	MUL	NULL	
+reported_id	varchar(255)	NO		NULL	
+reason_text	text	NO		NULL	
+status	enum('NEW','UNDER_REVIEW','RESOLVED','ESCALATED','DISMISSED')	YES	MUL	NEW	
+admin_action	text	YES		NULL	
+created_at	timestamp	YES	MUL	CURRENT_TIMESTAMP	DEFAULT_GENERATED
+resolved_at	timestamp	YES		NULL	
+
+Total Rows: 3
+
+--- TABLE DATA ---
+report_id	reporter_id	reported_type	reported_id	reason_text	status	admin_action	created_at	resolved_at
+1	55555555-5555-5555-5555-555555555555	LISTING	oooooooo-oooo-oooo-oooo-oooooooooooo	This listing appears to contain prohibited content.	NEW	NULL	2025-11-12 02:16:17	NULL
+2	66666666-6666-6666-6666-666666666666	USER	88888888-8888-8888-8888-888888888888	User is not responding to messages.	UNDER_REVIEW	NULL	2025-11-11 02:16:17	NULL
+3	77777777-7777-7777-7777-777777777777	MESSAGE	1	Inappropriate language in chat message.	RESOLVED	User has been warned. Issue resolved.	2025-11-08 02:16:17	2025-11-09 02:16:17
+
+
+================================================
+TABLE: trade_offerings
+================================================
+
+--- TABLE STRUCTURE ---
+Field	Type	Null	Key	Default	Extra
+trade_id	char(36)	NO	PRI	NULL	
+listing_id	char(36)	NO	PRI	NULL	
+
+Total Rows: 2
+
+--- TABLE DATA ---
+trade_id	listing_id
+30b2ce46-6c4b-4123-9567-94bb251c52dd	8cc92b35-1482-43a8-80f8-ba12a3afd41f
+tttttttt-tttt-tttt-tttt-tttttttttttt	iiiiiiii-iiii-iiii-iiii-iiiiiiiiiiii
+
+
+================================================
+TABLE: trades
+================================================
+
+--- TABLE STRUCTURE ---
+Field	Type	Null	Key	Default	Extra
+trade_id	char(36)	NO	PRI	NULL	
+initiator_id	char(36)	NO	MUL	NULL	
+recipient_id	char(36)	NO	MUL	NULL	
+requested_listing_id	char(36)	NO	MUL	NULL	
+cash_adjustment_amount	decimal(15,2)	YES		0.00	
+status	enum('PENDING','ACCEPTED','REJECTED','COMPLETED','CANCELLED')	YES	MUL	PENDING	
+created_at	timestamp	YES	MUL	CURRENT_TIMESTAMP	DEFAULT_GENERATED
+resolved_at	timestamp	YES		NULL	
+
+Total Rows: 4
+
+--- TABLE DATA ---
+trade_id	initiator_id	recipient_id	requested_listing_id	cash_adjustment_amount	status	created_at	resolved_at
+30b2ce46-6c4b-4123-9567-94bb251c52dd	11111111-1111-1111-1111-111111111111	33333333-3333-3333-3333-333333333333	884dde26-2bd5-465a-bf26-a12d4dfd9add	0.00	PENDING	2025-11-12 21:31:12	NULL
+tttttttt-tttt-tttt-tttt-tttttttttttt	33333333-3333-3333-3333-333333333333	22222222-2222-2222-2222-222222222222	hhhhhhhh-hhhh-hhhh-hhhh-hhhhhhhhhhhh	500.00	PENDING	2025-11-11 02:16:17	NULL
+uuuuuuuu-uuuu-uuuu-uuuu-uuuuuuuuuuuu	44444444-4444-4444-4444-444444444444	11111111-1111-1111-1111-111111111111	gggggggg-gggg-gggg-gggg-gggggggggggg	0.00	ACCEPTED	2025-11-06 02:16:17	2025-11-07 02:16:17
+vvvvvvvv-vvvv-vvvv-vvvv-vvvvvvvvvvvv	55555555-5555-5555-5555-555555555555	33333333-3333-3333-3333-333333333333	cccccccc-cccc-cccc-cccc-cccccccccccc	1000.00	REJECTED	2025-11-08 02:16:17	2025-11-09 02:16:17
+
+
+================================================
+TABLE: transaction_history
+================================================
+
+--- TABLE STRUCTURE ---
+Field	Type	Null	Key	Default	Extra
+transaction_history_id	bigint	NO	PRI	NULL	auto_increment
+buyer_id	char(36)	NO	MUL	NULL	
+seller_id	char(36)	NO	MUL	NULL	
+listing_id	char(36)	YES	MUL	NULL	
+trade_id	char(36)	YES	MUL	NULL	
+transaction_type	enum('PURCHASE','TRADE','BID_WIN')	NO		NULL	
+amount	decimal(15,2)	YES		NULL	
+completed_at	timestamp	YES	MUL	CURRENT_TIMESTAMP	DEFAULT_GENERATED
+
+Total Rows: 0
+
+--- TABLE DATA ---
+(No data)
+
+
+================================================
+TABLE: users
+================================================
+
+--- TABLE STRUCTURE ---
+Field	Type	Null	Key	Default	Extra
+user_id	char(36)	NO	PRI	NULL	
+email	varchar(255)	NO	UNI	NULL	
+password_hash	varchar(255)	YES		NULL	
+role	enum('ADMIN','STUDENT')	NO	MUL	STUDENT	
+full_name	varchar(255)	NO		NULL	
+wallet_balance	decimal(15,2)	NO		1000.00	
+trust_score	float	YES	MUL	0	
+registered_at	timestamp	YES		CURRENT_TIMESTAMP	DEFAULT_GENERATED
+last_login_at	timestamp	YES		NULL	
+is_suspended	tinyint(1)	YES	MUL	0	
+created_at	timestamp	YES		CURRENT_TIMESTAMP	DEFAULT_GENERATED
+updated_at	timestamp	YES		CURRENT_TIMESTAMP	DEFAULT_GENERATED on update CURRENT_TIMESTAMP
+
+Total Rows: 10
+
+--- TABLE DATA ---
+user_id	email	password_hash	role	full_name	wallet_balance	trust_score	registered_at	last_login_at	is_suspended	created_at	updated_at
+00000000-0000-0000-0000-000000000001	admin@pilani.bits-pilani.ac.in	$2a$10$MB5roPLO3RjnGNifzSBDCO9v.66TawwbFg2s9cLHT6qDJ.LwROZ.G	ADMIN	Admin User	5000.00	5	2025-11-13 02:16:17	2025-11-12 21:00:33	0	2025-11-13 02:16:17	2025-11-12 21:00:33
+11111111-1111-1111-1111-111111111111	student1@pilani.bits-pilani.ac.in	$2a$10$MB5roPLO3RjnGNifzSBDCO9v.66TawwbFg2s9cLHT6qDJ.LwROZ.G	STUDENT	Rahul Sharma	2500.00	3.92	2025-10-14 02:16:17	2025-11-13 10:51:37	0	2025-11-13 02:16:17	2025-11-13 10:51:37
+22222222-2222-2222-2222-222222222222	student2@pilani.bits-pilani.ac.in	$2a$10$MB5roPLO3RjnGNifzSBDCO9v.66TawwbFg2s9cLHT6qDJ.LwROZ.G	STUDENT	Priya Patel	3200.00	4	2025-10-19 02:16:17	NULL	0	2025-11-13 02:16:17	2025-11-13 02:16:17
+33333333-3333-3333-3333-333333333333	student3@pilani.bits-pilani.ac.in	$2a$10$MB5roPLO3RjnGNifzSBDCO9v.66TawwbFg2s9cLHT6qDJ.LwROZ.G	STUDENT	Arjun Kumar	1800.00	4.15	2025-10-24 02:16:17	NULL	0	2025-11-13 02:16:17	2025-11-13 02:16:17
+44444444-4444-4444-4444-444444444444	student4@pilani.bits-pilani.ac.in	$2a$10$MB5roPLO3RjnGNifzSBDCO9v.66TawwbFg2s9cLHT6qDJ.LwROZ.G	STUDENT	Ananya Singh	1500.00	3.17	2025-10-29 02:16:17	NULL	0	2025-11-13 02:16:17	2025-11-13 02:16:17
+55555555-5555-5555-5555-555555555555	student5@pilani.bits-pilani.ac.in	$2a$10$MB5roPLO3RjnGNifzSBDCO9v.66TawwbFg2s9cLHT6qDJ.LwROZ.G	STUDENT	Vikram Mehta	2100.00	3.17	2025-11-03 02:16:17	NULL	0	2025-11-13 02:16:17	2025-11-13 02:16:17
+66666666-6666-6666-6666-666666666666	student6@pilani.bits-pilani.ac.in	$2a$10$MB5roPLO3RjnGNifzSBDCO9v.66TawwbFg2s9cLHT6qDJ.LwROZ.G	STUDENT	Sneha Reddy	1400.00	3.17	2025-11-05 02:16:17	NULL	0	2025-11-13 02:16:17	2025-11-13 02:16:17
+77777777-7777-7777-7777-777777777777	student7@pilani.bits-pilani.ac.in	$2a$10$MB5roPLO3RjnGNifzSBDCO9v.66TawwbFg2s9cLHT6qDJ.LwROZ.G	STUDENT	Aditya Joshi	1900.00	3.17	2025-11-08 02:16:17	NULL	0	2025-11-13 02:16:17	2025-11-13 02:16:17
+88888888-8888-8888-8888-888888888888	student8@pilani.bits-pilani.ac.in	$2a$10$MB5roPLO3RjnGNifzSBDCO9v.66TawwbFg2s9cLHT6qDJ.LwROZ.G	STUDENT	Kavya Nair	1000.00	0	2025-11-10 02:16:17	NULL	0	2025-11-13 02:16:17	2025-11-13 02:16:17
+99999999-9999-9999-9999-999999999999	student9@pilani.bits-pilani.ac.in	$2a$10$MB5roPLO3RjnGNifzSBDCO9v.66TawwbFg2s9cLHT6qDJ.LwROZ.G	STUDENT	Rajesh Verma	1000.00	0	2025-11-12 02:16:17	NULL	0	2025-11-13 02:16:17	2025-11-13 02:16:17
+
+
+================================================
+TABLE: wallet_transactions
+================================================
+
+--- TABLE STRUCTURE ---
+Field	Type	Null	Key	Default	Extra
+transaction_id	bigint	NO	PRI	NULL	auto_increment
+user_id	char(36)	NO	MUL	NULL	
+amount	decimal(15,2)	NO		NULL	
+type	enum('CREDIT','DEBIT')	NO	MUL	NULL	
+reason	enum('PURCHASE','TRADE','BID','REFUND','TOPUP','WITHDRAWAL','ESCROW_HOLD','ESCROW_RELEASE')	NO		NULL	
+reference_id	varchar(255)	YES	MUL	NULL	
+description	text	YES		NULL	
+timestamp	timestamp	YES	MUL	CURRENT_TIMESTAMP	DEFAULT_GENERATED
+
+Total Rows: 6
+
+--- TABLE DATA ---
+transaction_id	user_id	amount	type	reason	reference_id	description	timestamp
+1	11111111-1111-1111-1111-111111111111	36000.00	DEBIT	ESCROW_HOLD	NULL	Bid placed on PS5	2025-11-12 14:16:17
+2	22222222-2222-2222-2222-222222222222	35500.00	CREDIT	ESCROW_RELEASE	NULL	Outbid on PS5	2025-11-12 14:16:17
+3	66666666-6666-6666-6666-666666666666	27000.00	DEBIT	ESCROW_HOLD	NULL	Bid placed on Drone	2025-11-12 02:16:17
+4	33333333-3333-3333-3333-333333333333	500.00	DEBIT	ESCROW_HOLD	NULL	Trade cash adjustment	2025-11-11 02:16:17
+5	22222222-2222-2222-2222-222222222222	12000.00	DEBIT	PURCHASE	NULL	Purchased headphones	2025-11-10 02:16:17
+6	11111111-1111-1111-1111-111111111111	12000.00	CREDIT	PURCHASE	NULL	Sold headphones	2025-11-10 02:16:17
+
+
+================================================
+TABLE: wishlists
+================================================
+
+--- TABLE STRUCTURE ---
+Field	Type	Null	Key	Default	Extra
+user_id	char(36)	NO	PRI	NULL	
+listing_id	char(36)	NO	PRI	NULL	
+created_at	timestamp	YES		CURRENT_TIMESTAMP	DEFAULT_GENERATED
+
+Total Rows: 3
+
+--- TABLE DATA ---
+user_id	listing_id	created_at
+22222222-2222-2222-2222-222222222222	cccccccc-cccc-cccc-cccc-cccccccccccc	2025-11-11 02:16:17
+33333333-3333-3333-3333-333333333333	bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb	2025-11-10 02:16:17
+44444444-4444-4444-4444-444444444444	kkkkkkkk-kkkk-kkkk-kkkk-kkkkkkkkkkkk	2025-11-12 02:16:17
+
+

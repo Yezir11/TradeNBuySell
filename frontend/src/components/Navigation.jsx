@@ -44,7 +44,7 @@ const Navigation = () => {
             <>
               <NavLink to="/post-listing" onClick={() => setIsMobileMenuOpen(false)}>Post Listing</NavLink>
               <NavLink to="/trades" onClick={() => setIsMobileMenuOpen(false)}>Trades</NavLink>
-              <NavLink to="/bids" onClick={() => setIsMobileMenuOpen(false)}>Bids</NavLink>
+              <NavLink to="/bids" onClick={() => setIsMobileMenuOpen(false)}>Bidding Center</NavLink>
               <NavLink to="/chat" onClick={() => setIsMobileMenuOpen(false)}>Chat</NavLink>
               {isAdmin() && (
                 <NavLink to="/admin" onClick={() => setIsMobileMenuOpen(false)}>Admin Dashboard</NavLink>

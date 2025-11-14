@@ -51,9 +51,11 @@ public class SecurityConfig {
                 .requestMatchers("/images/**").permitAll()
                 .requestMatchers("/api/auth/login", "/api/auth/register", "/api/auth/setup-password").permitAll()
                 .requestMatchers(HttpMethod.GET, "/api/listings", "/api/listings/**").permitAll()
+                .requestMatchers(HttpMethod.GET, "/api/featured/packages").permitAll()
                 .requestMatchers("/api/moderation/admin/**").hasRole("ADMIN")
                 .requestMatchers("/api/moderation/**").authenticated()
                 .requestMatchers("/api/admin/**").hasRole("ADMIN")
+                .requestMatchers(HttpMethod.POST, "/api/featured/**").authenticated()
                 .anyRequest().authenticated()
             )
             .addFilterBefore(jwtRequestFilter, UsernamePasswordAuthenticationFilter.class);

@@ -67,10 +67,21 @@ public class TradeService {
             throw new BadRequestException("Recipient does not meet trust score requirements (minimum 3.0)");
         }
 
-        if (cashAdjustmentAmount != null && cashAdjustmentAmount.compareTo(BigDecimal.ZERO) > 0) {
-            BigDecimal balance = walletService.getBalance(initiatorId);
-            if (balance.compareTo(cashAdjustmentAmount) < 0) {
-                throw new InsufficientFundsException("Insufficient funds for cash adjustment");
+        // Validate cash adjustment and check funds
+        if (cashAdjustmentAmount != null && cashAdjustmentAmount.compareTo(BigDecimal.ZERO) != 0) {
+            BigDecimal absAmount = cashAdjustmentAmount.abs();
+            if (cashAdjustmentAmount.compareTo(BigDecimal.ZERO) > 0) {
+                // Initiator pays extra - check initiator's balance
+                BigDecimal balance = walletService.getBalance(initiatorId);
+                if (balance.compareTo(absAmount) < 0) {
+                    throw new InsufficientFundsException("Insufficient funds for cash adjustment");
+                }
+            } else {
+                // Recipient pays extra (negative adjustment) - check recipient's balance
+                BigDecimal recipientBalance = walletService.getBalance(requestedListing.getUserId());
+                if (recipientBalance.compareTo(absAmount) < 0) {
+                    throw new BadRequestException("Recipient does not have sufficient funds for cash adjustment");
+                }
             }
         }
 
@@ -99,8 +110,16 @@ public class TradeService {
             }
         }
 
-        if (cashAdjustmentAmount != null && cashAdjustmentAmount.compareTo(BigDecimal.ZERO) > 0) {
-            walletService.holdFunds(initiatorId, cashAdjustmentAmount, trade.getTradeId());
+        // Hold funds based on cash adjustment direction
+        if (cashAdjustmentAmount != null && cashAdjustmentAmount.compareTo(BigDecimal.ZERO) != 0) {
+            BigDecimal absAmount = cashAdjustmentAmount.abs();
+            if (cashAdjustmentAmount.compareTo(BigDecimal.ZERO) > 0) {
+                // Initiator pays extra - hold from initiator
+                walletService.holdFunds(initiatorId, absAmount, trade.getTradeId());
+            } else {
+                // Recipient pays extra - hold from recipient
+                walletService.holdFunds(requestedListing.getUserId(), absAmount, trade.getTradeId());
+            }
         }
 
         return toDTO(trade);
@@ -141,10 +160,20 @@ public class TradeService {
             listingRepository.save(offeringListing);
         }
 
-        if (trade.getCashAdjustmentAmount().compareTo(BigDecimal.ZERO) > 0) {
-            walletService.releaseFunds(trade.getInitiatorId(), trade.getCashAdjustmentAmount(), tradeId);
-            walletService.creditFunds(trade.getRecipientId(), trade.getCashAdjustmentAmount(),
-                    WalletTransaction.TransactionReason.TRADE, tradeId, "Trade cash adjustment");
+        // Handle cash adjustment transfer on trade acceptance
+        if (trade.getCashAdjustmentAmount() != null && trade.getCashAdjustmentAmount().compareTo(BigDecimal.ZERO) != 0) {
+            BigDecimal absAmount = trade.getCashAdjustmentAmount().abs();
+            if (trade.getCashAdjustmentAmount().compareTo(BigDecimal.ZERO) > 0) {
+                // Initiator pays extra - release from initiator and credit to recipient
+                walletService.releaseFunds(trade.getInitiatorId(), absAmount, tradeId);
+                walletService.creditFunds(trade.getRecipientId(), absAmount,
+                        WalletTransaction.TransactionReason.TRADE, tradeId, "Trade cash adjustment - received from initiator");
+            } else {
+                // Recipient pays extra - release from recipient and credit to initiator
+                walletService.releaseFunds(trade.getRecipientId(), absAmount, tradeId);
+                walletService.creditFunds(trade.getInitiatorId(), absAmount,
+                        WalletTransaction.TransactionReason.TRADE, tradeId, "Trade cash adjustment - received from recipient");
+            }
         }
 
         return toDTO(trade);
@@ -167,8 +196,16 @@ public class TradeService {
         trade.setResolvedAt(LocalDateTime.now());
         trade = tradeRepository.save(trade);
 
-        if (trade.getCashAdjustmentAmount().compareTo(BigDecimal.ZERO) > 0) {
-            walletService.releaseFunds(trade.getInitiatorId(), trade.getCashAdjustmentAmount(), tradeId);
+        // Release held funds on trade rejection
+        if (trade.getCashAdjustmentAmount() != null && trade.getCashAdjustmentAmount().compareTo(BigDecimal.ZERO) != 0) {
+            BigDecimal absAmount = trade.getCashAdjustmentAmount().abs();
+            if (trade.getCashAdjustmentAmount().compareTo(BigDecimal.ZERO) > 0) {
+                // Release from initiator
+                walletService.releaseFunds(trade.getInitiatorId(), absAmount, tradeId);
+            } else {
+                // Release from recipient
+                walletService.releaseFunds(trade.getRecipientId(), absAmount, tradeId);
+            }
         }
 
         return toDTO(trade);
@@ -191,8 +228,16 @@ public class TradeService {
         trade.setResolvedAt(LocalDateTime.now());
         trade = tradeRepository.save(trade);
 
-        if (trade.getCashAdjustmentAmount().compareTo(BigDecimal.ZERO) > 0) {
-            walletService.releaseFunds(trade.getInitiatorId(), trade.getCashAdjustmentAmount(), tradeId);
+        // Release held funds on trade rejection
+        if (trade.getCashAdjustmentAmount() != null && trade.getCashAdjustmentAmount().compareTo(BigDecimal.ZERO) != 0) {
+            BigDecimal absAmount = trade.getCashAdjustmentAmount().abs();
+            if (trade.getCashAdjustmentAmount().compareTo(BigDecimal.ZERO) > 0) {
+                // Release from initiator
+                walletService.releaseFunds(trade.getInitiatorId(), absAmount, tradeId);
+            } else {
+                // Release from recipient
+                walletService.releaseFunds(trade.getRecipientId(), absAmount, tradeId);
+            }
         }
 
         return toDTO(trade);

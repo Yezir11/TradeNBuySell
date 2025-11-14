@@ -3,6 +3,35 @@ import { useNavigate, useSearchParams, Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import api from '../services/api';
 import Navigation from '../components/Navigation';
+import {
+  Box,
+  Card,
+  CardContent,
+  CardMedia,
+  CardActions,
+  Button,
+  TextField,
+  Chip,
+  Typography,
+  IconButton,
+  Menu,
+  MenuItem,
+  InputAdornment,
+  ToggleButton,
+  ToggleButtonGroup,
+  Stack,
+  Divider,
+  Container,
+  Paper,
+  CircularProgress,
+  Alert
+} from '@mui/material';
+import {
+  Search as SearchIcon,
+  MoreVert as MoreVertIcon,
+  Visibility as VisibilityIcon,
+  Gavel as GavelIcon
+} from '@mui/icons-material';
 import './BiddingCenter.css';
 
 const BiddingCenter = () => {
@@ -25,6 +54,9 @@ const BiddingCenter = () => {
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
   const [activeTab, setActiveTab] = useState('my-bids');
+  const [searchQuery, setSearchQuery] = useState('');
+  const [anchorEl, setAnchorEl] = useState(null);
+  const [selectedListingId, setSelectedListingId] = useState(null);
 
   useEffect(() => {
     if (!authLoading) {
@@ -47,7 +79,7 @@ const BiddingCenter = () => {
       setError('');
       const [myBidsRes, listingsRes, myListingsRes] = await Promise.all([
         api.get('/api/bids/my-bids').catch(() => ({ data: [] })),
-        api.get('/api/listings?category=&search=&page=0&size=100').catch(() => ({ data: { content: [] } })),
+        api.get('/api/listings?biddableOnly=true&page=0&size=100').catch(() => ({ data: { content: [] } })),
         api.get('/api/listings/my-listings?activeOnly=false').catch(() => ({ data: [] }))
       ]);
       
@@ -157,6 +189,48 @@ const BiddingCenter = () => {
     setSuccess('');
     await fetchListingBids(listing.listingId);
   };
+
+  const handleMenuOpen = (event, listingId) => {
+    event.preventDefault();
+    event.stopPropagation();
+    setAnchorEl(event.currentTarget);
+    setSelectedListingId(listingId);
+  };
+
+  const handleMenuClose = () => {
+    setAnchorEl(null);
+    setSelectedListingId(null);
+  };
+
+  const getImageUrl = (imageUrl) => {
+    if (!imageUrl) return 'https://via.placeholder.com/120x120?text=No+Image';
+    if (imageUrl.startsWith('http')) return imageUrl;
+    return `${process.env.REACT_APP_API_URL || 'http://localhost:8080'}${imageUrl}`;
+  };
+
+  const getDateRange = (listing) => {
+    if (!listing.createdAt) return { fromDate: 'N/A', toDate: null };
+    const fromDate = new Date(listing.createdAt).toLocaleDateString('en-US', { 
+      month: 'short', 
+      day: 'numeric',
+      year: 'numeric'
+    });
+    const toDate = listing.updatedAt && listing.updatedAt !== listing.createdAt
+      ? new Date(listing.updatedAt).toLocaleDateString('en-US', { 
+          month: 'short', 
+          day: 'numeric',
+          year: 'numeric'
+        })
+      : null;
+    return { fromDate, toDate };
+  };
+
+  const filteredMyListings = myListings.filter(listing => {
+    const matchesSearch = !searchQuery || 
+      (listing.title && listing.title.toLowerCase().includes(searchQuery.toLowerCase())) ||
+      (listing.description && listing.description.toLowerCase().includes(searchQuery.toLowerCase()));
+    return matchesSearch;
+  });
 
   const handleFinalizeBid = async (listingIdParam) => {
     if (!window.confirm('Are you sure you want to finalize this bid? This will close the listing and transfer funds.')) {
@@ -366,111 +440,285 @@ const BiddingCenter = () => {
 
           {activeTab === 'my-listings' && (
             <div className="my-listings-section">
-              <h2>My Biddable Listings</h2>
-              {myListings.length === 0 ? (
-                <div className="no-listings">
-                  <p>You don't have any biddable listings.</p>
-                  <Link to="/post-listing" className="create-listing-link">Create a biddable listing</Link>
-                </div>
-              ) : (
-                <div className="my-listings-container">
-                  <div className="listings-list">
-                    {myListings.map(listing => {
-                      const ended = isBidEnded(listing.bidEndTime);
-                      const timeRemaining = getTimeRemaining(listing.bidEndTime);
-                      
-                      return (
-                        <div 
-                          key={listing.listingId} 
-                          className={`listing-item ${selectedMyListing?.listingId === listing.listingId ? 'selected' : ''}`}
-                          onClick={() => handleMyListingSelect(listing)}
-                        >
-                          <div className="listing-item-content">
-                            {listing.imageUrls && listing.imageUrls.length > 0 && (
-                              <img 
-                                src={listing.imageUrls[0]} 
-                                alt={listing.title}
-                                className="listing-item-image"
+              <Paper elevation={2} sx={{ p: 3 }}>
+                <Box display="flex" justifyContent="space-between" alignItems="center" mb={3}>
+                  <Typography variant="h5">My Biddable Listings</Typography>
+                </Box>
+
+                {myListings.length === 0 ? (
+                  <Box textAlign="center" py={6}>
+                    <Typography variant="h6" color="text.secondary" gutterBottom>
+                      You haven't created any biddable listings yet.
+                    </Typography>
+                    <Button 
+                      variant="contained" 
+                      color="primary" 
+                      component={Link}
+                      to="/post-listing"
+                      sx={{ mt: 2 }}
+                    >
+                      Create a Biddable Listing
+                    </Button>
+                  </Box>
+                ) : (
+                  <>
+                    {/* Search */}
+                    <Stack spacing={2} mb={3}>
+                      <TextField
+                        fullWidth
+                        placeholder="Search by Listing Title"
+                        value={searchQuery}
+                        onChange={(e) => setSearchQuery(e.target.value)}
+                        InputProps={{
+                          startAdornment: (
+                            <InputAdornment position="start">
+                              <SearchIcon />
+                            </InputAdornment>
+                          ),
+                        }}
+                        size="small"
+                      />
+                    </Stack>
+
+                    {/* Listings Grid */}
+                    {filteredMyListings.length === 0 ? (
+                      <Box textAlign="center" py={4}>
+                        <Typography variant="body1" color="text.secondary">
+                          No listings match your search criteria.
+                        </Typography>
+                      </Box>
+                    ) : (
+                      <Stack spacing={2}>
+                        {filteredMyListings.map((listing) => {
+                          const { fromDate, toDate } = getDateRange(listing);
+                          const isActive = listing.isActive;
+                          const ended = isBidEnded(listing.bidEndTime);
+                          const timeRemaining = listing.bidEndTime ? getTimeRemaining(listing.bidEndTime) : null;
+                          const isSelected = selectedMyListing?.listingId === listing.listingId;
+                          
+                          return (
+                            <Card
+                              key={listing.listingId}
+                              sx={{
+                                display: 'flex',
+                                cursor: 'pointer',
+                                '&:hover': {
+                                  boxShadow: 4,
+                                },
+                                borderLeft: `4px solid ${isActive ? (ended ? '#ff9800' : '#1976d2') : '#d32f2f'}`,
+                                border: isSelected ? '2px solid #1976d2' : undefined,
+                              }}
+                              onClick={() => handleMyListingSelect(listing)}
+                            >
+                              {/* Image */}
+                              <CardMedia
+                                component="img"
+                                sx={{
+                                  width: 120,
+                                  height: 120,
+                                  objectFit: 'cover',
+                                  flexShrink: 0,
+                                }}
+                                image={listing.imageUrls && listing.imageUrls.length > 0 
+                                  ? getImageUrl(listing.imageUrls[0])
+                                  : 'https://via.placeholder.com/120x120?text=No+Image'
+                                }
+                                alt={listing.title || 'Listing image'}
                                 onError={(e) => {
-                                  e.target.src = 'https://via.placeholder.com/100x100?text=No+Image';
+                                  e.target.src = 'https://via.placeholder.com/120x120?text=No+Image';
+                                  e.target.onerror = null;
                                 }}
                               />
-                            )}
-                            <div className="listing-item-info">
-                              <h3>{listing.title}</h3>
-                              <p className="price">Starting: ₹{listing.startingPrice ? parseFloat(listing.startingPrice).toFixed(2) : 'N/A'}</p>
-                              {listing.highestBid && (
-                                <p className="highest-bid">Highest: ₹{parseFloat(listing.highestBid).toFixed(2)}</p>
-                              )}
-                              <p className="bid-count">{listing.bidCount || 0} bid{listing.bidCount !== 1 ? 's' : ''}</p>
-                              {listing.bidEndTime && (
-                                <p className={`end-time ${ended ? 'ended' : ''}`}>
-                                  {ended ? 'Ended' : `Ends: ${new Date(listing.bidEndTime).toLocaleString()}`}
-                                  {timeRemaining && !ended && (
-                                    <span className="time-remaining"> ({timeRemaining} remaining)</span>
-                                  )}
-                                </p>
-                              )}
-                              <span className={`status-badge ${listing.isActive ? 'active' : 'inactive'}`}>
-                                {listing.isActive ? 'Active' : 'Inactive'}
-                              </span>
-                            </div>
-                          </div>
-                        </div>
-                      );
-                    })}
-                  </div>
-                  
-                  {selectedMyListing && (
-                    <div className="listing-bids-detail">
-                      <h3>Bids on "{selectedMyListing.title}"</h3>
-                      {bids.length === 0 ? (
-                        <div className="no-bids">
-                          <p>No bids yet on this listing.</p>
-                        </div>
-                      ) : (
-                        <>
-                          <div className="bids-table">
-                            <div className="bids-table-header">
-                              <span>Bidder</span>
-                              <span>Amount</span>
-                              <span>Time</span>
-                              <span>Status</span>
-                            </div>
-                            {bids.map((bid, index) => (
-                              <div key={bid.bidId} className="bids-table-row">
-                                <span>{bid.userName || 'Unknown'}</span>
-                                <span className="bid-amount">₹{parseFloat(bid.bidAmount).toFixed(2)}</span>
-                                <span>{new Date(bid.bidTime).toLocaleString()}</span>
-                                <span className={`bid-status-badge ${bid.isWinning ? 'winning' : 'outbid'}`}>
-                                  {bid.isWinning ? 'Winning' : index === 0 ? 'Highest' : 'Outbid'}
-                                </span>
-                              </div>
-                            ))}
-                          </div>
-                          {selectedMyListing.isActive && 
-                           bids.length > 0 && 
-                           isBidEnded(selectedMyListing.bidEndTime) && (
-                            <button
-                              onClick={() => handleFinalizeBid(selectedMyListing.listingId)}
-                              className="finalize-bid-btn"
-                              disabled={finalizingBid}
-                            >
-                              {finalizingBid ? 'Finalizing...' : 'Finalize Winning Bid'}
-                            </button>
-                          )}
-                          {selectedMyListing.isActive && 
-                           !isBidEnded(selectedMyListing.bidEndTime) && (
-                            <p className="info-message">
-                              Bidding is still active. You can finalize after the bidding ends.
-                            </p>
-                          )}
-                        </>
-                      )}
-                    </div>
-                  )}
-                </div>
-              )}
+                              
+                              {/* Content */}
+                              <Box sx={{ display: 'flex', flexDirection: 'column', flex: 1, minWidth: 0 }}>
+                                <CardContent sx={{ flex: 1, pb: isSelected ? 1 : 1, pt: 1.5 }}>
+                                  <Box display="flex" justifyContent="space-between" alignItems="flex-start" mb={0.5}>
+                                    <Box flex={1} minWidth={0}>
+                                      <Typography 
+                                        variant="subtitle1" 
+                                        fontWeight="bold" 
+                                        noWrap
+                                        sx={{ mb: 0.5 }}
+                                      >
+                                        {listing.title || 'Untitled Listing'}
+                                      </Typography>
+                                      <Stack direction="row" spacing={1} alignItems="center" mb={0.5}>
+                                        {listing.category && (
+                                          <Chip 
+                                            label={listing.category} 
+                                            size="small" 
+                                            variant="outlined"
+                                          />
+                                        )}
+                                        <Chip
+                                          label={isActive ? (ended ? 'ENDED' : 'ACTIVE') : 'INACTIVE'}
+                                          size="small"
+                                          color={isActive ? (ended ? 'warning' : 'primary') : 'error'}
+                                        />
+                                        {listing.isBiddable && (
+                                          <Chip
+                                            label="BIDDABLE"
+                                            size="small"
+                                            color="secondary"
+                                          />
+                                        )}
+                                      </Stack>
+                                      <Typography
+                                        variant="body2"
+                                        color="text.secondary"
+                                        sx={{
+                                          overflow: 'hidden',
+                                          textOverflow: 'ellipsis',
+                                          display: '-webkit-box',
+                                          WebkitLineClamp: 1,
+                                          WebkitBoxOrient: 'vertical',
+                                          mb: 0.5,
+                                        }}
+                                      >
+                                        {listing.description || 'No description'}
+                                      </Typography>
+                                      <Stack direction="row" spacing={2} alignItems="center" flexWrap="wrap">
+                                        <Typography variant="body2" fontWeight="bold" color="primary">
+                                          Starting: ₹{listing.startingPrice 
+                                            ? parseFloat(listing.startingPrice).toLocaleString('en-IN') 
+                                            : 'N/A'}
+                                        </Typography>
+                                        {listing.highestBid && (
+                                          <Typography variant="body2" fontWeight="bold" color="success.main">
+                                            Highest: ₹{parseFloat(listing.highestBid).toLocaleString('en-IN')}
+                                          </Typography>
+                                        )}
+                                        <Box display="flex" alignItems="center" gap={0.5}>
+                                          <GavelIcon sx={{ fontSize: 14 }} />
+                                          <Typography variant="caption" color="text.secondary">
+                                            {listing.bidCount || 0} bid{listing.bidCount !== 1 ? 's' : ''}
+                                          </Typography>
+                                        </Box>
+                                        {listing.bidEndTime && (
+                                          <Typography variant="caption" color={ended ? 'error.main' : 'text.secondary'}>
+                                            {ended ? 'Ended' : `Ends: ${new Date(listing.bidEndTime).toLocaleString()}`}
+                                            {timeRemaining && !ended && ` (${timeRemaining} remaining)`}
+                                          </Typography>
+                                        )}
+                                        <Typography variant="caption" color="text.secondary">
+                                          FROM: {fromDate} {toDate && `TO: ${toDate}`}
+                                        </Typography>
+                                      </Stack>
+                                    </Box>
+                                    
+                                    {/* Menu Icon */}
+                                    <IconButton
+                                      size="small"
+                                      onClick={(e) => handleMenuOpen(e, listing.listingId)}
+                                      sx={{ ml: 1 }}
+                                    >
+                                      <MoreVertIcon />
+                                    </IconButton>
+                                  </Box>
+                                </CardContent>
+                                
+                                {isSelected && (
+                                  <>
+                                    <Divider />
+                                    {/* Bids Detail Section */}
+                                    <CardActions sx={{ px: 2, py: 1, flexDirection: 'column', alignItems: 'stretch' }}>
+                                      <Typography variant="h6" gutterBottom sx={{ mt: 1 }}>
+                                        Bids on "{listing.title}"
+                                      </Typography>
+                                      {bids.length === 0 ? (
+                                        <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
+                                          No bids yet on this listing.
+                                        </Typography>
+                                      ) : (
+                                        <>
+                                          <Box sx={{ mb: 2 }}>
+                                            <Stack spacing={1}>
+                                              {bids.map((bid, index) => (
+                                                <Box 
+                                                  key={bid.bidId}
+                                                  sx={{
+                                                    display: 'flex',
+                                                    justifyContent: 'space-between',
+                                                    alignItems: 'center',
+                                                    p: 1,
+                                                    bgcolor: bid.isWinning ? 'success.light' : 'grey.100',
+                                                    borderRadius: 1
+                                                  }}
+                                                >
+                                                  <Typography variant="body2">
+                                                    {bid.userName || 'Unknown'}
+                                                  </Typography>
+                                                  <Typography variant="body2" fontWeight="bold" color="primary">
+                                                    ₹{parseFloat(bid.bidAmount).toFixed(2)}
+                                                  </Typography>
+                                                  <Typography variant="caption" color="text.secondary">
+                                                    {new Date(bid.bidTime).toLocaleString()}
+                                                  </Typography>
+                                                  <Chip
+                                                    label={bid.isWinning ? 'Winning' : index === 0 ? 'Highest' : 'Outbid'}
+                                                    size="small"
+                                                    color={bid.isWinning ? 'success' : 'default'}
+                                                  />
+                                                </Box>
+                                              ))}
+                                            </Stack>
+                                          </Box>
+                                          {listing.isActive && 
+                                           bids.length > 0 && 
+                                           isBidEnded(listing.bidEndTime) && (
+                                            <Button
+                                              variant="contained"
+                                              color="success"
+                                              onClick={(e) => {
+                                                e.preventDefault();
+                                                e.stopPropagation();
+                                                handleFinalizeBid(listing.listingId);
+                                              }}
+                                              disabled={finalizingBid}
+                                              fullWidth
+                                            >
+                                              {finalizingBid ? 'Finalizing...' : 'Finalize Winning Bid'}
+                                            </Button>
+                                          )}
+                                          {listing.isActive && 
+                                           !isBidEnded(listing.bidEndTime) && (
+                                            <Alert severity="info" sx={{ mb: 1 }}>
+                                              Bidding is still active. You can finalize after the bidding ends.
+                                            </Alert>
+                                          )}
+                                        </>
+                                      )}
+                                    </CardActions>
+                                  </>
+                                )}
+                              </Box>
+                            </Card>
+                          );
+                        })}
+                      </Stack>
+                    )}
+                  </>
+                )}
+              </Paper>
+
+              {/* Menu */}
+              <Menu
+                anchorEl={anchorEl}
+                open={Boolean(anchorEl)}
+                onClose={handleMenuClose}
+              >
+                <MenuItem
+                  onClick={() => {
+                    if (selectedListingId) {
+                      navigate(`/listing/${selectedListingId}`);
+                    }
+                    handleMenuClose();
+                  }}
+                >
+                  View Details
+                </MenuItem>
+              </Menu>
             </div>
           )}
 

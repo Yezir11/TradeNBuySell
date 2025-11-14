@@ -23,6 +23,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.security.core.Authentication;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -48,8 +49,9 @@ public class ListingService {
 
     @Transactional
     public ListingDTO createListing(String userId, ListingCreateDTO createDTO) {
-        User user = userRepository.findById(userId)
-                .orElseThrow(() -> new ResourceNotFoundException("User not found"));
+        if (!userRepository.existsById(userId)) {
+            throw new ResourceNotFoundException("User not found");
+        }
 
         Listing listing = new Listing();
         listing.setUserId(userId);
@@ -92,19 +94,125 @@ public class ListingService {
     }
 
     public PagedResponse<ListingDTO> getAllActiveListings(int page, int size) {
-        Pageable pageable = PageRequest.of(page, size);
-        Page<Listing> listingPage = listingRepository.findByIsActiveOrderByCreatedAtDesc(true, pageable);
-        List<ListingDTO> content = listingPage.getContent().stream()
+        // Get all featured listings first
+        List<Listing> featuredListings = listingRepository.findActiveFeaturedListings();
+        List<ListingDTO> featuredDTOs = featuredListings.stream()
                 .map(this::toDTO)
                 .collect(Collectors.toList());
+        
+        int featuredCount = featuredDTOs.size();
+        long totalNonFeatured = listingRepository.countActiveNonFeaturedListings();
+        int totalElements = featuredCount + (int) totalNonFeatured;
+        
+        // Combine featured and non-featured for pagination
+        List<ListingDTO> allListings = new ArrayList<>(featuredDTOs);
+        
+        // Get non-featured listings (we'll get all and paginate in memory for simplicity)
+        // For better performance with large datasets, you might want to use a cursor-based approach
+        List<Listing> nonFeaturedListings = listingRepository.findActiveNonFeaturedListings();
+        List<ListingDTO> nonFeaturedDTOs = nonFeaturedListings.stream()
+                .map(this::toDTO)
+                .collect(Collectors.toList());
+        allListings.addAll(nonFeaturedDTOs);
+        
+        // Apply pagination
+        int start = page * size;
+        int end = Math.min(start + size, allListings.size());
+        
+        List<ListingDTO> content;
+        if (start >= allListings.size()) {
+            content = new ArrayList<>();
+        } else {
+            content = new ArrayList<>(allListings.subList(start, end));
+        }
+        
+        int totalPages = (int) Math.ceil((double) totalElements / size);
+        
         return new PagedResponse<>(
                 content,
-                listingPage.getNumber(),
-                listingPage.getSize(),
-                listingPage.getTotalElements(),
-                listingPage.getTotalPages(),
-                listingPage.isFirst(),
-                listingPage.isLast()
+                page,
+                size,
+                totalElements,
+                totalPages,
+                page == 0,
+                page >= totalPages - 1
+        );
+    }
+
+    // Get only non-biddable listings (for marketplace - buy/sell/trade only)
+    public PagedResponse<ListingDTO> getNonBiddableListings(int page, int size) {
+        // Get featured non-biddable listings first
+        List<Listing> featuredNonBiddable = listingRepository.findActiveNonBiddableFeaturedListings();
+        List<ListingDTO> featuredDTOs = featuredNonBiddable.stream()
+                .map(this::toDTO)
+                .collect(Collectors.toList());
+        
+        // Combine featured and non-featured non-biddable listings
+        List<ListingDTO> allListings = new ArrayList<>(featuredDTOs);
+        
+        // Get non-featured non-biddable listings
+        List<Listing> nonFeaturedNonBiddable = listingRepository.findActiveNonBiddableNonFeaturedListings();
+        List<ListingDTO> nonFeaturedDTOs = nonFeaturedNonBiddable.stream()
+                .map(this::toDTO)
+                .collect(Collectors.toList());
+        allListings.addAll(nonFeaturedDTOs);
+        
+        // Apply pagination
+        int totalElements = allListings.size();
+        int start = page * size;
+        int end = Math.min(start + size, allListings.size());
+        
+        List<ListingDTO> content;
+        if (start >= allListings.size()) {
+            content = new ArrayList<>();
+        } else {
+            content = new ArrayList<>(allListings.subList(start, end));
+        }
+        
+        int totalPages = (int) Math.ceil((double) totalElements / size);
+        
+        return new PagedResponse<>(
+                content,
+                page,
+                size,
+                totalElements,
+                totalPages,
+                page == 0,
+                page >= totalPages - 1
+        );
+    }
+
+    // Get only biddable listings (for bidding center)
+    public PagedResponse<ListingDTO> getBiddableListings(int page, int size) {
+        // Get all biddable listings (no pagination at DB level, we'll filter by bidEndTime)
+        List<Listing> allBiddable = listingRepository.findByIsBiddableAndIsActive(true, true);
+        List<ListingDTO> allBiddableDTOs = allBiddable.stream()
+                .filter(l -> l.getBidEndTime() == null || l.getBidEndTime().isAfter(java.time.LocalDateTime.now()))
+                .map(this::toDTO)
+                .collect(Collectors.toList());
+        
+        // Apply pagination
+        int totalElements = allBiddableDTOs.size();
+        int start = page * size;
+        int end = Math.min(start + size, allBiddableDTOs.size());
+        
+        List<ListingDTO> content;
+        if (start >= allBiddableDTOs.size()) {
+            content = new ArrayList<>();
+        } else {
+            content = new ArrayList<>(allBiddableDTOs.subList(start, end));
+        }
+        
+        int totalPages = (int) Math.ceil((double) totalElements / size);
+        
+        return new PagedResponse<>(
+                content,
+                page,
+                size,
+                totalElements,
+                totalPages,
+                page == 0,
+                page >= totalPages - 1
         );
     }
 
@@ -135,7 +243,7 @@ public class ListingService {
                 content,
                 listingPage.getNumber(),
                 listingPage.getSize(),
-                listingPage.getTotalElements(),
+                (int) listingPage.getTotalElements(),
                 listingPage.getTotalPages(),
                 listingPage.isFirst(),
                 listingPage.isLast()
@@ -158,10 +266,58 @@ public class ListingService {
                 content,
                 listingPage.getNumber(),
                 listingPage.getSize(),
-                listingPage.getTotalElements(),
+                (int) listingPage.getTotalElements(),
                 listingPage.getTotalPages(),
                 listingPage.isFirst(),
                 listingPage.isLast()
+        );
+    }
+
+    // Search non-biddable listings only
+    public PagedResponse<ListingDTO> searchNonBiddableListings(String query, int page, int size) {
+        Pageable pageable = PageRequest.of(page, size);
+        Page<Listing> listingPage = listingRepository.searchNonBiddableListings(query, pageable);
+        List<ListingDTO> content = listingPage.getContent().stream()
+                .map(this::toDTO)
+                .collect(Collectors.toList());
+        
+        // Get total count for non-biddable search results
+        long totalNonBiddable = listingRepository.searchNonBiddableListings(query).size();
+        
+        int totalPages = (int) Math.ceil((double) totalNonBiddable / size);
+        
+        return new PagedResponse<>(
+                content,
+                page,
+                size,
+                (int) totalNonBiddable,
+                totalPages,
+                page == 0,
+                page >= totalPages - 1
+        );
+    }
+
+    // Search by category for non-biddable listings only
+    public PagedResponse<ListingDTO> getNonBiddableListingsByCategory(String category, int page, int size) {
+        Pageable pageable = PageRequest.of(page, size);
+        Page<Listing> listingPage = listingRepository.findNonBiddableByCategoryAndIsActiveOrderByCreatedAtDesc(category, pageable);
+        List<ListingDTO> content = listingPage.getContent().stream()
+                .map(this::toDTO)
+                .collect(Collectors.toList());
+        
+        // Get total count for non-biddable category results
+        long totalNonBiddable = listingRepository.findNonBiddableByCategoryAndIsActive(category).size();
+        
+        int totalPages = (int) Math.ceil((double) totalNonBiddable / size);
+        
+        return new PagedResponse<>(
+                content,
+                page,
+                size,
+                (int) totalNonBiddable,
+                totalPages,
+                page == 0,
+                page >= totalPages - 1
         );
     }
 
@@ -263,6 +419,9 @@ public class ListingService {
         dto.setBidStartTime(listing.getBidStartTime());
         dto.setBidEndTime(listing.getBidEndTime());
         dto.setIsActive(listing.getIsActive());
+        dto.setIsFeatured(listing.getIsFeatured() != null && listing.getIsFeatured());
+        dto.setFeaturedUntil(listing.getFeaturedUntil());
+        dto.setFeaturedType(listing.getFeaturedType());
         dto.setCategory(listing.getCategory());
         dto.setCreatedAt(listing.getCreatedAt());
         dto.setUpdatedAt(listing.getUpdatedAt());
@@ -288,4 +447,3 @@ public class ListingService {
         return dto;
     }
 }
-

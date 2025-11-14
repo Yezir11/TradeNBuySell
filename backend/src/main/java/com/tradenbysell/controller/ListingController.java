@@ -28,15 +28,35 @@ public class ListingController {
     public ResponseEntity<PagedResponse<ListingDTO>> getAllListings(
             @RequestParam(required = false) String category,
             @RequestParam(required = false) String search,
+            @RequestParam(required = false) Boolean biddableOnly,
+            @RequestParam(required = false) Boolean nonBiddableOnly,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "12") int size) {
         PagedResponse<ListingDTO> response;
-        if (search != null && !search.isEmpty()) {
-            response = listingService.searchListings(search, page, size);
-        } else if (category != null && !category.isEmpty()) {
-            response = listingService.getListingsByCategory(category, page, size);
-        } else {
-            response = listingService.getAllActiveListings(page, size);
+        
+        // If explicitly requesting biddable listings (for bidding center)
+        if (biddableOnly != null && biddableOnly) {
+            response = listingService.getBiddableListings(page, size);
+        }
+        // If explicitly requesting non-biddable listings (for marketplace)
+        else if (nonBiddableOnly != null && nonBiddableOnly) {
+            if (search != null && !search.isEmpty()) {
+                response = listingService.searchNonBiddableListings(search, page, size);
+            } else if (category != null && !category.isEmpty()) {
+                response = listingService.getNonBiddableListingsByCategory(category, page, size);
+            } else {
+                response = listingService.getNonBiddableListings(page, size);
+            }
+        }
+        // Default behavior - return all listings (for backward compatibility)
+        else {
+            if (search != null && !search.isEmpty()) {
+                response = listingService.searchListings(search, page, size);
+            } else if (category != null && !category.isEmpty()) {
+                response = listingService.getListingsByCategory(category, page, size);
+            } else {
+                response = listingService.getAllActiveListings(page, size);
+            }
         }
         return ResponseEntity.ok(response);
     }

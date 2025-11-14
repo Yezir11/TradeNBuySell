@@ -17,7 +17,9 @@ import java.time.LocalDateTime;
     @Index(name = "idx_category", columnList = "category"),
     @Index(name = "idx_is_tradeable", columnList = "is_tradeable"),
     @Index(name = "idx_is_biddable", columnList = "is_biddable"),
-    @Index(name = "idx_created_at", columnList = "created_at")
+    @Index(name = "idx_created_at", columnList = "created_at"),
+    @Index(name = "idx_is_featured", columnList = "is_featured"),
+    @Index(name = "idx_featured_until", columnList = "featured_until")
 })
 @Data
 @NoArgsConstructor
@@ -59,6 +61,15 @@ public class Listing {
 
     @Column(name = "is_active")
     private Boolean isActive = true;
+
+    @Column(name = "is_featured")
+    private Boolean isFeatured = false;
+
+    @Column(name = "featured_until")
+    private LocalDateTime featuredUntil;
+
+    @Column(name = "featured_type", length = 50)
+    private String featuredType;
 
     @Column(length = 100)
     private String category;

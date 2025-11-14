@@ -165,8 +165,14 @@ const TradeCenter = () => {
       return;
     }
     
-    if (tradeForm.offeringListingIds.length === 0 && (!tradeForm.cashAdjustmentAmount || parseFloat(tradeForm.cashAdjustmentAmount) <= 0)) {
-      setError('Please select at least one offering listing or provide a cash adjustment amount greater than 0');
+    if (tradeForm.offeringListingIds.length === 0 && (!tradeForm.cashAdjustmentAmount || parseFloat(tradeForm.cashAdjustmentAmount) === 0)) {
+      setError('Please select at least one offering listing or provide a non-zero cash adjustment amount');
+      return;
+    }
+    
+    // Validate cash adjustment if provided
+    if (tradeForm.cashAdjustmentAmount && isNaN(parseFloat(tradeForm.cashAdjustmentAmount))) {
+      setError('Please enter a valid cash adjustment amount');
       return;
     }
     
@@ -436,18 +442,25 @@ const TradeCenter = () => {
                 {formStep === 3 && (
                   <form onSubmit={handleTradeSubmit} className="trade-form-step">
                     <h3>Step 3: Cash Adjustment (Optional)</h3>
-                    <p>Add cash to balance the trade if needed.</p>
+                    <p>Adjust cash to balance the trade if needed. Enter positive amount if you're paying extra, or negative amount if you're receiving cash.</p>
                     <div className="form-group">
                       <label>Cash Adjustment (₹)</label>
                       <input
                         type="number"
                         step="0.01"
-                        min="0"
                         value={tradeForm.cashAdjustmentAmount}
                         onChange={(e) => setTradeForm({ ...tradeForm, cashAdjustmentAmount: e.target.value })}
                         placeholder="0.00"
                       />
-                      <small>Optional: Additional cash to balance the trade</small>
+                      <small>
+                        {tradeForm.cashAdjustmentAmount && parseFloat(tradeForm.cashAdjustmentAmount) > 0 ? (
+                          <span style={{ color: '#28a745' }}>You will pay ₹{Math.abs(parseFloat(tradeForm.cashAdjustmentAmount)).toFixed(2)} extra</span>
+                        ) : tradeForm.cashAdjustmentAmount && parseFloat(tradeForm.cashAdjustmentAmount) < 0 ? (
+                          <span style={{ color: '#dc3545' }}>You will receive ₹{Math.abs(parseFloat(tradeForm.cashAdjustmentAmount)).toFixed(2)} from the other party</span>
+                        ) : (
+                          'Optional: Enter positive amount to pay extra, negative amount to receive cash'
+                        )}
+                      </small>
                     </div>
                     {selectedListing && (
                       <div className="trade-summary">
@@ -471,10 +484,14 @@ const TradeCenter = () => {
                             <p>No listings selected</p>
                           )}
                         </div>
-                        {tradeForm.cashAdjustmentAmount && parseFloat(tradeForm.cashAdjustmentAmount) > 0 && (
+                        {tradeForm.cashAdjustmentAmount && parseFloat(tradeForm.cashAdjustmentAmount) !== 0 && (
                           <div className="trade-summary-item">
                             <strong>Cash Adjustment:</strong>
-                            <p>+₹{parseFloat(tradeForm.cashAdjustmentAmount).toFixed(2)}</p>
+                            <p style={{ color: parseFloat(tradeForm.cashAdjustmentAmount) > 0 ? '#28a745' : '#dc3545' }}>
+                              {parseFloat(tradeForm.cashAdjustmentAmount) > 0 
+                                ? `+₹${parseFloat(tradeForm.cashAdjustmentAmount).toFixed(2)} (You pay extra)`
+                                : `-₹${Math.abs(parseFloat(tradeForm.cashAdjustmentAmount)).toFixed(2)} (You receive)`}
+                            </p>
                           </div>
                         )}
                       </div>
@@ -548,8 +565,20 @@ const TradeCenter = () => {
                     </div>
 
                     {trade.cashAdjustmentAmount && parseFloat(trade.cashAdjustmentAmount) !== 0 && (
-                      <div className="cash-adjustment">
-                        Cash Adjustment: {trade.initiatorId === user?.userId ? '+' : '-'}₹{Math.abs(trade.cashAdjustmentAmount)}
+                      <div className="cash-adjustment" style={{ 
+                        backgroundColor: parseFloat(trade.cashAdjustmentAmount) > 0 ? '#e7f3ff' : '#ffe7e7',
+                        color: parseFloat(trade.cashAdjustmentAmount) > 0 ? '#0066cc' : '#cc0000'
+                      }}>
+                        Cash Adjustment: 
+                        {trade.initiatorId === user?.userId ? (
+                          parseFloat(trade.cashAdjustmentAmount) > 0 
+                            ? ` +₹${parseFloat(trade.cashAdjustmentAmount).toFixed(2)} (You pay extra)`
+                            : ` -₹${Math.abs(parseFloat(trade.cashAdjustmentAmount)).toFixed(2)} (You receive)`
+                        ) : (
+                          parseFloat(trade.cashAdjustmentAmount) > 0
+                            ? ` +₹${parseFloat(trade.cashAdjustmentAmount).toFixed(2)} (You receive)`
+                            : ` -₹${Math.abs(parseFloat(trade.cashAdjustmentAmount)).toFixed(2)} (You pay extra)`
+                        )}
                       </div>
                     )}
 

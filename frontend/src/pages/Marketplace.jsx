@@ -1,10 +1,13 @@
 import React, { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import api from '../services/api';
+import { useAuth } from '../context/AuthContext';
 import Navigation from '../components/Navigation';
 import './Marketplace.css';
 
 const Marketplace = () => {
+  const { isAuthenticated, user } = useAuth();
+  const navigate = useNavigate();
   const [listings, setListings] = useState([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
@@ -26,7 +29,7 @@ const Marketplace = () => {
     setLoading(true);
     setError(null);
     try {
-      const params = { page, size: 12 };
+      const params = { page, size: 12, nonBiddableOnly: true };
       if (searchQuery) params.search = searchQuery;
       if (category) params.category = category;
 
@@ -48,6 +51,28 @@ const Marketplace = () => {
       setPage(newPage);
       window.scrollTo({ top: 0, behavior: 'smooth' });
     }
+  };
+
+  const handleBuyClick = (e, listing) => {
+    e.preventDefault();
+    e.stopPropagation();
+    
+    if (!isAuthenticated) {
+      const shouldSignIn = window.confirm('You need to sign in to purchase items. Would you like to sign in now?');
+      if (shouldSignIn) {
+        navigate('/auth');
+      }
+      return;
+    }
+    
+    // Check if user is trying to buy their own listing
+    if (user?.userId === listing.userId) {
+      alert('You cannot buy your own listing.');
+      return;
+    }
+    
+    // Navigate to listing details page where they can complete the purchase
+    navigate(`/listing/${listing.listingId}`);
   };
 
   const categories = ['Electronics', 'Books', 'Furniture', 'Clothing', 'Sports', 'Stationery', 'Other'];
@@ -90,25 +115,85 @@ const Marketplace = () => {
                 <p>Showing {listings.length} of {totalElements} listings (Page {page + 1} of {totalPages})</p>
               </div>
               <div className="listings-grid">
-                {listings.map(listing => (
-                  <Link key={listing.listingId} to={`/listing/${listing.listingId}`} className="listing-card">
-                    {listing.imageUrls && listing.imageUrls.length > 0 && (
-                      <img src={listing.imageUrls[0]} alt={listing.title} />
-                    )}
-                    <div className="listing-info">
-                      <h3>{listing.title}</h3>
-                      <p className="price">₹{listing.price || 'Trade Only'}</p>
-                      <p className="category">{listing.category}</p>
-                      {listing.sellerTrustScore && (
-                        <p className="trust-score">Trust Score: {listing.sellerTrustScore.toFixed(1)}</p>
+                {listings.map(listing => {
+                  const isOwner = isAuthenticated && user?.userId === listing.userId;
+                  const hasPrice = listing.price && parseFloat(listing.price) > 0;
+                  
+                  return (
+                    <div key={listing.listingId} className="listing-card-container">
+                      <Link to={`/listing/${listing.listingId}`} className="listing-card">
+                        <div className="listing-card-wrapper" style={{ position: 'relative' }}>
+                          {listing.isFeatured && (
+                            <div className="featured-ribbon">
+                              <span>FEATURED</span>
+                            </div>
+                          )}
+                          {listing.imageUrls && listing.imageUrls.length > 0 && (
+                            <img src={listing.imageUrls[0]} alt={listing.title} />
+                          )}
+                          <div className="listing-info">
+                            <h3>{listing.title}</h3>
+                            {listing.sellerName && (
+                              <p className="seller-name">Sold by: {listing.sellerName}</p>
+                            )}
+                            <p className="price">₹{listing.price || 'Trade Only'}</p>
+                            <p className="category">{listing.category}</p>
+                            {listing.sellerTrustScore && (
+                              <p className="trust-score">Trust Score: {listing.sellerTrustScore.toFixed(1)}</p>
+                            )}
+                            <div className="badges">
+                              {listing.isTradeable && <span className="badge trade">Trade</span>}
+                              {listing.isBiddable && <span className="badge bid">Bid</span>}
+                            </div>
+                          </div>
+                        </div>
+                      </Link>
+                      {!isOwner && (
+                        <>
+                          {hasPrice && (
+                            <button 
+                              className="buy-btn"
+                              onClick={(e) => handleBuyClick(e, listing)}
+                            >
+                              {isAuthenticated ? 'Buy Now' : 'Sign in to Buy'}
+                            </button>
+                          )}
+                          {!hasPrice && listing.isTradeable && (
+                            <button 
+                              className="buy-btn trade-btn-marketplace"
+                              onClick={(e) => {
+                                e.preventDefault();
+                                e.stopPropagation();
+                                if (!isAuthenticated) {
+                                  const shouldSignIn = window.confirm('You need to sign in to propose trades. Would you like to sign in now?');
+                                  if (shouldSignIn) {
+                                    navigate('/auth');
+                                  }
+                                } else {
+                                  navigate(`/listing/${listing.listingId}`);
+                                }
+                              }}
+                            >
+                              {isAuthenticated ? 'View Details' : 'Sign in to Trade'}
+                            </button>
+                          )}
+                          {!hasPrice && !listing.isTradeable && !listing.isBiddable && (
+                            <button 
+                              className="buy-btn view-btn-marketplace"
+                              onClick={(e) => {
+                                e.preventDefault();
+                                e.stopPropagation();
+                                navigate(`/listing/${listing.listingId}`);
+                              }}
+                            >
+                              View Details
+                            </button>
+                          )}
+                        </>
                       )}
-                      <div className="badges">
-                        {listing.isTradeable && <span className="badge trade">Trade</span>}
-                        {listing.isBiddable && <span className="badge bid">Bid</span>}
-                      </div>
                     </div>
-                  </Link>
-                ))}
+                  );
+                })}
               </div>
               {totalPages > 1 && (
                 <div className="pagination">

@@ -26,6 +26,9 @@ public class ListingDTO {
     private List<String> tags;
     private BigDecimal highestBid;
     private Long bidCount;
+    private Boolean isFeatured;
+    private LocalDateTime featuredUntil;
+    private String featuredType;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
 }
