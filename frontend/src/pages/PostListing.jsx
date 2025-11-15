@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import api from '../services/api';
-import Navigation from '../components/Navigation';
+import MarketplaceHeader from '../components/MarketplaceHeader';
 import './PostListing.css';
 
 const PostListing = () => {
@@ -142,7 +142,7 @@ const PostListing = () => {
 
   return (
     <>
-      <Navigation />
+      <MarketplaceHeader showSearch={false} />
       <div className="post-listing-page">
         <div className="container">
           <h1>Post a New Listing</h1>
@@ -206,6 +206,7 @@ const PostListing = () => {
                   <option value="Clothing">Clothing</option>
                   <option value="Sports">Sports</option>
                   <option value="Stationery">Stationery</option>
+                  <option value="Appliances">Appliances</option>
                   <option value="Other">Other</option>
                 </select>
               </div>

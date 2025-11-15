@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate, useSearchParams, Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import api from '../services/api';
-import Navigation from '../components/Navigation';
+import MarketplaceHeader from '../components/MarketplaceHeader';
 import './TradeCenter.css';
 
 const TradeCenter = () => {
@@ -226,7 +226,7 @@ const TradeCenter = () => {
   if (loading) {
     return (
       <>
-        <Navigation />
+        <MarketplaceHeader showSearch={false} />
         <div className="trade-center">Loading...</div>
       </>
     );
@@ -234,7 +234,7 @@ const TradeCenter = () => {
 
   return (
     <>
-      <Navigation />
+      <MarketplaceHeader showSearch={false} />
       <div className="trade-center">
         <div className="container">
           <div className="trade-header">

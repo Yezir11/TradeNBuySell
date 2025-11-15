@@ -31,7 +31,7 @@ const Navigation = () => {
     <nav className="navbar">
       <div className="navbar-container">
         <Link to="/" className="navbar-brand">
-          TradeNBuySell
+          <img src="/logo.png" alt="TradeNBuySell" className="navbar-logo" />
         </Link>
 
         <div className="menu-icon" onClick={toggleMobileMenu}>

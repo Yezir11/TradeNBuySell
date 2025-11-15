@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { Link, useNavigate } from 'react-router-dom';
 import api from '../services/api';
-import Navigation from '../components/Navigation';
+import MarketplaceHeader from '../components/MarketplaceHeader';
 import {
   Box,
   Card,
@@ -286,7 +286,7 @@ const MyProfile = () => {
   if (authLoading || loading) {
     return (
       <>
-        <Navigation />
+        <MarketplaceHeader showSearch={false} />
         <Container maxWidth="lg" sx={{ mt: 4, mb: 4 }}>
           <Box display="flex" justifyContent="center" alignItems="center" minHeight="50vh">
             <CircularProgress />
@@ -299,7 +299,7 @@ const MyProfile = () => {
   if (error && !profile) {
     return (
       <>
-        <Navigation />
+        <MarketplaceHeader showSearch={false} />
         <Container maxWidth="lg" sx={{ mt: 4, mb: 4 }}>
           <Alert severity="error">{error}</Alert>
         </Container>
@@ -310,7 +310,7 @@ const MyProfile = () => {
   if (!profile) {
     return (
       <>
-        <Navigation />
+        <MarketplaceHeader showSearch={false} />
         <Container maxWidth="lg" sx={{ mt: 4, mb: 4 }}>
           <Alert severity="error">Unable to load profile data</Alert>
         </Container>
@@ -325,7 +325,7 @@ const MyProfile = () => {
 
   return (
     <>
-      <Navigation />
+      <MarketplaceHeader showSearch={false} />
       <Container maxWidth="lg" sx={{ mt: 4, mb: 4 }}>
         {/* Profile Header */}
         <Paper elevation={2} sx={{ p: 3, mb: 3 }}>

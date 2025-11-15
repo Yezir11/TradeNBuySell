@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import api from '../services/api';
-import Navigation from '../components/Navigation';
+import MarketplaceHeader from '../components/MarketplaceHeader';
 import './AuthCallback.css';
 
 const AuthCallback = () => {
@@ -54,7 +54,7 @@ const AuthCallback = () => {
   if (loading) {
     return (
       <>
-        <Navigation />
+        <MarketplaceHeader showSearch={false} />
         <div className="auth-callback">
           <div className="callback-container">
             <div className="spinner"></div>
@@ -68,7 +68,7 @@ const AuthCallback = () => {
   if (error) {
     return (
       <>
-        <Navigation />
+        <MarketplaceHeader showSearch={false} />
         <div className="auth-callback">
           <div className="callback-container">
             <div className="error-icon">✕</div>

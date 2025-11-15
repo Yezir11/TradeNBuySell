@@ -2,7 +2,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import api from '../services/api';
-import Navigation from '../components/Navigation';
+import MarketplaceHeader from '../components/MarketplaceHeader';
 import './AdminDashboard.css';
 
 const AdminDashboard = () => {
@@ -133,7 +133,7 @@ const AdminDashboard = () => {
   if (!isAdmin()) {
     return (
       <>
-        <Navigation />
+        <MarketplaceHeader showSearch={false} />
         <div className="admin-dashboard">
           <div className="container">
             <h1>Access Denied</h1>
@@ -147,7 +147,7 @@ const AdminDashboard = () => {
   if (loading) {
     return (
       <>
-        <Navigation />
+        <MarketplaceHeader showSearch={false} />
         <div className="admin-dashboard">Loading...</div>
       </>
     );
@@ -155,7 +155,7 @@ const AdminDashboard = () => {
 
   return (
     <>
-      <Navigation />
+      <MarketplaceHeader showSearch={false} />
       <div className="admin-dashboard">
         <div className="container">
           <h1>Admin Dashboard</h1>

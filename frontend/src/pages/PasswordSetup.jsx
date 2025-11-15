@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import api from '../services/api';
-import Navigation from '../components/Navigation';
+import MarketplaceHeader from '../components/MarketplaceHeader';
 import './PasswordSetup.css';
 
 const PasswordSetup = () => {
@@ -46,7 +46,7 @@ const PasswordSetup = () => {
 
   return (
     <>
-      <Navigation />
+      <MarketplaceHeader showSearch={false} />
       <div className="password-setup-page">
         <div className="password-setup-container">
           <h1>Setup Password</h1>

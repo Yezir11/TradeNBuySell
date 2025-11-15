@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate, useSearchParams, Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import api from '../services/api';
-import Navigation from '../components/Navigation';
+import MarketplaceHeader from '../components/MarketplaceHeader';
 import {
   Box,
   Card,
@@ -284,7 +284,7 @@ const BiddingCenter = () => {
   if (authLoading || loading) {
     return (
       <>
-        <Navigation />
+        <MarketplaceHeader showSearch={false} />
         <div className="bidding-center">
           <div className="container">
             <div className="loading-container">
@@ -302,7 +302,7 @@ const BiddingCenter = () => {
 
   return (
     <>
-      <Navigation />
+      <MarketplaceHeader showSearch={false} />
       <div className="bidding-center">
         <div className="container">
           <h1>Bidding Center</h1>

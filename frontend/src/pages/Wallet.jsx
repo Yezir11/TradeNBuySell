@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
 import api from '../services/api';
-import Navigation from '../components/Navigation';
+import MarketplaceHeader from '../components/MarketplaceHeader';
 import './Wallet.css';
 
 const Wallet = () => {
@@ -49,7 +49,7 @@ const Wallet = () => {
   if (loading) {
     return (
       <>
-        <Navigation />
+        <MarketplaceHeader showSearch={false} />
         <div className="wallet-page">Loading...</div>
       </>
     );
@@ -57,7 +57,7 @@ const Wallet = () => {
 
   return (
     <>
-      <Navigation />
+      <MarketplaceHeader showSearch={false} />
       <div className="wallet-page">
         <div className="container">
           <h1>My Wallet</h1>

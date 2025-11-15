@@ -1,3 +1,5 @@
+@import './styles/theme.css';
+
 * {
   margin: 0;
   padding: 0;
@@ -11,6 +13,8 @@ body {
     sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  background: #f2f4f5;
+  color: #002f34;
 }
 
 code {

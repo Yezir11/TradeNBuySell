@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import api from '../services/api';
 import { useAuth } from '../context/AuthContext';
-import Navigation from '../components/Navigation';
+import MarketplaceHeader from '../components/MarketplaceHeader';
 import './ListingDetails.css';
 
 const ListingDetails = () => {
@@ -126,7 +126,7 @@ const ListingDetails = () => {
   if (loading) {
     return (
       <>
-        <Navigation />
+        <MarketplaceHeader showSearch={false} />
         <div className="listing-details">Loading...</div>
       </>
     );
@@ -135,7 +135,7 @@ const ListingDetails = () => {
   if (error || !listing) {
     return (
       <>
-        <Navigation />
+        <MarketplaceHeader showSearch={false} />
         <div className="listing-details">Error: {error || 'Listing not found'}</div>
       </>
     );
@@ -145,7 +145,7 @@ const ListingDetails = () => {
 
   return (
     <>
-      <Navigation />
+      <MarketplaceHeader showSearch={false} />
       <div className="listing-details">
         <div className="container">
           <Link to="/marketplace" className="back-link">← Back to Marketplace</Link>

@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import api from '../services/api';
-import Navigation from '../components/Navigation';
+import MarketplaceHeader from '../components/MarketplaceHeader';
 import './AuthPage.css';
 
 const AuthPage = () => {
@@ -47,7 +47,7 @@ const AuthPage = () => {
 
   return (
     <>
-      <Navigation />
+      <MarketplaceHeader showSearch={false} />
       <div className="auth-page">
         <div className="auth-container">
           <h1>{isLogin ? 'Login' : 'Register'}</h1>

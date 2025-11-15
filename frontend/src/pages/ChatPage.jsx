@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { useSearchParams, Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import api from '../services/api';
-import Navigation from '../components/Navigation';
+import MarketplaceHeader from '../components/MarketplaceHeader';
 import './ChatPage.css';
 
 const ChatPage = () => {
@@ -31,12 +31,6 @@ const ChatPage = () => {
     fetchConversations();
     if (userIdParam) {
       loadConversation(userIdParam, listingIdParam);
-    }
-    // Fetch listing context if listingId is provided
-    if (listingIdParam) {
-      fetchListingContext(listingIdParam);
-    } else {
-      setListingContext(null);
     }
   }, [userIdParam, listingIdParam]);
 
@@ -105,14 +99,34 @@ const ChatPage = () => {
     try {
       const response = await api.get(`/api/chat/conversation?userId2=${conversationUserId}`);
       setMessages(response.data);
+      return response.data;
     } catch (err) {
       console.error('Failed to fetch messages:', err);
+      return [];
     }
   };
 
   const loadConversation = async (userId, listingId) => {
     setActiveConversation(userId);
-    await fetchMessages(userId);
+    const fetchedMessages = await fetchMessages(userId);
+    
+    // Determine which listingId to use
+    let targetListingId = listingId;
+    
+    // If no listingId provided, try to get it from messages
+    if (!targetListingId && fetchedMessages && fetchedMessages.length > 0) {
+      const firstMessageWithListing = fetchedMessages.find(m => m.listingId && m.listingId.trim() !== '');
+      if (firstMessageWithListing?.listingId) {
+        targetListingId = firstMessageWithListing.listingId;
+      }
+    }
+    
+    // Fetch listing context if we have a listingId
+    if (targetListingId) {
+      await fetchListingContext(targetListingId);
+    } else {
+      setListingContext(null);
+    }
   };
 
   const handleSendMessage = async (e) => {
@@ -237,7 +251,7 @@ const ChatPage = () => {
   if (loading) {
     return (
       <>
-        <Navigation />
+        <MarketplaceHeader showSearch={false} />
         <div className="chat-page">Loading...</div>
       </>
     );
@@ -245,7 +259,7 @@ const ChatPage = () => {
 
   return (
     <>
-      <Navigation />
+      <MarketplaceHeader showSearch={false} />
       <div className="chat-page">
         <div className="chat-container">
           <div className="conversations-sidebar">
