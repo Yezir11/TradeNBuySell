@@ -1,9 +1,9 @@
-/* Marketplace Header with Centered Search (OLX-style) */
+/* Marketplace Header - Dark BITS Theme */
 .marketplace-header {
-  background: white;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-  padding: 12px 0;
-  border-bottom: 1px solid #e0e0e0;
+  background: var(--tbs-bg-header);
+  box-shadow: var(--tbs-shadow-md);
+  padding: 16px 0;
+  border-bottom: 2px solid var(--tbs-red);
   position: sticky;
   top: 0;
   z-index: 100;
@@ -22,19 +22,26 @@
 .marketplace-logo {
   font-size: 1.8rem;
   font-weight: bold;
-  color: #002f34;
+  color: var(--tbs-text);
   text-decoration: none;
   white-space: nowrap;
   display: flex;
   align-items: center;
   flex-shrink: 0;
+  transition: color 0.3s ease;
+}
+
+.marketplace-logo:hover {
+  color: var(--tbs-gold);
 }
 
 .marketplace-logo-img {
   height: 45px;
   width: auto;
   object-fit: contain;
-  max-width: 200px;
+  max-width: 220px;
+  min-width: 180px;
+  filter: brightness(1.05);
 }
 
 .marketplace-search-form {
@@ -47,37 +54,46 @@
 .search-bar-wrapper {
   display: flex;
   align-items: center;
-  background: white;
-  border: 2px solid #002f34;
-  border-radius: 4px;
+  background: var(--tbs-bg-card);
+  border: 2px solid var(--tbs-border);
+  border-radius: 8px;
   overflow: hidden;
+  transition: all 0.3s ease;
+}
+
+.search-bar-wrapper:focus-within {
+  border-color: var(--tbs-sky);
+  box-shadow: 0 0 0 3px rgba(95, 183, 229, 0.2);
 }
 
 .marketplace-search-input {
   flex: 1;
-  padding: 12px 16px;
+  padding: 14px 18px;
   border: none;
   outline: none;
   font-size: 1rem;
-  color: #002f34;
+  color: var(--tbs-text);
+  background: transparent;
 }
 
 .marketplace-search-input::placeholder {
-  color: #999;
+  color: var(--tbs-text-muted);
 }
 
 .search-button {
-  padding: 12px 20px;
-  background: #002f34;
+  padding: 14px 24px;
+  background: var(--tbs-primary);
   border: none;
-  color: white;
+  color: var(--tbs-text);
   cursor: pointer;
   font-size: 1.1rem;
-  transition: background 0.3s;
+  transition: all 0.3s ease;
+  font-weight: 600;
 }
 
 .search-button:hover {
-  background: #004047;
+  background: var(--tbs-sky);
+  box-shadow: var(--tbs-shadow-sm);
 }
 
 .marketplace-header-actions {
@@ -89,32 +105,41 @@
 }
 
 .marketplace-link-button {
-  color: #002f34;
+  color: var(--tbs-text);
   padding: 10px 20px;
-  border-radius: 4px;
+  border-radius: 6px;
   text-decoration: none;
   font-weight: 500;
   font-size: 0.95rem;
-  transition: color 0.3s, background 0.3s;
+  transition: all 0.3s ease;
   white-space: nowrap;
   border: 1px solid transparent;
 }
 
 .marketplace-link-button:hover {
-  color: #23e5db;
-  background: #f2f4f5;
+  background: rgba(255, 255, 255, 0.1);
+  color: var(--tbs-gold);
+  border-color: var(--tbs-gold);
 }
 
 .header-icon {
-  color: #002f34;
+  color: var(--tbs-text);
+  padding: 10px;
   font-size: 1.3rem;
   text-decoration: none;
-  padding: 8px;
-  transition: color 0.3s;
+  border-radius: 8px;
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
 }
 
 .header-icon:hover {
-  color: #23e5db;
+  background: rgba(255, 255, 255, 0.1);
+  color: var(--tbs-gold);
+  transform: translateY(-2px);
 }
 
 .user-dropdown-wrapper {
@@ -122,97 +147,120 @@
 }
 
 .user-icon-button {
-  background: none;
+  background: transparent;
   border: none;
+  color: var(--tbs-text);
   cursor: pointer;
-  padding: 8px;
-  color: #002f34;
-  font-size: 1.3rem;
-  transition: color 0.3s;
+  padding: 10px;
+  border-radius: 8px;
+  transition: all 0.3s ease;
   display: flex;
   align-items: center;
   justify-content: center;
+  width: 44px;
+  height: 44px;
 }
 
 .user-icon-button:hover {
-  color: #23e5db;
+  background: rgba(255, 255, 255, 0.1);
+  color: var(--tbs-gold);
+  transform: translateY(-2px);
 }
 
 .marketplace-dropdown-menu {
   position: absolute;
-  top: 100%;
+  top: calc(100% + 8px);
   right: 0;
-  background: white;
-  border-radius: 4px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-  margin-top: 10px;
-  min-width: 180px;
+  background: var(--tbs-bg-card);
+  border-radius: 12px;
+  box-shadow: var(--tbs-shadow-lg);
+  border: 1px solid var(--tbs-border);
+  min-width: 200px;
   z-index: 1000;
-  padding: 8px 0;
+  padding: 8px;
 }
 
 .marketplace-dropdown-menu a,
 .marketplace-dropdown-menu button {
   display: block;
-  padding: 12px 20px;
-  color: #002f34;
+  padding: 12px 16px;
+  color: var(--tbs-text);
   text-decoration: none;
   border: none;
-  background: none;
+  background: transparent;
   width: 100%;
   text-align: left;
   cursor: pointer;
   font-size: 0.95rem;
-  transition: background 0.2s;
+  border-radius: 6px;
+  transition: all 0.3s ease;
+  font-weight: 500;
 }
 
 .marketplace-dropdown-menu a:hover,
 .marketplace-dropdown-menu button:hover {
-  background: #f2f4f5;
-  color: #23e5db;
+  background: var(--tbs-bg-hover);
+  color: var(--tbs-primary);
+  padding-left: 20px;
 }
 
 .dropdown-divider {
   height: 1px;
-  background: #e0e0e0;
+  background: var(--tbs-border-subtle);
   margin: 8px 0;
 }
 
 .login-button {
-  color: #002f34;
+  padding: 10px 24px;
+  background: var(--tbs-gold);
+  color: var(--tbs-bg);
   text-decoration: none;
-  font-weight: 500;
-  padding: 8px 16px;
-  border: 1px solid #002f34;
-  border-radius: 4px;
-  transition: all 0.3s;
+  border-radius: 6px;
+  font-weight: 600;
+  font-size: 0.95rem;
+  transition: all 0.3s ease;
+  white-space: nowrap;
+  box-shadow: var(--tbs-shadow-gold);
 }
 
 .login-button:hover {
-  background: #002f34;
-  color: white;
+  background: var(--tbs-gold-light);
+  transform: translateY(-2px);
+  box-shadow: var(--tbs-shadow-md);
 }
 
 @media (max-width: 768px) {
   .marketplace-header-container {
-    flex-wrap: wrap;
-    gap: 15px;
-    justify-content: flex-start;
+    padding: 0 15px;
+    gap: 10px;
   }
 
   .marketplace-search-form {
-    order: 3;
-    width: 100%;
-    max-width: 100%;
-    margin: 0;
-  }
-
-  .marketplace-header-actions {
-    margin-left: 0;
+    margin: 0 10px;
   }
 
   .marketplace-logo-img {
-    height: 35px;
+    height: 38px;
+  }
+
+  .marketplace-header-actions {
+    gap: 10px;
+  }
+
+  .header-icon,
+  .user-icon-button {
+    width: 40px;
+    height: 40px;
+    font-size: 1.1rem;
+  }
+
+  .marketplace-link-button {
+    padding: 8px 16px;
+    font-size: 0.9rem;
+  }
+
+  .login-button {
+    padding: 8px 20px;
+    font-size: 0.9rem;
   }
 }
-

@@ -23,10 +23,16 @@ public interface ModerationLogRepository extends JpaRepository<ModerationLog, St
     
     Page<ModerationLog> findByAdminAction(ModerationLog.AdminAction action, Pageable pageable);
     
-    @Query("SELECT m FROM ModerationLog m WHERE m.shouldFlag = true AND m.adminAction = 'PENDING'")
+    @Query("SELECT m FROM ModerationLog m " +
+           "JOIN Listing l ON l.listingId = m.listingId " +
+           "WHERE m.shouldFlag = true AND m.adminAction = 'PENDING' " +
+           "AND l.isActive = false")
     Page<ModerationLog> findPendingFlaggedListings(Pageable pageable);
     
-    @Query("SELECT COUNT(m) FROM ModerationLog m WHERE m.shouldFlag = true AND m.adminAction = 'PENDING'")
+    @Query("SELECT COUNT(m) FROM ModerationLog m " +
+           "JOIN Listing l ON l.listingId = m.listingId " +
+           "WHERE m.shouldFlag = true AND m.adminAction = 'PENDING' " +
+           "AND l.isActive = false")
     long countPendingFlaggedListings();
     
     long countByAdminAction(ModerationLog.AdminAction action);

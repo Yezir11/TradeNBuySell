@@ -15,8 +15,10 @@ public class TradeDTO {
     private String recipientName;
     private String requestedListingId;
     private String requestedListingTitle;
+    private String requestedListingImageUrl;
     private List<String> offeringListingIds;
     private List<String> offeringListingTitles;
+    private List<String> offeringListingImageUrls;
     private BigDecimal cashAdjustmentAmount;
     private Trade.TradeStatus status;
     private LocalDateTime createdAt;

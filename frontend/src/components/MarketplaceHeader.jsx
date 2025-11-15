@@ -99,7 +99,7 @@ const MarketplaceHeader = ({ showSearch = true, searchPlaceholder = "Find items,
     <div className="marketplace-header">
       <div className="marketplace-header-container">
         <Link to="/" className="marketplace-logo">
-          <img src="/logo.png" alt="TradeNBuySell" className="marketplace-logo-img" />
+          <img src="/navbar-logo.svg" alt="TradeNBuySell" className="marketplace-logo-img" />
         </Link>
         
         {showSearch && (

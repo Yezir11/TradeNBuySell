@@ -84,6 +84,15 @@ public class ListingController {
         return ResponseEntity.ok(listing);
     }
 
+    @PostMapping("/{listingId}/edit")
+    public ResponseEntity<ListingDTO> editListingAsNew(@PathVariable String listingId,
+                                                         @Valid @RequestBody ListingCreateDTO editDTO,
+                                                         Authentication authentication) {
+        String userId = authUtil.getUserId(authentication);
+        ListingDTO newListing = listingService.editListingAsNew(userId, listingId, editDTO);
+        return ResponseEntity.ok(newListing);
+    }
+
     @DeleteMapping("/{listingId}")
     public ResponseEntity<Void> deactivateListing(@PathVariable String listingId,
                                                    @RequestParam(required = false, defaultValue = "false") Boolean permanent,

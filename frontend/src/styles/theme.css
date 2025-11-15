@@ -1,54 +1,138 @@
-/* Shared Theme Styles - OLX-style Marketplace Theme */
+/* TBS (TradeBuySell) - Dark Theme with BITS Pilani Color System */
 
 :root {
-  --primary-color: #002f34;
-  --accent-color: #23e5db;
-  --background-color: #ffffff;
-  --background-light: #f2f4f5;
-  --text-primary: #002f34;
-  --text-secondary: #666;
-  --text-light: #999;
-  --border-color: #e0e0e0;
-  --shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-  --shadow-hover: 0 4px 12px rgba(0, 0, 0, 0.15);
-  --success-color: #28a745;
-  --danger-color: #dc3545;
-  --warning-color: #ffc107;
+  /* Dark Theme Background Colors - BITS Style */
+  --tbs-bg: #11152A;                    /* Deep Navy - main app background */
+  --tbs-bg-card: #1B2136;               /* Card Background - raised surfaces */
+  --tbs-bg-elevated: #232A45;           /* Elevated surfaces - slightly lighter */
+  --tbs-bg-header: #13224F;             /* Navy Gear Blue - headers, footers, navbars */
+  --tbs-bg-hover: #2A3350;              /* Hover states on dark backgrounds */
+  
+  /* BITS Brand Colors - From Official Logo (3 Major Sections) */
+  --tbs-primary: #1C2F7A;               /* BITS Royal Blue - primary brand color (outer band) */
+  --tbs-primary-light: #2d4287;         /* Lighter royal blue for hovers */
+  --tbs-primary-dark: #13224F;          /* Navy Gear Blue - darker accent */
+  --tbs-gold: #CFA349;                  /* Campus Gold - gear border accent */
+  --tbs-gold-light: #d9b55d;            /* Lighter gold for hovers */
+  --tbs-gold-dark: #b8903d;             /* Darker gold */
+  --tbs-red: #D62332;                   /* BITS Red - middle section (lotus), primary accent */
+  --tbs-red-light: #e03a49;             /* Lighter red */
+  --tbs-red-dark: #c01d2a;              /* Darker red */
+  --tbs-sky: #5FB7E5;                   /* Science Sky Blue - left section (network), info */
+  --tbs-sky-light: #7bc5ed;             /* Lighter sky blue */
+  --tbs-sky-dark: #4a9fd1;              /* Darker sky blue */
+  --tbs-yellow: #FFD700;                /* BITS Yellow - right section (quill), highlights */
+  --tbs-yellow-light: #FFE44D;          /* Lighter yellow */
+  --tbs-yellow-dark: #FFC800;           /* Darker yellow */
+  
+  /* Text Colors - Light on Dark */
+  --tbs-text: #F5F7FF;                  /* Off-White - primary text on dark backgrounds */
+  --tbs-text-muted: #A6AEC5;            /* Muted Text - secondary text, labels, metadata */
+  --tbs-text-light: #FFFFFF;            /* Pure white for emphasis */
+  --tbs-text-on-primary: #F5F7FF;       /* Text on primary blue background */
+  
+  /* Border Colors */
+  --tbs-border: #252C45;                /* Border / Divider Gray - borders, dividers */
+  --tbs-border-subtle: rgba(37, 44, 69, 0.5); /* Subtle borders */
+  --tbs-border-focus: #5FB7E5;          /* Focus border - sky blue */
+  --tbs-border-gold: rgba(207, 163, 73, 0.5); /* Gold border for highlights */
+  --tbs-border-primary: rgba(28, 47, 122, 0.5); /* Primary blue border */
+  
+  /* Shadow Colors - Dark Theme */
+  --tbs-shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.5);
+  --tbs-shadow-md: 0 4px 16px rgba(0, 0, 0, 0.6);
+  --tbs-shadow-lg: 0 8px 24px rgba(0, 0, 0, 0.7);
+  --tbs-shadow-xl: 0 12px 32px rgba(0, 0, 0, 0.8);
+  --tbs-shadow-gold: 0 4px 16px rgba(207, 163, 73, 0.3);
+  --tbs-shadow-sky: 0 4px 16px rgba(95, 183, 229, 0.3);
+  
+  /* State Colors - Using BITS Logo Colors */
+  --tbs-success: #28a745;
+  --tbs-success-light: #34ce57;
+  --tbs-success-dark: #218838;
+  --tbs-danger: #D62332;                /* BITS Red - from logo middle section */
+  --tbs-danger-light: #e03a49;
+  --tbs-danger-dark: #c01d2a;
+  --tbs-warning: #FFD700;               /* BITS Yellow - from logo right section */
+  --tbs-warning-light: #FFE44D;
+  --tbs-warning-dark: #FFC800;
+  --tbs-info: #5FB7E5;                  /* BITS Sky Blue - from logo left section */
+  --tbs-info-light: #7bc5ed;
+  --tbs-info-dark: #4a9fd1;
+  
+  /* Legacy aliases for backward compatibility */
+  --background-primary: var(--tbs-bg);
+  --background-secondary: var(--tbs-bg-header);
+  --background-elevated: var(--tbs-bg-elevated);
+  --background-card: var(--tbs-bg-card);
+  --background-panel: var(--tbs-bg-card);
+  
+  --text-primary: var(--tbs-text);
+  --text-secondary: var(--tbs-text-muted);
+  --text-muted: var(--tbs-text-muted);
+  --text-accent: var(--tbs-gold);
+  
+  --primary-dark: var(--tbs-text);
+  --accent-gold: var(--tbs-gold);
+  --accent-gold-light: var(--tbs-gold-light);
+  --accent-gold-dark: var(--tbs-gold-dark);
+  --accent-burgundy: var(--tbs-red);
+  --accent-burgundy-light: var(--tbs-red-light);
+  
+  --border-color: var(--tbs-border);
+  --border-color-hover: var(--tbs-border-gold);
+  --border-divider: var(--tbs-border-subtle);
+  
+  --shadow-sm: var(--tbs-shadow-sm);
+  --shadow-md: var(--tbs-shadow-md);
+  --shadow-lg: var(--tbs-shadow-lg);
+  
+  --success-color: var(--tbs-success);
+  --danger-color: var(--tbs-danger);
+  --warning-color: var(--tbs-warning);
+  --info-color: var(--tbs-info);
 }
 
-/* Common Button Styles */
+/* Common Button Styles - Dark BITS Theme */
 .theme-btn-primary {
   padding: 12px 24px;
-  background: var(--accent-color);
-  color: var(--primary-color);
+  background: var(--tbs-primary);
+  color: var(--tbs-text);
   border: none;
-  border-radius: 4px;
+  border-radius: 6px;
   font-weight: 600;
   font-size: 1rem;
   cursor: pointer;
-  transition: all 0.3s;
+  transition: all 0.3s ease;
   text-decoration: none;
   display: inline-flex;
   align-items: center;
   gap: 8px;
+  box-shadow: var(--tbs-shadow-sm);
 }
 
 .theme-btn-primary:hover {
-  background: #1fd4cc;
+  background: var(--tbs-accent-sky);
   transform: translateY(-2px);
-  box-shadow: var(--shadow-hover);
+  box-shadow: var(--tbs-shadow-md);
+  color: var(--tbs-text);
+}
+
+.theme-btn-primary:focus {
+  outline: 3px solid var(--tbs-sky);
+  outline-offset: 2px;
 }
 
 .theme-btn-secondary {
   padding: 12px 24px;
   background: transparent;
-  color: var(--primary-color);
-  border: 2px solid var(--primary-color);
-  border-radius: 4px;
+  color: var(--tbs-gold);
+  border: 2px solid var(--tbs-gold);
+  border-radius: 6px;
   font-weight: 600;
   font-size: 1rem;
   cursor: pointer;
-  transition: all 0.3s;
+  transition: all 0.3s ease;
   text-decoration: none;
   display: inline-flex;
   align-items: center;
@@ -56,169 +140,397 @@
 }
 
 .theme-btn-secondary:hover {
-  background: var(--primary-color);
-  color: white;
+  background: rgba(207, 163, 73, 0.15);
+  color: var(--tbs-gold-light);
+  box-shadow: var(--tbs-shadow-gold);
+}
+
+.theme-btn-red {
+  padding: 12px 24px;
+  background: var(--tbs-red);
+  color: var(--tbs-text);
+  border: none;
+  border-radius: 6px;
+  font-weight: 600;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  box-shadow: var(--tbs-shadow-sm);
+}
+
+.theme-btn-red:hover {
+  background: var(--tbs-red-light);
+  transform: translateY(-2px);
+  box-shadow: var(--tbs-shadow-md);
+  color: var(--tbs-text);
+}
+
+.theme-btn-yellow {
+  padding: 12px 24px;
+  background: var(--tbs-yellow);
+  color: var(--tbs-bg);
+  border: none;
+  border-radius: 6px;
+  font-weight: 600;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  box-shadow: var(--tbs-shadow-sm);
+}
+
+.theme-btn-yellow:hover {
+  background: var(--tbs-yellow-light);
+  transform: translateY(-2px);
+  box-shadow: var(--tbs-shadow-md);
+}
+
+.theme-btn-gold {
+  padding: 12px 24px;
+  background: var(--tbs-gold);
+  color: var(--tbs-bg);
+  border: none;
+  border-radius: 6px;
+  font-weight: 600;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  box-shadow: var(--tbs-shadow-gold);
+}
+
+.theme-btn-gold:hover {
+  background: var(--tbs-gold-light);
+  transform: translateY(-2px);
+  box-shadow: var(--tbs-shadow-md);
 }
 
 .theme-btn-danger {
   padding: 12px 24px;
-  background: var(--danger-color);
-  color: white;
+  background: var(--tbs-red);
+  color: var(--tbs-text);
   border: none;
-  border-radius: 4px;
+  border-radius: 6px;
   font-weight: 600;
   font-size: 1rem;
   cursor: pointer;
-  transition: all 0.3s;
+  transition: all 0.3s ease;
+  box-shadow: var(--tbs-shadow-sm);
 }
 
 .theme-btn-danger:hover {
-  background: #c82333;
+  background: var(--tbs-red-dark);
+  transform: translateY(-2px);
+  box-shadow: var(--tbs-shadow-md);
+  color: var(--tbs-text);
 }
 
-/* Common Card Styles */
+/* Common Card Styles - Dark Theme */
 .theme-card {
-  background: white;
-  border-radius: 8px;
-  box-shadow: var(--shadow);
-  border: 1px solid var(--border-color);
-  padding: 20px;
-  transition: all 0.3s;
+  background: var(--tbs-bg-card);
+  border-radius: 12px;
+  box-shadow: var(--tbs-shadow-md);
+  border: 1px solid var(--tbs-border);
+  padding: 24px;
+  transition: all 0.3s ease;
+  color: var(--tbs-text);
 }
 
 .theme-card:hover {
-  box-shadow: var(--shadow-hover);
-  border-color: var(--accent-color);
+  box-shadow: var(--tbs-shadow-lg);
+  border-color: var(--tbs-border-gold);
+  transform: translateY(-2px);
 }
 
-/* Common Input Styles */
+/* Common Input Styles - Dark Theme */
 .theme-input {
   padding: 12px 16px;
-  border: 2px solid var(--border-color);
-  border-radius: 4px;
+  border: 2px solid var(--tbs-border);
+  border-radius: 6px;
   font-size: 1rem;
-  color: var(--text-primary);
-  transition: border-color 0.3s;
+  color: var(--tbs-text);
+  background: var(--tbs-bg-card);
+  transition: all 0.3s ease;
   width: 100%;
 }
 
 .theme-input:focus {
   outline: none;
-  border-color: var(--primary-color);
+  border-color: var(--tbs-border-focus);
+  box-shadow: 0 0 0 3px rgba(95, 183, 229, 0.2);
+  background: var(--tbs-bg-elevated);
 }
 
-/* Common Page Container */
+.theme-input::placeholder {
+  color: var(--tbs-text-muted);
+}
+
+.theme-input:invalid {
+  border-color: var(--tbs-red);
+}
+
+.theme-input:invalid:focus {
+  box-shadow: 0 0 0 3px rgba(214, 35, 50, 0.2);
+}
+
+/* Common Page Container - Dark Theme */
 .theme-page-container {
   max-width: 1400px;
   margin: 0 auto;
   padding: 20px;
-  background: var(--background-light);
+  background: var(--tbs-bg);
   min-height: calc(100vh - 80px);
+  color: var(--tbs-text);
 }
 
-/* Common Section Styles */
+/* Common Section Styles - Dark Theme */
 .theme-section {
-  background: white;
-  border-radius: 8px;
+  background: var(--tbs-bg-card);
+  border-radius: 12px;
   padding: 30px;
   margin-bottom: 20px;
-  box-shadow: var(--shadow);
+  box-shadow: var(--tbs-shadow-md);
+  border: 1px solid var(--tbs-border);
+  color: var(--tbs-text);
 }
 
 .theme-section-title {
   font-size: 1.5rem;
   font-weight: 700;
-  color: var(--text-primary);
+  color: var(--tbs-text);
   margin-bottom: 20px;
+  border-bottom: 2px solid var(--tbs-gold);
+  padding-bottom: 10px;
 }
 
 .theme-divider {
   height: 1px;
-  background: var(--border-color);
+  background: var(--tbs-border-subtle);
   margin: 20px 0;
 }
 
 /* Common Text Styles */
 .theme-text-primary {
-  color: var(--text-primary);
+  color: var(--tbs-text);
   font-weight: 600;
 }
 
 .theme-text-secondary {
-  color: var(--text-secondary);
+  color: var(--tbs-text-muted);
 }
 
 .theme-text-light {
-  color: var(--text-light);
+  color: var(--tbs-text-muted);
 }
 
-/* Badge Styles */
-.theme-badge {
-  display: inline-block;
-  padding: 4px 12px;
-  border-radius: 4px;
-  font-size: 0.85rem;
+.theme-text-accent {
+  color: var(--tbs-gold);
   font-weight: 600;
 }
 
+/* Badge Styles - Dark BITS Theme */
+.theme-badge {
+  display: inline-block;
+  padding: 6px 14px;
+  border-radius: 20px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  box-shadow: var(--tbs-shadow-sm);
+}
+
 .theme-badge-primary {
-  background: var(--accent-color);
-  color: var(--primary-color);
+  background: var(--tbs-primary);
+  color: var(--tbs-text);
+}
+
+.theme-badge-gold {
+  background: var(--tbs-gold);
+  color: var(--tbs-bg);
+}
+
+.theme-badge-sky {
+  background: var(--tbs-sky);
+  color: var(--tbs-bg);
+}
+
+.theme-badge-red {
+  background: var(--tbs-red);
+  color: var(--tbs-text);
 }
 
 .theme-badge-success {
-  background: var(--success-color);
-  color: white;
+  background: var(--tbs-success);
+  color: var(--tbs-text);
 }
 
 .theme-badge-danger {
-  background: var(--danger-color);
-  color: white;
+  background: var(--tbs-danger);
+  color: var(--tbs-text);
 }
 
-/* Link Styles */
+.theme-badge-info {
+  background: var(--tbs-info);
+  color: var(--tbs-bg);
+}
+
+.theme-badge-yellow {
+  background: var(--tbs-yellow);
+  color: var(--tbs-bg);
+}
+
+/* Link Styles - Dark BITS Theme */
 .theme-link {
-  color: var(--primary-color);
+  color: var(--tbs-primary);
   text-decoration: none;
-  transition: color 0.3s;
+  transition: color 0.3s ease;
+  font-weight: 500;
 }
 
 .theme-link:hover {
-  color: var(--accent-color);
+  color: var(--tbs-sky);
+  text-decoration: underline;
 }
 
-/* Alert Styles */
+.theme-link-gold {
+  color: var(--tbs-gold);
+  text-decoration: none;
+  transition: color 0.3s ease;
+  font-weight: 500;
+}
+
+.theme-link-gold:hover {
+  color: var(--tbs-gold-light);
+  text-decoration: underline;
+}
+
+.theme-link-sky {
+  color: var(--tbs-sky);
+  text-decoration: none;
+  transition: color 0.3s ease;
+  font-weight: 500;
+}
+
+.theme-link-sky:hover {
+  color: var(--tbs-sky-light);
+  text-decoration: underline;
+}
+
+.theme-link-red {
+  color: var(--tbs-red);
+  text-decoration: none;
+  transition: color 0.3s ease;
+  font-weight: 500;
+}
+
+.theme-link-red:hover {
+  color: var(--tbs-red-light);
+  text-decoration: underline;
+}
+
+.theme-link-yellow {
+  color: var(--tbs-yellow);
+  text-decoration: none;
+  transition: color 0.3s ease;
+  font-weight: 500;
+}
+
+.theme-link-yellow:hover {
+  color: var(--tbs-yellow-light);
+  text-decoration: underline;
+}
+
+/* Alert Styles - Dark Theme */
 .theme-alert {
   padding: 16px 20px;
-  border-radius: 4px;
+  border-radius: 8px;
   margin-bottom: 20px;
   border-left: 4px solid;
+  box-shadow: var(--tbs-shadow-sm);
 }
 
 .theme-alert-success {
-  background: #d4edda;
-  border-color: var(--success-color);
-  color: #155724;
+  background: rgba(40, 167, 69, 0.15);
+  border-color: var(--tbs-success);
+  color: var(--tbs-success-light);
 }
 
 .theme-alert-error {
-  background: #f8d7da;
-  border-color: var(--danger-color);
-  color: #721c24;
+  background: rgba(214, 35, 50, 0.15);
+  border-color: var(--tbs-red);
+  color: var(--tbs-red-light);
 }
 
 .theme-alert-warning {
-  background: #fff3cd;
-  border-color: var(--warning-color);
-  color: #856404;
+  background: rgba(255, 215, 0, 0.15);
+  border-color: var(--tbs-yellow);
+  color: var(--tbs-yellow-light);
 }
 
-/* Loading Spinner */
+.theme-alert-info {
+  background: rgba(95, 183, 229, 0.15);
+  border-color: var(--tbs-sky);
+  color: var(--tbs-sky-light);
+}
+
+/* Loading Spinner - Dark Theme */
 .theme-loading {
   display: flex;
   justify-content: center;
   align-items: center;
   padding: 40px;
-  color: var(--text-secondary);
+  color: var(--tbs-text-muted);
 }
 
+.theme-spinner {
+  border: 4px solid var(--tbs-border);
+  border-top: 4px solid var(--tbs-primary);
+  border-radius: 50%;
+  width: 40px;
+  height: 40px;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+/* Scrollbar Styling - Dark Theme */
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--tbs-bg);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--tbs-gold);
+  border-radius: 5px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--tbs-gold-light);
+}
+
+/* Selection Styling - Dark Theme */
+::selection {
+  background: var(--tbs-gold);
+  color: var(--tbs-bg);
+}
+
+::-moz-selection {
+  background: var(--tbs-gold);
+  color: var(--tbs-bg);
+}

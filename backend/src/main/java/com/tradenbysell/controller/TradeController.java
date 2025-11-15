@@ -31,9 +31,10 @@ public class TradeController {
     }
 
     @GetMapping
-    public ResponseEntity<List<TradeDTO>> getUserTrades(Authentication authentication) {
+    public ResponseEntity<List<TradeDTO>> getUserTrades(@RequestParam(required = false) String status,
+                                                        Authentication authentication) {
         String userId = authUtil.getUserId(authentication);
-        List<TradeDTO> trades = tradeService.getUserTrades(userId);
+        List<TradeDTO> trades = tradeService.getUserTrades(userId, status);
         return ResponseEntity.ok(trades);
     }
 

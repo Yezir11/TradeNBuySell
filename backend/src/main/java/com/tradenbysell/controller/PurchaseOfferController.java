@@ -72,6 +72,15 @@ public class PurchaseOfferController {
         return ResponseEntity.ok(offer);
     }
     
+    @PostMapping("/{offerId}/accept-counter")
+    public ResponseEntity<PurchaseOfferDTO> acceptCounterOffer(
+            @PathVariable String offerId,
+            Authentication authentication) {
+        String buyerId = authUtil.getUserId(authentication);
+        PurchaseOfferDTO offer = purchaseOfferService.acceptCounterOfferByBuyer(buyerId, offerId);
+        return ResponseEntity.ok(offer);
+    }
+    
     @PostMapping("/{offerId}/counter")
     public ResponseEntity<PurchaseOfferDTO> counterOffer(
             @PathVariable String offerId,

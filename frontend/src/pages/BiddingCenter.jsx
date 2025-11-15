@@ -3,6 +3,8 @@ import { useNavigate, useSearchParams, Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import api from '../services/api';
 import MarketplaceHeader from '../components/MarketplaceHeader';
+import RatingDialog from '../components/RatingDialog';
+import RatingButton from '../components/RatingButton';
 import {
   Box,
   Card,
@@ -54,9 +56,15 @@ const BiddingCenter = () => {
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
   const [activeTab, setActiveTab] = useState('my-bids');
-  const [searchQuery, setSearchQuery] = useState('');
   const [anchorEl, setAnchorEl] = useState(null);
   const [selectedListingId, setSelectedListingId] = useState(null);
+  const [ratingDialog, setRatingDialog] = useState({
+    open: false,
+    toUserId: null,
+    toUserName: null,
+    listingId: null,
+    listingTitle: null
+  });
 
   useEffect(() => {
     if (!authLoading) {
@@ -225,12 +233,7 @@ const BiddingCenter = () => {
     return { fromDate, toDate };
   };
 
-  const filteredMyListings = myListings.filter(listing => {
-    const matchesSearch = !searchQuery || 
-      (listing.title && listing.title.toLowerCase().includes(searchQuery.toLowerCase())) ||
-      (listing.description && listing.description.toLowerCase().includes(searchQuery.toLowerCase()));
-    return matchesSearch;
-  });
+
 
   const handleFinalizeBid = async (listingIdParam) => {
     if (!window.confirm('Are you sure you want to finalize this bid? This will close the listing and transfer funds.')) {
@@ -242,8 +245,8 @@ const BiddingCenter = () => {
     setFinalizingBid(true);
     
     try {
-      await api.post(`/api/bids/listing/${listingIdParam}/finalize`);
-      setSuccess('Bid finalized successfully!');
+      const response = await api.post(`/api/bids/listing/${listingIdParam}/finalize`);
+      setSuccess('Bid finalized successfully! You can now rate the buyer.');
       
       // Refresh all data
       await fetchBiddingData();
@@ -257,6 +260,21 @@ const BiddingCenter = () => {
     } finally {
       setFinalizingBid(false);
     }
+  };
+
+  const handleRateUser = async (toUserId, toUserName, listingId, listingTitle) => {
+    setRatingDialog({
+      open: true,
+      toUserId,
+      toUserName: toUserName || 'User',
+      listingId,
+      listingTitle
+    });
+  };
+
+  const handleRatingSuccess = () => {
+    // Refresh data after rating
+    fetchBiddingData();
   };
 
   const getTimeRemaining = (endTime) => {
@@ -345,151 +363,402 @@ const BiddingCenter = () => {
 
           {activeTab === 'my-bids' && (
             <div className="my-bids-section">
-              <h2>My Bids</h2>
-              {myBids.length === 0 ? (
-                <div className="no-bids">
-                  <p>You haven't placed any bids yet.</p>
-                  <p>Browse active listings to start bidding!</p>
-                </div>
-              ) : (
-                <div className="bids-list">
-                  {myBids.map(bid => (
-                    <div key={bid.bidId} className="bid-card">
-                      <div className="bid-header">
-                        <Link to={`/listing/${bid.listingId}`} className="listing-link">
-                          <h3>{bid.listingTitle || 'Untitled Listing'}</h3>
-                        </Link>
-                        <span className={`bid-status ${bid.isWinning ? 'winning' : 'outbid'}`}>
-                          {bid.isWinning ? 'Winning' : 'Outbid'}
-                        </span>
-                      </div>
-                      <div className="bid-details">
-                        <div>
-                          <p className="bid-amount">₹{parseFloat(bid.bidAmount).toFixed(2)}</p>
-                          <p className="bid-time">Placed: {new Date(bid.bidTime).toLocaleString()}</p>
-                        </div>
-                        <Link to={`/listing/${bid.listingId}`} className="view-listing-btn">
-                          View Listing
-                        </Link>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              )}
+              <Paper elevation={2} sx={{ p: 3, backgroundColor: 'var(--tbs-bg-card)', color: 'var(--tbs-text)' }}>
+                <Box display="flex" justifyContent="space-between" alignItems="center" mb={3}>
+                  <Typography variant="h5" sx={{ color: 'var(--tbs-text)' }}>My Bids</Typography>
+                </Box>
+
+                {myBids.length === 0 ? (
+                  <Box textAlign="center" py={6}>
+                    <Typography variant="h6" sx={{ color: 'var(--tbs-text-muted)' }} gutterBottom>
+                      You haven't placed any bids yet.
+                    </Typography>
+                    <Typography variant="body2" sx={{ color: 'var(--tbs-text-muted)', mb: 2 }}>
+                      Browse active listings to start bidding!
+                    </Typography>
+                    <Button 
+                      variant="contained" 
+                      component={Link}
+                      to="/bids"
+                      onClick={() => setActiveTab('active-listings')}
+                      sx={{ 
+                        backgroundColor: 'var(--tbs-primary)',
+                        color: 'var(--tbs-text)',
+                        '&:hover': {
+                          backgroundColor: 'var(--tbs-primary-dark)'
+                        }
+                      }}
+                    >
+                      Browse Active Listings
+                    </Button>
+                  </Box>
+                ) : (
+                  <Stack spacing={2}>
+                    {myBids.map(bid => (
+                      <Card
+                        key={bid.bidId}
+                        sx={{
+                          display: 'flex',
+                          cursor: 'pointer',
+                          backgroundColor: 'var(--tbs-bg-card)',
+                          color: 'var(--tbs-text)',
+                          '&:hover': {
+                            boxShadow: 4,
+                          },
+                          borderLeft: `4px solid ${bid.isWinning ? 'var(--tbs-success)' : 'var(--tbs-red)'}`,
+                          overflow: 'hidden',
+                          maxWidth: '100%'
+                        }}
+                        onClick={() => navigate(`/listing/${bid.listingId}`)}
+                      >
+                        {/* Image */}
+                        <CardMedia
+                          component="img"
+                          sx={{
+                            width: 120,
+                            height: 120,
+                            objectFit: 'cover',
+                            flexShrink: 0,
+                          }}
+                          image={bid.listingImageUrl || 'https://via.placeholder.com/120x120?text=No+Image'}
+                          alt={bid.listingTitle || 'Listing image'}
+                          onError={(e) => {
+                            e.target.src = 'https://via.placeholder.com/120x120?text=No+Image';
+                            e.target.onerror = null;
+                          }}
+                        />
+                        
+                        {/* Content */}
+                        <Box sx={{ display: 'flex', flexDirection: 'column', flex: 1, minWidth: 0, overflow: 'hidden' }}>
+                          <CardContent sx={{ flex: 1, pb: 1, pt: 1.5, overflow: 'hidden', maxWidth: '100%' }}>
+                            <Box display="flex" justifyContent="space-between" alignItems="flex-start" mb={0.5} sx={{ gap: 1 }}>
+                              <Box flex={1} minWidth={0} sx={{ overflow: 'hidden', maxWidth: '100%' }}>
+                                <Typography 
+                                  variant="subtitle1" 
+                                  fontWeight="bold" 
+                                  sx={{ 
+                                    mb: 0.5,
+                                    color: 'var(--tbs-text)',
+                                    overflow: 'hidden',
+                                    textOverflow: 'ellipsis',
+                                    display: '-webkit-box',
+                                    WebkitLineClamp: 2,
+                                    WebkitBoxOrient: 'vertical',
+                                    wordBreak: 'break-word'
+                                  }}
+                                >
+                                  {bid.listingTitle || 'Untitled Listing'}
+                                </Typography>
+                                <Stack direction="row" spacing={1} alignItems="center" mb={0.5}>
+                                  <Chip
+                                    label={bid.isWinning ? 'WINNING' : 'OUTBID'}
+                                    size="small"
+                                    sx={{
+                                      backgroundColor: bid.isWinning ? 'var(--tbs-success)' : 'var(--tbs-red)',
+                                      color: 'var(--tbs-text)'
+                                    }}
+                                  />
+                                </Stack>
+                                <Stack direction="row" spacing={2} alignItems="center" flexWrap="wrap" sx={{ mt: 1 }}>
+                                  <Typography 
+                                    variant="body2" 
+                                    fontWeight="bold" 
+                                    sx={{ color: 'var(--tbs-gold)' }}
+                                  >
+                                    Bid Amount: ₹{parseFloat(bid.bidAmount).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                                  </Typography>
+                                  <Typography 
+                                    variant="caption" 
+                                    sx={{ color: 'var(--tbs-text-muted)', wordBreak: 'break-word' }}
+                                  >
+                                    Placed: {new Date(bid.bidTime).toLocaleString()}
+                                  </Typography>
+                                </Stack>
+                              </Box>
+                            </Box>
+                          </CardContent>
+                          <CardActions sx={{ px: 2, pb: 1.5, flexDirection: 'column', alignItems: 'stretch', gap: 1 }}>
+                            <Button
+                              variant="contained"
+                              component={Link}
+                              to={`/listing/${bid.listingId}`}
+                              onClick={(e) => e.stopPropagation()}
+                              sx={{
+                                backgroundColor: 'var(--tbs-gold)',
+                                color: '#11152A',
+                                fontWeight: 'bold',
+                                '&:hover': {
+                                  backgroundColor: 'var(--tbs-gold-light)',
+                                }
+                              }}
+                            >
+                              View Listing
+                            </Button>
+                            {/* Rate Seller button for winning bids (only show if bid is winning) */}
+                            {bid.isWinning && (
+                              <RatingButton
+                                toUserId={null} // Will be fetched from listing by RatingButton
+                                toUserName={null} // Will be fetched from listing by RatingButton
+                                listingId={bid.listingId}
+                                listingTitle={bid.listingTitle}
+                                onRated={handleRateUser}
+                              />
+                            )}
+                          </CardActions>
+                        </Box>
+                      </Card>
+                    ))}
+                  </Stack>
+                )}
+              </Paper>
             </div>
           )}
 
           {activeTab === 'active-listings' && (
             <div className="active-listings-section">
-              <h2>Active Biddable Listings</h2>
-              {activeListings.length === 0 ? (
-                <div className="no-listings">
-                  <p>No active biddable listings available.</p>
-                </div>
-              ) : (
-                <div className="listings-grid">
-                  {activeListings.map(listing => {
-                    const timeRemaining = getTimeRemaining(listing.bidEndTime);
-                    const ended = isBidEnded(listing.bidEndTime);
-                    
-                    return (
-                      <div key={listing.listingId} className="listing-card">
-                        {listing.imageUrls && listing.imageUrls.length > 0 && (
-                          <img 
-                            src={listing.imageUrls[0]} 
-                            alt={listing.title}
-                            onError={(e) => {
-                              e.target.src = 'https://via.placeholder.com/300x200?text=No+Image';
-                            }}
-                          />
-                        )}
-                        <div className="listing-info">
-                          <Link to={`/listing/${listing.listingId}`} className="listing-title-link">
-                            <h3>{listing.title}</h3>
-                          </Link>
-                          <p className="price">Starting: ₹{listing.startingPrice ? parseFloat(listing.startingPrice).toFixed(2) : 'N/A'}</p>
-                          {listing.highestBid && (
-                            <p className="highest-bid">Highest: ₹{parseFloat(listing.highestBid).toFixed(2)}</p>
-                          )}
-                          <p className="bid-count">
-                            {listing.bidCount || 0} bid{listing.bidCount !== 1 ? 's' : ''}
-                          </p>
-                          {listing.bidEndTime && (
-                            <p className={`end-time ${ended ? 'ended' : ''}`}>
-                              {ended ? 'Ended' : `Ends: ${new Date(listing.bidEndTime).toLocaleString()}`}
-                              {timeRemaining && !ended && (
-                                <span className="time-remaining"> ({timeRemaining} remaining)</span>
-                              )}
-                            </p>
-                          )}
-                          <button
-                            onClick={() => handleListingSelect(listing)}
-                            className="bid-now-btn"
-                            disabled={ended}
-                          >
-                            {ended ? 'Bidding Ended' : 'Place Bid'}
-                          </button>
-                        </div>
-                      </div>
-                    );
-                  })}
-                </div>
-              )}
+              <Paper elevation={2} sx={{ p: 3, backgroundColor: 'var(--tbs-bg-card)', color: 'var(--tbs-text)' }}>
+                <Box display="flex" justifyContent="space-between" alignItems="center" mb={3}>
+                  <Typography variant="h5" sx={{ color: 'var(--tbs-text)' }}>Active Biddable Listings</Typography>
+                </Box>
+
+                {activeListings.length === 0 ? (
+                  <Box textAlign="center" py={6}>
+                    <Typography variant="h6" sx={{ color: 'var(--tbs-text-muted)' }} gutterBottom>
+                      No active biddable listings available.
+                    </Typography>
+                  </Box>
+                ) : (
+                  <>
+                    {/* Listings */}
+                    {activeListings.length === 0 ? (
+                        <Box textAlign="center" py={4}>
+                          <Typography variant="body1" sx={{ color: 'var(--tbs-text-muted)' }}>
+                            No active biddable listings available.
+                          </Typography>
+                        </Box>
+                    ) : (
+                      <Stack spacing={2}>
+                        {activeListings.map(listing => {
+                          const timeRemaining = getTimeRemaining(listing.bidEndTime);
+                          const ended = isBidEnded(listing.bidEndTime);
+                          
+                          return (
+                            <Card
+                              key={listing.listingId}
+                              sx={{
+                                display: 'flex',
+                                cursor: 'pointer',
+                                backgroundColor: 'var(--tbs-bg-card)',
+                                color: 'var(--tbs-text)',
+                                '&:hover': {
+                                  boxShadow: 4,
+                                },
+                                borderLeft: `4px solid ${ended ? 'var(--tbs-warning)' : 'var(--tbs-primary)'}`,
+                                overflow: 'hidden',
+                                maxWidth: '100%'
+                              }}
+                              onClick={() => navigate(`/listing/${listing.listingId}`)}
+                            >
+                              {/* Image */}
+                              <CardMedia
+                                component="img"
+                                sx={{
+                                  width: 120,
+                                  height: 120,
+                                  objectFit: 'cover',
+                                  flexShrink: 0,
+                                }}
+                                image={listing.imageUrls && listing.imageUrls.length > 0 
+                                  ? getImageUrl(listing.imageUrls[0])
+                                  : 'https://via.placeholder.com/120x120?text=No+Image'
+                                }
+                                alt={listing.title || 'Listing image'}
+                                onError={(e) => {
+                                  e.target.src = 'https://via.placeholder.com/120x120?text=No+Image';
+                                  e.target.onerror = null;
+                                }}
+                              />
+                              
+                                <Box sx={{ display: 'flex', flexDirection: 'column', flex: 1, minWidth: 0, overflow: 'hidden' }}>
+                                  <CardContent sx={{ flex: 1, pb: 1, pt: 1.5, overflow: 'hidden', maxWidth: '100%' }}>
+                                    <Box display="flex" justifyContent="space-between" alignItems="flex-start" mb={0.5} sx={{ gap: 1 }}>
+                                      <Box flex={1} minWidth={0} sx={{ overflow: 'hidden', maxWidth: '100%' }}>
+                                        <Typography 
+                                          variant="subtitle1" 
+                                          fontWeight="bold" 
+                                          sx={{ 
+                                            mb: 0.5,
+                                            color: 'var(--tbs-text)',
+                                            overflow: 'hidden',
+                                            textOverflow: 'ellipsis',
+                                            display: '-webkit-box',
+                                            WebkitLineClamp: 2,
+                                            WebkitBoxOrient: 'vertical',
+                                            wordBreak: 'break-word'
+                                          }}
+                                        >
+                                          {listing.title || 'Untitled Listing'}
+                                        </Typography>
+                                        <Stack direction="row" spacing={1} alignItems="center" mb={0.5}>
+                                          {listing.category && (
+                                            <Chip 
+                                              label={listing.category} 
+                                              size="small" 
+                                              variant="outlined"
+                                              sx={{ 
+                                                borderColor: 'var(--tbs-border)',
+                                                color: 'var(--tbs-text)'
+                                              }}
+                                            />
+                                          )}
+                                          <Chip
+                                            label={ended ? 'ENDED' : 'ACTIVE'}
+                                            size="small"
+                                            sx={{
+                                              backgroundColor: ended ? 'var(--tbs-warning)' : 'var(--tbs-primary)',
+                                              color: 'var(--tbs-text)'
+                                            }}
+                                          />
+                                          <Chip
+                                            label="BIDDABLE"
+                                            size="small"
+                                            sx={{
+                                              backgroundColor: 'var(--tbs-gold)',
+                                              color: 'var(--tbs-text)'
+                                            }}
+                                          />
+                                        </Stack>
+                                        <Typography
+                                          variant="body2"
+                                          sx={{
+                                            color: 'var(--tbs-text-muted)',
+                                            overflow: 'hidden',
+                                            textOverflow: 'ellipsis',
+                                            display: '-webkit-box',
+                                            WebkitLineClamp: 2,
+                                            WebkitBoxOrient: 'vertical',
+                                            mb: 0.5,
+                                            wordBreak: 'break-word'
+                                          }}
+                                        >
+                                          {listing.description || 'No description'}
+                                        </Typography>
+                                        <Stack direction="row" spacing={2} alignItems="center" flexWrap="wrap" sx={{ mt: 1 }}>
+                                          <Typography 
+                                            variant="body2" 
+                                            fontWeight="bold" 
+                                            sx={{ color: 'var(--tbs-gold)' }}
+                                          >
+                                            Starting: ₹{listing.startingPrice 
+                                              ? parseFloat(listing.startingPrice).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) 
+                                              : 'N/A'}
+                                          </Typography>
+                                          {listing.highestBid && (
+                                            <Typography 
+                                              variant="body2" 
+                                              fontWeight="bold" 
+                                              sx={{ color: 'var(--tbs-success)' }}
+                                            >
+                                              Highest: ₹{parseFloat(listing.highestBid).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                                            </Typography>
+                                          )}
+                                          <Box display="flex" alignItems="center" gap={0.5}>
+                                            <GavelIcon sx={{ fontSize: 14, color: 'var(--tbs-text-muted)' }} />
+                                            <Typography variant="caption" sx={{ color: 'var(--tbs-text-muted)' }}>
+                                              {listing.bidCount || 0} bid{listing.bidCount !== 1 ? 's' : ''}
+                                            </Typography>
+                                          </Box>
+                                          {listing.bidEndTime && (
+                                            <Typography 
+                                              variant="caption" 
+                                              sx={{ 
+                                                color: ended ? 'var(--tbs-red)' : 'var(--tbs-text-muted)',
+                                                wordBreak: 'break-word'
+                                              }}
+                                            >
+                                              {ended ? 'Ended' : `Ends: ${new Date(listing.bidEndTime).toLocaleString()}`}
+                                              {timeRemaining && !ended && ` (${timeRemaining} remaining)`}
+                                            </Typography>
+                                          )}
+                                        </Stack>
+                                      </Box>
+                                    </Box>
+                                  </CardContent>
+                                  <CardActions sx={{ px: 2, pb: 1.5 }}>
+                                    <Button
+                                      variant="contained"
+                                      onClick={(e) => {
+                                        e.stopPropagation();
+                                        handleListingSelect(listing);
+                                      }}
+                                      disabled={ended}
+                                      sx={{
+                                        backgroundColor: ended ? 'var(--tbs-border)' : 'var(--tbs-info)',
+                                        color: 'var(--tbs-text)',
+                                        '&:hover': {
+                                          backgroundColor: ended ? 'var(--tbs-border)' : 'var(--tbs-info-dark)'
+                                        },
+                                        '&:disabled': {
+                                          backgroundColor: 'var(--tbs-border)',
+                                          color: 'var(--tbs-text-muted)'
+                                        }
+                                      }}
+                                    >
+                                      {ended ? 'Bidding Ended' : 'Place Bid'}
+                                    </Button>
+                                  </CardActions>
+                                </Box>
+                              </Card>
+                            );
+                          })}
+                        </Stack>
+                    )}
+                  </>
+                )}
+              </Paper>
             </div>
           )}
 
           {activeTab === 'my-listings' && (
             <div className="my-listings-section">
-              <Paper elevation={2} sx={{ p: 3 }}>
+              <Paper elevation={2} sx={{ p: 3, backgroundColor: 'var(--tbs-bg-card)', color: 'var(--tbs-text)' }}>
                 <Box display="flex" justifyContent="space-between" alignItems="center" mb={3}>
-                  <Typography variant="h5">My Biddable Listings</Typography>
+                  <Typography variant="h5" sx={{ color: 'var(--tbs-text)' }}>My Biddable Listings</Typography>
                 </Box>
 
                 {myListings.length === 0 ? (
                   <Box textAlign="center" py={6}>
-                    <Typography variant="h6" color="text.secondary" gutterBottom>
+                    <Typography variant="h6" sx={{ color: 'var(--tbs-text-muted)' }} gutterBottom>
                       You haven't created any biddable listings yet.
                     </Typography>
                     <Button 
                       variant="contained" 
-                      color="primary" 
                       component={Link}
                       to="/post-listing"
-                      sx={{ mt: 2 }}
+                      sx={{ 
+                        mt: 2,
+                        backgroundColor: 'var(--tbs-primary)',
+                        color: 'var(--tbs-text)',
+                        '&:hover': {
+                          backgroundColor: 'var(--tbs-primary-dark)'
+                        }
+                      }}
                     >
                       Create a Biddable Listing
                     </Button>
                   </Box>
                 ) : (
                   <>
-                    {/* Search */}
-                    <Stack spacing={2} mb={3}>
-                      <TextField
-                        fullWidth
-                        placeholder="Search by Listing Title"
-                        value={searchQuery}
-                        onChange={(e) => setSearchQuery(e.target.value)}
-                        InputProps={{
-                          startAdornment: (
-                            <InputAdornment position="start">
-                              <SearchIcon />
-                            </InputAdornment>
-                          ),
-                        }}
-                        size="small"
-                      />
-                    </Stack>
-
                     {/* Listings Grid */}
-                    {filteredMyListings.length === 0 ? (
+                    {myListings.length === 0 ? (
                       <Box textAlign="center" py={4}>
-                        <Typography variant="body1" color="text.secondary">
-                          No listings match your search criteria.
+                        <Typography variant="body1" sx={{ color: 'var(--tbs-text-muted)' }}>
+                          No listings available.
                         </Typography>
                       </Box>
                     ) : (
                       <Stack spacing={2}>
-                        {filteredMyListings.map((listing) => {
+                        {myListings.map((listing) => {
                           const { fromDate, toDate } = getDateRange(listing);
                           const isActive = listing.isActive;
                           const ended = isBidEnded(listing.bidEndTime);
@@ -502,13 +771,16 @@ const BiddingCenter = () => {
                               sx={{
                                 display: 'flex',
                                 cursor: 'pointer',
+                                backgroundColor: 'var(--tbs-bg-card)',
+                                color: 'var(--tbs-text)',
                                 '&:hover': {
                                   boxShadow: 4,
                                 },
-                                borderLeft: `4px solid ${isActive ? (ended ? '#ff9800' : '#1976d2') : '#d32f2f'}`,
-                                border: isSelected ? '2px solid #1976d2' : undefined,
+                                borderLeft: `4px solid ${ended ? 'var(--tbs-warning)' : 'var(--tbs-primary)'}`,
+                                overflow: 'hidden',
+                                maxWidth: '100%'
                               }}
-                              onClick={() => handleMyListingSelect(listing)}
+                              onClick={() => navigate(`/listing/${listing.listingId}`)}
                             >
                               {/* Image */}
                               <CardMedia
@@ -531,15 +803,23 @@ const BiddingCenter = () => {
                               />
                               
                               {/* Content */}
-                              <Box sx={{ display: 'flex', flexDirection: 'column', flex: 1, minWidth: 0 }}>
-                                <CardContent sx={{ flex: 1, pb: isSelected ? 1 : 1, pt: 1.5 }}>
-                                  <Box display="flex" justifyContent="space-between" alignItems="flex-start" mb={0.5}>
-                                    <Box flex={1} minWidth={0}>
+                              <Box sx={{ display: 'flex', flexDirection: 'column', flex: 1, minWidth: 0, overflow: 'hidden' }}>
+                                <CardContent sx={{ flex: 1, pb: isSelected ? 1 : 1, pt: 1.5, overflow: 'hidden', maxWidth: '100%' }}>
+                                  <Box display="flex" justifyContent="space-between" alignItems="flex-start" mb={0.5} sx={{ gap: 1 }}>
+                                    <Box flex={1} minWidth={0} sx={{ overflow: 'hidden', maxWidth: '100%' }}>
                                       <Typography 
                                         variant="subtitle1" 
                                         fontWeight="bold" 
-                                        noWrap
-                                        sx={{ mb: 0.5 }}
+                                        sx={{ 
+                                          mb: 0.5,
+                                          color: 'var(--tbs-text)',
+                                          overflow: 'hidden',
+                                          textOverflow: 'ellipsis',
+                                          display: '-webkit-box',
+                                          WebkitLineClamp: 2,
+                                          WebkitBoxOrient: 'vertical',
+                                          wordBreak: 'break-word'
+                                        }}
                                       >
                                         {listing.title || 'Untitled Listing'}
                                       </Typography>
@@ -549,59 +829,87 @@ const BiddingCenter = () => {
                                             label={listing.category} 
                                             size="small" 
                                             variant="outlined"
+                                            sx={{ 
+                                              borderColor: 'var(--tbs-border)',
+                                              color: 'var(--tbs-text)'
+                                            }}
                                           />
                                         )}
                                         <Chip
                                           label={isActive ? (ended ? 'ENDED' : 'ACTIVE') : 'INACTIVE'}
                                           size="small"
-                                          color={isActive ? (ended ? 'warning' : 'primary') : 'error'}
+                                          sx={{
+                                            backgroundColor: isActive ? (ended ? 'var(--tbs-warning)' : 'var(--tbs-primary)') : 'var(--tbs-red)',
+                                            color: 'var(--tbs-text)'
+                                          }}
                                         />
                                         {listing.isBiddable && (
                                           <Chip
                                             label="BIDDABLE"
                                             size="small"
-                                            color="secondary"
+                                            sx={{
+                                              backgroundColor: 'var(--tbs-gold)',
+                                              color: 'var(--tbs-text)'
+                                            }}
                                           />
                                         )}
                                       </Stack>
                                       <Typography
                                         variant="body2"
-                                        color="text.secondary"
                                         sx={{
+                                          color: 'var(--tbs-text-muted)',
                                           overflow: 'hidden',
                                           textOverflow: 'ellipsis',
                                           display: '-webkit-box',
-                                          WebkitLineClamp: 1,
+                                          WebkitLineClamp: 2,
                                           WebkitBoxOrient: 'vertical',
                                           mb: 0.5,
+                                          wordBreak: 'break-word'
                                         }}
                                       >
                                         {listing.description || 'No description'}
                                       </Typography>
-                                      <Stack direction="row" spacing={2} alignItems="center" flexWrap="wrap">
-                                        <Typography variant="body2" fontWeight="bold" color="primary">
+                                      <Stack direction="row" spacing={2} alignItems="center" flexWrap="wrap" sx={{ mt: 1 }}>
+                                        <Typography 
+                                          variant="body2" 
+                                          fontWeight="bold" 
+                                          sx={{ color: 'var(--tbs-gold)' }}
+                                        >
                                           Starting: ₹{listing.startingPrice 
                                             ? parseFloat(listing.startingPrice).toLocaleString('en-IN') 
                                             : 'N/A'}
                                         </Typography>
                                         {listing.highestBid && (
-                                          <Typography variant="body2" fontWeight="bold" color="success.main">
+                                          <Typography 
+                                            variant="body2" 
+                                            fontWeight="bold" 
+                                            sx={{ color: 'var(--tbs-success)' }}
+                                          >
                                             Highest: ₹{parseFloat(listing.highestBid).toLocaleString('en-IN')}
                                           </Typography>
                                         )}
                                         <Box display="flex" alignItems="center" gap={0.5}>
-                                          <GavelIcon sx={{ fontSize: 14 }} />
-                                          <Typography variant="caption" color="text.secondary">
+                                          <GavelIcon sx={{ fontSize: 14, color: 'var(--tbs-text-muted)' }} />
+                                          <Typography variant="caption" sx={{ color: 'var(--tbs-text-muted)' }}>
                                             {listing.bidCount || 0} bid{listing.bidCount !== 1 ? 's' : ''}
                                           </Typography>
                                         </Box>
                                         {listing.bidEndTime && (
-                                          <Typography variant="caption" color={ended ? 'error.main' : 'text.secondary'}>
+                                          <Typography 
+                                            variant="caption" 
+                                            sx={{ 
+                                              color: ended ? 'var(--tbs-red)' : 'var(--tbs-text-muted)',
+                                              wordBreak: 'break-word'
+                                            }}
+                                          >
                                             {ended ? 'Ended' : `Ends: ${new Date(listing.bidEndTime).toLocaleString()}`}
                                             {timeRemaining && !ended && ` (${timeRemaining} remaining)`}
                                           </Typography>
                                         )}
-                                        <Typography variant="caption" color="text.secondary">
+                                        <Typography 
+                                          variant="caption" 
+                                          sx={{ color: 'var(--tbs-text-muted)', wordBreak: 'break-word' }}
+                                        >
                                           FROM: {fromDate} {toDate && `TO: ${toDate}`}
                                         </Typography>
                                       </Stack>
@@ -623,11 +931,11 @@ const BiddingCenter = () => {
                                     <Divider />
                                     {/* Bids Detail Section */}
                                     <CardActions sx={{ px: 2, py: 1, flexDirection: 'column', alignItems: 'stretch' }}>
-                                      <Typography variant="h6" gutterBottom sx={{ mt: 1 }}>
+                                      <Typography variant="h6" gutterBottom sx={{ mt: 1, color: 'var(--tbs-text)' }}>
                                         Bids on "{listing.title}"
                                       </Typography>
                                       {bids.length === 0 ? (
-                                        <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
+                                        <Typography variant="body2" sx={{ mb: 2, color: 'var(--tbs-text-muted)' }}>
                                           No bids yet on this listing.
                                         </Typography>
                                       ) : (
@@ -642,23 +950,33 @@ const BiddingCenter = () => {
                                                     justifyContent: 'space-between',
                                                     alignItems: 'center',
                                                     p: 1,
-                                                    bgcolor: bid.isWinning ? 'success.light' : 'grey.100',
-                                                    borderRadius: 1
+                                                    bgcolor: bid.isWinning ? 'rgba(40, 167, 69, 0.2)' : 'var(--tbs-bg-elevated)',
+                                                    borderRadius: 1,
+                                                    gap: 1,
+                                                    flexWrap: 'wrap'
                                                   }}
                                                 >
-                                                  <Typography variant="body2">
+                                                  <Typography variant="body2" sx={{ color: 'var(--tbs-text)' }}>
                                                     {bid.userName || 'Unknown'}
                                                   </Typography>
-                                                  <Typography variant="body2" fontWeight="bold" color="primary">
+                                                  <Typography 
+                                                    variant="body2" 
+                                                    fontWeight="bold" 
+                                                    sx={{ color: 'var(--tbs-gold)' }}
+                                                  >
                                                     ₹{parseFloat(bid.bidAmount).toFixed(2)}
                                                   </Typography>
-                                                  <Typography variant="caption" color="text.secondary">
+                                                  <Typography variant="caption" sx={{ color: 'var(--tbs-text-muted)' }}>
                                                     {new Date(bid.bidTime).toLocaleString()}
                                                   </Typography>
                                                   <Chip
                                                     label={bid.isWinning ? 'Winning' : index === 0 ? 'Highest' : 'Outbid'}
                                                     size="small"
-                                                    color={bid.isWinning ? 'success' : 'default'}
+                                                    sx={{
+                                                      backgroundColor: bid.isWinning ? 'var(--tbs-success)' : 'var(--tbs-bg-elevated)',
+                                                      color: 'var(--tbs-text)',
+                                                      border: !bid.isWinning ? '1px solid var(--tbs-border)' : 'none'
+                                                    }}
                                                   />
                                                 </Box>
                                               ))}
@@ -677,6 +995,7 @@ const BiddingCenter = () => {
                                               }}
                                               disabled={finalizingBid}
                                               fullWidth
+                                              sx={{ mb: 1 }}
                                             >
                                               {finalizingBid ? 'Finalizing...' : 'Finalize Winning Bid'}
                                             </Button>
@@ -686,6 +1005,20 @@ const BiddingCenter = () => {
                                             <Alert severity="info" sx={{ mb: 1 }}>
                                               Bidding is still active. You can finalize after the bidding ends.
                                             </Alert>
+                                          )}
+                                          {/* Rate Buyer button for finalized listings (inactive with winning bid) */}
+                                          {!listing.isActive && 
+                                           bids.length > 0 && 
+                                           bids[0]?.isWinning && (
+                                            <Box sx={{ mt: 1 }}>
+                                              <RatingButton
+                                                toUserId={bids[0]?.userId}
+                                                toUserName={bids[0]?.userName}
+                                                listingId={listing.listingId}
+                                                listingTitle={listing.title}
+                                                onRated={handleRateUser}
+                                              />
+                                            </Box>
                                           )}
                                         </>
                                       )}
@@ -830,6 +1163,17 @@ const BiddingCenter = () => {
           )}
         </div>
       </div>
+
+      {/* Rating Dialog */}
+      <RatingDialog
+        open={ratingDialog.open}
+        onClose={() => setRatingDialog({ ...ratingDialog, open: false })}
+        onSuccess={handleRatingSuccess}
+        toUserId={ratingDialog.toUserId}
+        toUserName={ratingDialog.toUserName}
+        listingId={ratingDialog.listingId}
+        listingTitle={ratingDialog.listingTitle}
+      />
     </>
   );
 };

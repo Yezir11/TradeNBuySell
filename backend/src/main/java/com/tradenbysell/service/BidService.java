@@ -6,9 +6,11 @@ import com.tradenbysell.exception.InsufficientFundsException;
 import com.tradenbysell.exception.ResourceNotFoundException;
 import com.tradenbysell.model.Bid;
 import com.tradenbysell.model.Listing;
+import com.tradenbysell.model.ListingImage;
 import com.tradenbysell.model.User;
 import com.tradenbysell.repository.BidRepository;
 import com.tradenbysell.repository.ListingRepository;
+import com.tradenbysell.repository.ListingImageRepository;
 import com.tradenbysell.repository.UserRepository;
 import com.tradenbysell.service.WalletService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -27,6 +29,9 @@ public class BidService {
 
     @Autowired
     private ListingRepository listingRepository;
+
+    @Autowired
+    private ListingImageRepository listingImageRepository;
 
     @Autowired
     private UserRepository userRepository;
@@ -175,6 +180,12 @@ public class BidService {
         Listing listing = listingRepository.findById(bid.getListingId()).orElse(null);
         if (listing != null) {
             dto.setListingTitle(listing.getTitle());
+            
+            // Get the first image URL for the listing
+            List<ListingImage> images = listingImageRepository.findByListingIdOrderByDisplayOrderAsc(listing.getListingId());
+            if (images != null && !images.isEmpty()) {
+                dto.setListingImageUrl(images.get(0).getImageUrl());
+            }
         }
 
         return dto;

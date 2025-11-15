@@ -13,8 +13,10 @@ body {
     sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  background: #f2f4f5;
-  color: #002f34;
+  background: var(--tbs-bg);
+  color: var(--tbs-text);
+  min-height: 100vh;
+  overflow-x: hidden;
 }
 
 code {

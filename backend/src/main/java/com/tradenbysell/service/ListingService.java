@@ -415,6 +415,80 @@ public class ListingService {
         return toDTO(listing);
     }
 
+    /**
+     * Edit a listing by creating a new listing and deactivating the old one.
+     * The new listing will go through moderation when images are added.
+     */
+    @Transactional
+    public ListingDTO editListingAsNew(String userId, String oldListingId, ListingCreateDTO editDTO) {
+        // Verify the old listing exists and belongs to the user
+        Listing oldListing = listingRepository.findById(oldListingId)
+                .orElseThrow(() -> new ResourceNotFoundException("Listing not found"));
+
+        if (!oldListing.getUserId().equals(userId)) {
+            throw new BadRequestException("You can only edit your own listings");
+        }
+
+        // Validate: Price required if not tradeable and not biddable
+        if (!editDTO.getIsTradeable() && !editDTO.getIsBiddable()) {
+            if (editDTO.getPrice() == null || editDTO.getPrice().compareTo(BigDecimal.ZERO) <= 0) {
+                throw new BadRequestException("Price is required if listing is neither tradeable nor biddable");
+            }
+        }
+
+        // Validate: Bidding fields required if biddable
+        if (editDTO.getIsBiddable()) {
+            if (editDTO.getStartingPrice() == null || editDTO.getStartingPrice().compareTo(BigDecimal.ZERO) <= 0) {
+                throw new BadRequestException("Starting price is required for biddable listings");
+            }
+            if (editDTO.getBidIncrement() == null || editDTO.getBidIncrement().compareTo(BigDecimal.ZERO) <= 0) {
+                throw new BadRequestException("Bid increment is required for biddable listings");
+            }
+            if (editDTO.getBidStartTime() == null) {
+                throw new BadRequestException("Bid start time is required for biddable listings");
+            }
+            if (editDTO.getBidEndTime() == null) {
+                throw new BadRequestException("Bid end time is required for biddable listings");
+            }
+        }
+
+        // Validate: Tags required
+        if (editDTO.getTags() == null || editDTO.getTags().isEmpty()) {
+            throw new BadRequestException("At least one tag is required");
+        }
+
+        // Create a new listing with the edited data
+        Listing newListing = new Listing();
+        newListing.setUserId(userId);
+        newListing.setTitle(editDTO.getTitle());
+        newListing.setDescription(editDTO.getDescription());
+        newListing.setPrice(editDTO.getPrice());
+        newListing.setIsTradeable(editDTO.getIsTradeable());
+        newListing.setIsBiddable(editDTO.getIsBiddable());
+        newListing.setStartingPrice(editDTO.getStartingPrice());
+        newListing.setBidIncrement(editDTO.getBidIncrement());
+        newListing.setBidStartTime(editDTO.getBidStartTime());
+        newListing.setBidEndTime(editDTO.getBidEndTime());
+        newListing.setCategory(editDTO.getCategory());
+        newListing.setIsActive(true); // Will be set to false if flagged by moderation
+
+        newListing = listingRepository.save(newListing);
+
+        // Add tags to the new listing
+        for (String tag : editDTO.getTags()) {
+            ListingTag listingTag = new ListingTag();
+            listingTag.setListingId(newListing.getListingId());
+            listingTag.setTag(tag);
+            listingTagRepository.save(listingTag);
+        }
+
+        // Deactivate the old listing
+        oldListing.setIsActive(false);
+        listingRepository.save(oldListing);
+
+        return toDTO(newListing);
+    }
+
     @Transactional
     public void deactivateListing(String userId, String listingId) {
         Listing listing = listingRepository.findById(listingId)

@@ -40,7 +40,7 @@ const LandingPage = () => {
         <div className="landing-header">
           <div className="landing-header-container">
             <Link to="/" className="landing-logo">
-              <img src="/logo.png" alt="TradeNBuySell" className="landing-logo-img" />
+              <img src="/navbar-logo.svg" alt="TradeNBuySell" className="landing-logo-img" />
             </Link>
             <div style={{ flex: 1 }}></div>
             <Link to="/auth" className="login-button">Login</Link>
@@ -59,7 +59,7 @@ const LandingPage = () => {
       <div className="landing-header">
         <div className="landing-header-container">
           <Link to="/" className="landing-logo">
-            <img src="/logo.png" alt="TradeNBuySell" className="landing-logo-img" />
+            <img src="/navbar-logo.svg" alt="TradeNBuySell" className="landing-logo-img" />
           </Link>
           
           <form className="landing-search-form" onSubmit={(e) => { e.preventDefault(); navigate('/marketplace'); }}>

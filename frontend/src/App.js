@@ -14,6 +14,7 @@ import PasswordSetup from './pages/PasswordSetup';
 import Marketplace from './pages/Marketplace';
 import ListingDetails from './pages/ListingDetails';
 import PostListing from './pages/PostListing';
+import EditListing from './pages/EditListing';
 import MyProfile from './pages/MyProfile';
 import Wallet from './pages/Wallet';
 import TradeCenter from './pages/TradeCenter';
@@ -23,11 +24,36 @@ import AdminDashboard from './pages/AdminDashboard';
 
 const theme = createTheme({
   palette: {
+    mode: 'dark',
     primary: {
-      main: '#1976d2',
+      main: '#1C2F7A', // BITS Royal Blue
+      light: '#2d4287',
+      dark: '#13224F',
     },
     secondary: {
-      main: '#dc004e',
+      main: '#CFA349', // Campus Gold
+      light: '#d9b55d',
+      dark: '#b8903d',
+    },
+    success: {
+      main: '#28a745',
+    },
+    warning: {
+      main: '#FFD700', // BITS Yellow
+    },
+    error: {
+      main: '#D62332', // BITS Red
+    },
+    info: {
+      main: '#5FB7E5', // BITS Sky Blue
+    },
+    background: {
+      default: '#11152A', // --tbs-bg
+      paper: '#1B2136', // --tbs-bg-card
+    },
+    text: {
+      primary: '#F5F7FF', // --tbs-text
+      secondary: '#A6AEC5', // --tbs-text-muted
     },
   },
 });
@@ -56,6 +82,14 @@ function App() {
                 element={
                   <PrivateRoute>
                     <PostListing />
+                  </PrivateRoute>
+                }
+              />
+              <Route
+                path="/listing/:listingId/edit"
+                element={
+                  <PrivateRoute>
+                    <EditListing />
                   </PrivateRoute>
                 }
               />

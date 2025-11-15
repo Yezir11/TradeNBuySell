@@ -10,6 +10,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/ratings")
@@ -34,6 +35,16 @@ public class RatingController {
     public ResponseEntity<List<RatingDTO>> getUserRatings(@PathVariable String userId) {
         List<RatingDTO> ratings = ratingService.getUserRatings(userId);
         return ResponseEntity.ok(ratings);
+    }
+
+    @GetMapping("/can-rate")
+    public ResponseEntity<Map<String, Boolean>> canRateUser(
+            @RequestParam String toUserId,
+            @RequestParam(required = false) String listingId,
+            Authentication authentication) {
+        String fromUserId = authUtil.getUserId(authentication);
+        boolean canRate = ratingService.canRateUser(fromUserId, toUserId, listingId);
+        return ResponseEntity.ok(Map.of("canRate", canRate));
     }
 
     public static class CreateRatingRequest {

@@ -29,5 +29,19 @@ public interface PurchaseOfferRepository extends JpaRepository<PurchaseOffer, St
     
     @Query("SELECT COUNT(p) FROM PurchaseOffer p WHERE p.listingId = :listingId AND p.status = 'PENDING'")
     long countPendingOffersByListing(@Param("listingId") String listingId);
+    
+    // Check if two users have completed a purchase transaction
+    @Query("SELECT COUNT(p) > 0 FROM PurchaseOffer p WHERE " +
+           "p.status = 'ACCEPTED' AND p.listingId = :listingId AND " +
+           "((p.buyerId = :userId1 AND p.sellerId = :userId2) OR " +
+           "(p.buyerId = :userId2 AND p.sellerId = :userId1))")
+    boolean haveCompletedPurchaseForListing(@Param("userId1") String userId1, @Param("userId2") String userId2, @Param("listingId") String listingId);
+    
+    // Check if two users have any completed purchase transaction
+    @Query("SELECT COUNT(p) > 0 FROM PurchaseOffer p WHERE " +
+           "p.status = 'ACCEPTED' AND " +
+           "((p.buyerId = :userId1 AND p.sellerId = :userId2) OR " +
+           "(p.buyerId = :userId2 AND p.sellerId = :userId1))")
+    boolean haveCompletedPurchase(@Param("userId1") String userId1, @Param("userId2") String userId2);
 }
 

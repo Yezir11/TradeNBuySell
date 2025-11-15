@@ -185,7 +185,7 @@ const PostListing = () => {
                   required={!formData.isTradeable && !formData.isBiddable}
                 />
                 {!formData.isTradeable && !formData.isBiddable && (
-                  <small style={{ color: '#666', display: 'block', marginTop: '4px' }}>
+                  <small style={{ color: 'var(--tbs-text-muted)', display: 'block', marginTop: '4px' }}>
                     Required if not tradeable or biddable
                   </small>
                 )}
@@ -326,7 +326,7 @@ const PostListing = () => {
                 </div>
               )}
               {images.length === 0 && !uploading && (
-                <small style={{ color: '#d32f2f', display: 'block', marginTop: '4px' }}>
+                <small style={{ color: 'var(--tbs-red)', display: 'block', marginTop: '4px' }}>
                   At least one image is required
                 </small>
               )}

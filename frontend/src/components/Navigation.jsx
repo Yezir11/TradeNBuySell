@@ -1,6 +1,7 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link, NavLink, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import api from '../services/api';
 import './Navigation.css';
 
 const Navigation = () => {
@@ -8,6 +9,7 @@ const Navigation = () => {
   const navigate = useNavigate();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isUserDropdownOpen, setIsUserDropdownOpen] = useState(false);
+  const [unreadCount, setUnreadCount] = useState(0);
 
   // Don't show user dropdown if loading or no user
   const showUserDropdown = isAuthenticated && user && !loading;
@@ -27,11 +29,34 @@ const Navigation = () => {
     setIsMobileMenuOpen(false);
   };
 
+  // Fetch unread message count
+  useEffect(() => {
+    if (!isAuthenticated || !user || loading) {
+      setUnreadCount(0);
+      return;
+    }
+
+    const fetchUnreadCount = async () => {
+      try {
+        const response = await api.get('/api/chat/unread-count');
+        setUnreadCount(response.data.unreadCount || 0);
+      } catch (err) {
+        console.error('Failed to fetch unread count:', err);
+        setUnreadCount(0);
+      }
+    };
+
+    fetchUnreadCount();
+    // Poll every 10 seconds for new messages
+    const interval = setInterval(fetchUnreadCount, 10000);
+    return () => clearInterval(interval);
+  }, [isAuthenticated, user, loading]);
+
   return (
     <nav className="navbar">
       <div className="navbar-container">
         <Link to="/" className="navbar-brand">
-          <img src="/logo.png" alt="TradeNBuySell" className="navbar-logo" />
+          <img src="/navbar-logo.svg" alt="TradeNBuySell" className="navbar-logo" />
         </Link>
 
         <div className="menu-icon" onClick={toggleMobileMenu}>
@@ -45,7 +70,12 @@ const Navigation = () => {
               <NavLink to="/post-listing" onClick={() => setIsMobileMenuOpen(false)}>Post Listing</NavLink>
               <NavLink to="/trades" onClick={() => setIsMobileMenuOpen(false)}>Trades</NavLink>
               <NavLink to="/bids" onClick={() => setIsMobileMenuOpen(false)}>Bidding Center</NavLink>
-              <NavLink to="/chat" onClick={() => setIsMobileMenuOpen(false)}>Chat</NavLink>
+              <NavLink to="/chat" onClick={() => setIsMobileMenuOpen(false)} className="chat-link">
+                Chat
+                {unreadCount > 0 && (
+                  <span className="unread-badge">{unreadCount > 99 ? '99+' : unreadCount}</span>
+                )}
+              </NavLink>
               {isAdmin() && (
                 <NavLink to="/admin" onClick={() => setIsMobileMenuOpen(false)}>Admin Dashboard</NavLink>
               )}

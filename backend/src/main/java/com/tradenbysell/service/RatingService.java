@@ -34,6 +34,9 @@ public class RatingService {
 
     @Autowired
     private BidRepository bidRepository;
+    
+    @Autowired
+    private com.tradenbysell.repository.PurchaseOfferRepository purchaseOfferRepository;
 
     @Transactional
     public RatingDTO createRating(String fromUserId, String toUserId, Integer ratingValue,
@@ -73,9 +76,17 @@ public class RatingService {
                      bidRepository.hasWinningBidForListing(fromUserId, listingId)) {
                 hasValidTransaction = true;
             }
+            // Check if they have completed a purchase transaction for this listing
+            else if (purchaseOfferRepository.haveCompletedPurchaseForListing(fromUserId, toUserId, listingId)) {
+                hasValidTransaction = true;
+            }
         } else {
             // If no listing specified, check if they have any completed trade
             if (tradeRepository.haveCompletedTrade(fromUserId, toUserId)) {
+                hasValidTransaction = true;
+            }
+            // Check if they have any completed purchase transaction
+            else if (purchaseOfferRepository.haveCompletedPurchase(fromUserId, toUserId)) {
                 hasValidTransaction = true;
             }
         }
@@ -106,6 +117,53 @@ public class RatingService {
         return ratingRepository.findByToUserIdOrderByTimestampDesc(userId).stream()
                 .map(this::toDTO)
                 .collect(Collectors.toList());
+    }
+
+    /**
+     * Check if a user can rate another user (has completed transaction and hasn't rated yet)
+     */
+    public boolean canRateUser(String fromUserId, String toUserId, String listingId) {
+        if (fromUserId.equals(toUserId)) {
+            return false;
+        }
+
+        // Check if already rated
+        if (listingId != null) {
+            if (ratingRepository.findByFromUserIdAndToUserIdAndListingId(fromUserId, toUserId, listingId).isPresent()) {
+                return false; // Already rated for this listing
+            }
+        }
+
+        // Check if they have a completed transaction
+        boolean hasValidTransaction = false;
+        
+        if (listingId != null) {
+            Listing listing = listingRepository.findById(listingId).orElse(null);
+            if (listing != null) {
+                // Check for completed trade
+                if (tradeRepository.haveCompletedTradeForListing(fromUserId, toUserId, listingId)) {
+                    hasValidTransaction = true;
+                }
+                // Check for winning bid
+                else if (listing.getUserId().equals(toUserId) && 
+                         bidRepository.hasWinningBidForListing(fromUserId, listingId)) {
+                    hasValidTransaction = true;
+                }
+                // Check for completed purchase
+                else if (purchaseOfferRepository.haveCompletedPurchaseForListing(fromUserId, toUserId, listingId)) {
+                    hasValidTransaction = true;
+                }
+            }
+        } else {
+            // Check for any completed transaction
+            if (tradeRepository.haveCompletedTrade(fromUserId, toUserId)) {
+                hasValidTransaction = true;
+            } else if (purchaseOfferRepository.haveCompletedPurchase(fromUserId, toUserId)) {
+                hasValidTransaction = true;
+            }
+        }
+
+        return hasValidTransaction;
     }
 
     @Transactional

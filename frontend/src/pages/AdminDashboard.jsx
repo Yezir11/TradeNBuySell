@@ -162,12 +162,12 @@ const AdminDashboard = () => {
 
           {error && (
             <div className="error-message" style={{
-              background: '#ffebee',
-              color: '#c62828',
+              background: 'rgba(214, 35, 50, 0.15)',
+              color: 'var(--tbs-red)',
               padding: '12px',
               borderRadius: '4px',
               marginBottom: '20px',
-              border: '1px solid #ef5350'
+              border: '1px solid var(--tbs-red)'
             }}>
               {error}
               <button 
@@ -380,17 +380,18 @@ const AdminDashboard = () => {
               </div>
 
               <div className="moderation-setting-card" style={{
-                background: '#f5f5f5',
+                background: 'var(--tbs-bg-elevated)',
                 padding: '20px',
                 borderRadius: '8px',
                 marginBottom: '20px',
                 display: 'flex',
                 justifyContent: 'space-between',
-                alignItems: 'center'
+                alignItems: 'center',
+                border: '1px solid var(--tbs-border)'
               }}>
                 <div>
-                  <h3 style={{ margin: '0 0 8px 0' }}>Mandatory Moderation for New Postings</h3>
-                  <p style={{ margin: 0, color: '#666', fontSize: '14px' }}>
+                  <h3 style={{ margin: '0 0 8px 0', color: 'var(--tbs-text)' }}>Mandatory Moderation for New Postings</h3>
+                  <p style={{ margin: 0, color: 'var(--tbs-text-muted)', fontSize: '14px' }}>
                     {mandatoryModerationEnabled 
                       ? 'All new postings must go through ML moderation before being activated'
                       : 'Moderation is optional - postings can be created without moderation'}
@@ -400,8 +401,8 @@ const AdminDashboard = () => {
                   onClick={handleToggleMandatoryModeration}
                   style={{
                     padding: '10px 20px',
-                    backgroundColor: mandatoryModerationEnabled ? '#4caf50' : '#f44336',
-                    color: 'white',
+                    backgroundColor: mandatoryModerationEnabled ? 'var(--tbs-success)' : 'var(--tbs-red)',
+                    color: 'var(--tbs-text)',
                     border: 'none',
                     borderRadius: '4px',
                     cursor: 'pointer',

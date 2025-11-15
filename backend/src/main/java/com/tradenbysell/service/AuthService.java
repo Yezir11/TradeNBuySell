@@ -62,7 +62,7 @@ public class AuthService {
         user.setFullName(request.getFullName());
         user.setRole(User.Role.STUDENT);
         user.setWalletBalance(new java.math.BigDecimal("1000.00"));
-        user.setTrustScore(0.0f);
+        user.setTrustScore(3.0f); // Default trust score (prior mean in Bayesian average calculation);
         user.setRegisteredAt(java.time.LocalDateTime.now());
         user.setIsSuspended(false);
 

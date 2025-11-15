@@ -58,6 +58,13 @@ public class ChatController {
         chatService.reportMessage(userId, messageId, request.getReason());
         return ResponseEntity.ok().build();
     }
+    
+    @GetMapping("/unread-count")
+    public ResponseEntity<UnreadCountResponse> getUnreadCount(Authentication authentication) {
+        String userId = authUtil.getUserId(authentication);
+        Long count = chatService.getUnreadMessageCount(userId);
+        return ResponseEntity.ok(new UnreadCountResponse(count));
+    }
 
     public static class SendMessageRequest {
         private String receiverId;
@@ -98,6 +105,24 @@ public class ChatController {
 
         public void setReason(String reason) {
             this.reason = reason;
+        }
+    }
+    
+    public static class UnreadCountResponse {
+        private Long unreadCount;
+        
+        public UnreadCountResponse() {}
+        
+        public UnreadCountResponse(Long unreadCount) {
+            this.unreadCount = unreadCount;
+        }
+        
+        public Long getUnreadCount() {
+            return unreadCount;
+        }
+        
+        public void setUnreadCount(Long unreadCount) {
+            this.unreadCount = unreadCount;
         }
     }
 }

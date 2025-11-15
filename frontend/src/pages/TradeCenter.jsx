@@ -3,6 +3,7 @@ import { useNavigate, useSearchParams, Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import api from '../services/api';
 import MarketplaceHeader from '../components/MarketplaceHeader';
+import RatingDialog from '../components/RatingDialog';
 import './TradeCenter.css';
 
 const TradeCenter = () => {
@@ -25,11 +26,26 @@ const TradeCenter = () => {
   });
   const [error, setError] = useState('');
   const [checkingListings, setCheckingListings] = useState(false);
+  const [ratingDialog, setRatingDialog] = useState({
+    open: false,
+    toUserId: null,
+    toUserName: null,
+    listingId: null,
+    listingTitle: null
+  });
+  const [canRateMap, setCanRateMap] = useState({}); // Map of tradeId -> { canRate: boolean }
 
   useEffect(() => {
     fetchTrades();
     fetchMyTradeableListings();
   }, []);
+
+  useEffect(() => {
+    // Check rating eligibility for completed trades
+    if (trades.length > 0 && user?.userId) {
+      checkRatingEligibility();
+    }
+  }, [trades, user?.userId]);
 
   useEffect(() => {
     if (listingId) {
@@ -53,13 +69,65 @@ const TradeCenter = () => {
 
   const fetchTrades = async () => {
     try {
+      // Fetch all trades for the user (both as initiator and recipient)
       const response = await api.get('/api/trades');
-      setTrades(response.data);
+      setTrades(response.data || []);
     } catch (err) {
       console.error('Failed to fetch trades:', err);
+      setTrades([]);
     } finally {
       setLoading(false);
     }
+  };
+
+  const checkRatingEligibility = async () => {
+    const completedTrades = trades.filter(t => t.status === 'COMPLETED');
+    const newCanRateMap = { ...canRateMap };
+
+    for (const trade of completedTrades) {
+      const otherUserId = trade.initiatorId === user?.userId 
+        ? trade.recipientId 
+        : trade.initiatorId;
+      const otherUserName = trade.initiatorId === user?.userId
+        ? trade.recipientName
+        : trade.initiatorName;
+
+      try {
+        const response = await api.get(`/api/ratings/can-rate?toUserId=${otherUserId}&listingId=${trade.requestedListingId}`);
+        newCanRateMap[trade.tradeId] = {
+          canRate: response.data.canRate,
+          toUserId: otherUserId,
+          toUserName: otherUserName,
+          listingId: trade.requestedListingId,
+          listingTitle: trade.requestedListingTitle
+        };
+      } catch (err) {
+        console.error(`Failed to check rating eligibility for trade ${trade.tradeId}:`, err);
+        newCanRateMap[trade.tradeId] = { canRate: false };
+      }
+    }
+
+    setCanRateMap(newCanRateMap);
+  };
+
+  const handleRateUser = (trade) => {
+    const ratingInfo = canRateMap[trade.tradeId];
+    if (ratingInfo && ratingInfo.canRate) {
+      setRatingDialog({
+        open: true,
+        toUserId: ratingInfo.toUserId,
+        toUserName: ratingInfo.toUserName,
+        listingId: ratingInfo.listingId,
+        listingTitle: ratingInfo.listingTitle
+      });
+    }
+  };
+
+  const handleRatingSuccess = () => {
+    // Refresh rating eligibility
+    checkRatingEligibility();
+    // Refresh trades to get updated data
+    fetchTrades();
   };
 
   const fetchMyTradeableListings = async () => {
@@ -176,20 +244,43 @@ const TradeCenter = () => {
       return;
     }
     
+    // Ensure we have the selected listing data (recipient's userId)
+    let targetListing = selectedListing;
+    if (!targetListing || targetListing.listingId !== tradeForm.requestedListingId) {
+      try {
+        const response = await api.get(`/api/listings/${tradeForm.requestedListingId}`);
+        targetListing = response.data;
+      } catch (err) {
+        setError('Failed to fetch listing details');
+        return;
+      }
+    }
+
+    const recipientId = targetListing.userId;
+    if (!recipientId) {
+      setError('Could not determine recipient');
+      return;
+    }
+
     try {
+      // Create the trade
       const tradeData = {
         requestedListingId: tradeForm.requestedListingId,
         offeringListingIds: tradeForm.offeringListingIds.length > 0 ? tradeForm.offeringListingIds : [],
         cashAdjustmentAmount: tradeForm.cashAdjustmentAmount ? parseFloat(tradeForm.cashAdjustmentAmount) : null
       };
-      await api.post('/api/trades', tradeData);
+      const tradeResponse = await api.post('/api/trades', tradeData);
+      const trade = tradeResponse.data;
+      
+      // Close modal and reset form
       setShowTradeModal(false);
       setTradeForm({ requestedListingId: '', offeringListingIds: [], cashAdjustmentAmount: '' });
       setFormStep(1);
       setSelectedListing(null);
       setError('');
+      
+      // Refresh trades and stay on trades page
       fetchTrades();
-      navigate('/trades');
     } catch (err) {
       setError(err.response?.data?.message || 'Failed to create trade');
     }
@@ -221,6 +312,19 @@ const TradeCenter = () => {
     setTradeForm({ requestedListingId: '', offeringListingIds: [], cashAdjustmentAmount: '' });
     setSelectedListing(null);
     setError('');
+  };
+
+  const getImageUrl = (imageUrl) => {
+    if (!imageUrl) return null;
+    if (imageUrl.startsWith('http://') || imageUrl.startsWith('https://')) {
+      return imageUrl;
+    }
+    if (imageUrl.startsWith('/')) {
+      const backendUrl = process.env.REACT_APP_API_URL || 'http://localhost:8080';
+      return `${backendUrl}${imageUrl}`;
+    }
+    const backendUrl = process.env.REACT_APP_API_URL || 'http://localhost:8080';
+    return `${backendUrl}/${imageUrl}`;
   };
 
   if (loading) {
@@ -454,9 +558,9 @@ const TradeCenter = () => {
                       />
                       <small>
                         {tradeForm.cashAdjustmentAmount && parseFloat(tradeForm.cashAdjustmentAmount) > 0 ? (
-                          <span style={{ color: '#28a745' }}>You will pay ₹{Math.abs(parseFloat(tradeForm.cashAdjustmentAmount)).toFixed(2)} extra</span>
+                          <span style={{ color: 'var(--tbs-success)' }}>You will pay ₹{Math.abs(parseFloat(tradeForm.cashAdjustmentAmount)).toFixed(2)} extra</span>
                         ) : tradeForm.cashAdjustmentAmount && parseFloat(tradeForm.cashAdjustmentAmount) < 0 ? (
-                          <span style={{ color: '#dc3545' }}>You will receive ₹{Math.abs(parseFloat(tradeForm.cashAdjustmentAmount)).toFixed(2)} from the other party</span>
+                          <span style={{ color: 'var(--tbs-red)' }}>You will receive ₹{Math.abs(parseFloat(tradeForm.cashAdjustmentAmount)).toFixed(2)} from the other party</span>
                         ) : (
                           'Optional: Enter positive amount to pay extra, negative amount to receive cash'
                         )}
@@ -487,7 +591,7 @@ const TradeCenter = () => {
                         {tradeForm.cashAdjustmentAmount && parseFloat(tradeForm.cashAdjustmentAmount) !== 0 && (
                           <div className="trade-summary-item">
                             <strong>Cash Adjustment:</strong>
-                            <p style={{ color: parseFloat(tradeForm.cashAdjustmentAmount) > 0 ? '#28a745' : '#dc3545' }}>
+                            <p style={{ color: parseFloat(tradeForm.cashAdjustmentAmount) > 0 ? 'var(--tbs-success)' : 'var(--tbs-red)' }}>
                               {parseFloat(tradeForm.cashAdjustmentAmount) > 0 
                                 ? `+₹${parseFloat(tradeForm.cashAdjustmentAmount).toFixed(2)} (You pay extra)`
                                 : `-₹${Math.abs(parseFloat(tradeForm.cashAdjustmentAmount)).toFixed(2)} (You receive)`}
@@ -528,33 +632,105 @@ const TradeCenter = () => {
 
                     <div className="trade-details">
                       <div className="trade-side">
-                        <h4>You {trade.initiatorId === user?.userId ? '(Initiator)' : '(Recipient)'}</h4>
+                        <div className="trade-side-header">
+                          <h4>
+                            {trade.initiatorId === user?.userId 
+                              ? `You (Initiator)` 
+                              : `You (Recipient)`}
+                          </h4>
+                          {trade.initiatorId === user?.userId && trade.initiatorName && (
+                            <span className="trade-role-badge">You initiated this trade</span>
+                          )}
+                          {trade.initiatorId !== user?.userId && trade.recipientName && (
+                            <span className="trade-role-badge">Trade proposed to you</span>
+                          )}
+                        </div>
                         {trade.initiatorId === user?.userId ? (
                           trade.offeringListingTitles && trade.offeringListingTitles.length > 0 ? (
-                            <ul>
+                            <ul className="trade-listings-list">
                               {trade.offeringListingTitles.map((title, index) => (
-                                <li key={index}>{title}</li>
+                                <li key={index} className="trade-listing-item">
+                                  {trade.offeringListingImageUrls && trade.offeringListingImageUrls[index] && (
+                                    <img 
+                                      src={getImageUrl(trade.offeringListingImageUrls[index]) || 'https://via.placeholder.com/80x80?text=No+Image'} 
+                                      alt={title}
+                                      className="trade-listing-image"
+                                      onError={(e) => {
+                                        e.target.src = 'https://via.placeholder.com/80x80?text=No+Image';
+                                      }}
+                                    />
+                                  )}
+                                  <span className="trade-listing-title">{title}</span>
+                                </li>
                               ))}
                             </ul>
                           ) : (
                             <p>No offerings</p>
                           )
                         ) : (
-                          <p>{trade.requestedListingTitle}</p>
+                          <div className="trade-listing-item">
+                            {trade.requestedListingImageUrl && (
+                              <img 
+                                src={getImageUrl(trade.requestedListingImageUrl) || 'https://via.placeholder.com/80x80?text=No+Image'} 
+                                alt={trade.requestedListingTitle}
+                                className="trade-listing-image"
+                                onError={(e) => {
+                                  e.target.src = 'https://via.placeholder.com/80x80?text=No+Image';
+                                }}
+                              />
+                            )}
+                            <span className="trade-listing-title">{trade.requestedListingTitle}</span>
+                          </div>
                         )}
                       </div>
 
-                      <div className="trade-arrow">⇄</div>
+                      <div className="trade-arrow" style={{ color: 'var(--tbs-gold)', fontSize: '2.5rem' }}>⇄</div>
 
                       <div className="trade-side">
-                        <h4>{trade.initiatorId === user?.userId ? 'Recipient' : 'Initiator'}</h4>
+                        <div className="trade-side-header">
+                          <h4>
+                            {trade.initiatorId === user?.userId 
+                              ? `${trade.recipientName || 'Recipient'}` 
+                              : `${trade.initiatorName || 'Initiator'}`}
+                          </h4>
+                          {trade.initiatorId === user?.userId && (
+                            <span className="trade-role-badge">Recipient</span>
+                          )}
+                          {trade.initiatorId !== user?.userId && (
+                            <span className="trade-role-badge">Initiator</span>
+                          )}
+                        </div>
                         {trade.initiatorId === user?.userId ? (
-                          <p>{trade.requestedListingTitle}</p>
+                          <div className="trade-listing-item">
+                            {trade.requestedListingImageUrl && (
+                              <img 
+                                src={getImageUrl(trade.requestedListingImageUrl) || 'https://via.placeholder.com/80x80?text=No+Image'} 
+                                alt={trade.requestedListingTitle}
+                                className="trade-listing-image"
+                                onError={(e) => {
+                                  e.target.src = 'https://via.placeholder.com/80x80?text=No+Image';
+                                }}
+                              />
+                            )}
+                            <span className="trade-listing-title">{trade.requestedListingTitle}</span>
+                          </div>
                         ) : (
                           trade.offeringListingTitles && trade.offeringListingTitles.length > 0 ? (
-                            <ul>
+                            <ul className="trade-listings-list">
                               {trade.offeringListingTitles.map((title, index) => (
-                                <li key={index}>{title}</li>
+                                <li key={index} className="trade-listing-item">
+                                  {trade.offeringListingImageUrls && trade.offeringListingImageUrls[index] && (
+                                    <img 
+                                      src={getImageUrl(trade.offeringListingImageUrls[index]) || 'https://via.placeholder.com/80x80?text=No+Image'} 
+                                      alt={title}
+                                      className="trade-listing-image"
+                                      onError={(e) => {
+                                        e.target.src = 'https://via.placeholder.com/80x80?text=No+Image';
+                                      }}
+                                    />
+                                  )}
+                                  <span className="trade-listing-title">{title}</span>
+                                </li>
                               ))}
                             </ul>
                           ) : (
@@ -566,8 +742,9 @@ const TradeCenter = () => {
 
                     {trade.cashAdjustmentAmount && parseFloat(trade.cashAdjustmentAmount) !== 0 && (
                       <div className="cash-adjustment" style={{ 
-                        backgroundColor: parseFloat(trade.cashAdjustmentAmount) > 0 ? '#e7f3ff' : '#ffe7e7',
-                        color: parseFloat(trade.cashAdjustmentAmount) > 0 ? '#0066cc' : '#cc0000'
+                        backgroundColor: parseFloat(trade.cashAdjustmentAmount) > 0 ? 'var(--tbs-bg-elevated)' : 'var(--tbs-bg-elevated)',
+                        color: parseFloat(trade.cashAdjustmentAmount) > 0 ? 'var(--tbs-info)' : 'var(--tbs-red)',
+                        border: `1px solid ${parseFloat(trade.cashAdjustmentAmount) > 0 ? 'var(--tbs-info)' : 'var(--tbs-red)'}`
                       }}>
                         Cash Adjustment: 
                         {trade.initiatorId === user?.userId ? (
@@ -583,6 +760,7 @@ const TradeCenter = () => {
                     )}
 
                     <div className="trade-actions">
+                      {/* Action buttons based on trade status and user role */}
                       {trade.status === 'PENDING' && trade.recipientId === user?.userId && (
                         <>
                           <button
@@ -597,6 +775,15 @@ const TradeCenter = () => {
                           >
                             Reject
                           </button>
+                          <button
+                            onClick={() => {
+                              // Navigate to create new trade with the same requested listing
+                              navigate(`/trades?listingId=${trade.requestedListingId}`);
+                            }}
+                            className="ask-new-proposal-btn"
+                          >
+                            Ask New Proposal
+                          </button>
                         </>
                       )}
                       {trade.status === 'PENDING' && trade.initiatorId === user?.userId && (
@@ -607,8 +794,41 @@ const TradeCenter = () => {
                           Cancel
                         </button>
                       )}
-                      <Link to={`/trade/${trade.tradeId}`} className="view-btn">
-                        View Details
+                      {(trade.status === 'REJECTED' && trade.initiatorId !== user?.userId) && (
+                        <button
+                          onClick={() => {
+                            // Navigate to create new trade with the same requested listing
+                            navigate(`/trades?listingId=${trade.requestedListingId}`);
+                          }}
+                          className="ask-new-proposal-btn"
+                        >
+                          Ask New Proposal
+                        </button>
+                      )}
+                      {/* Rate User button for completed trades */}
+                      {trade.status === 'COMPLETED' && canRateMap[trade.tradeId]?.canRate && (
+                        <button
+                          onClick={() => handleRateUser(trade)}
+                          className="rate-user-btn"
+                          style={{
+                            backgroundColor: 'var(--tbs-gold)',
+                            color: 'var(--tbs-bg)',
+                            border: 'none',
+                            padding: '8px 16px',
+                            borderRadius: '4px',
+                            cursor: 'pointer',
+                            fontWeight: 'bold'
+                          }}
+                        >
+                          ⭐ Rate User
+                        </button>
+                      )}
+                      {/* Chat button - always available for both users */}
+                      <Link 
+                        to={`/chat?userId=${trade.initiatorId === user?.userId ? trade.recipientId : trade.initiatorId}&listingId=${trade.requestedListingId}`}
+                        className="chat-btn"
+                      >
+                        Chat
                       </Link>
                     </div>
 
@@ -625,6 +845,17 @@ const TradeCenter = () => {
           </div>
         </div>
       </div>
+
+      {/* Rating Dialog */}
+      <RatingDialog
+        open={ratingDialog.open}
+        onClose={() => setRatingDialog({ ...ratingDialog, open: false })}
+        onSuccess={handleRatingSuccess}
+        toUserId={ratingDialog.toUserId}
+        toUserName={ratingDialog.toUserName}
+        listingId={ratingDialog.listingId}
+        listingTitle={ratingDialog.listingTitle}
+      />
     </>
   );
 };

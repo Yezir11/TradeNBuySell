@@ -41,7 +41,7 @@ public class User {
     private BigDecimal walletBalance = new BigDecimal("1000.00");
 
     @Column(name = "trust_score")
-    private Float trustScore = 0.0f;
+    private Float trustScore = 3.0f; // Default trust score (prior mean in Bayesian average calculation)
 
     @Column(name = "registered_at")
     private LocalDateTime registeredAt;

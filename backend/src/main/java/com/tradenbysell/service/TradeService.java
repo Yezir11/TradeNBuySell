@@ -14,6 +14,7 @@ import com.tradenbysell.repository.TradeOfferingRepository;
 import com.tradenbysell.repository.TradeRepository;
 import com.tradenbysell.repository.UserRepository;
 import com.tradenbysell.service.WalletService;
+import com.tradenbysell.service.ChatService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -40,6 +41,12 @@ public class TradeService {
 
     @Autowired
     private WalletService walletService;
+    
+    @Autowired
+    private ChatService chatService;
+    
+    @Autowired
+    private com.tradenbysell.repository.ListingImageRepository listingImageRepository;
 
     @Transactional
     public TradeDTO createTrade(String initiatorId, String requestedListingId, 
@@ -58,13 +65,6 @@ public class TradeService {
 
         if (requestedListing.getUserId().equals(initiatorId)) {
             throw new BadRequestException("Cannot trade with your own listing");
-        }
-
-        User recipient = userRepository.findById(requestedListing.getUserId())
-                .orElseThrow(() -> new ResourceNotFoundException("Recipient not found"));
-
-        if (recipient.getTrustScore() == null || recipient.getTrustScore() < 3.0f) {
-            throw new BadRequestException("Recipient does not meet trust score requirements (minimum 3.0)");
         }
 
         // Validate cash adjustment and check funds
@@ -110,18 +110,7 @@ public class TradeService {
             }
         }
 
-        // Hold funds based on cash adjustment direction
-        if (cashAdjustmentAmount != null && cashAdjustmentAmount.compareTo(BigDecimal.ZERO) != 0) {
-            BigDecimal absAmount = cashAdjustmentAmount.abs();
-            if (cashAdjustmentAmount.compareTo(BigDecimal.ZERO) > 0) {
-                // Initiator pays extra - hold from initiator
-                walletService.holdFunds(initiatorId, absAmount, trade.getTradeId());
-            } else {
-                // Recipient pays extra - hold from recipient
-                walletService.holdFunds(requestedListing.getUserId(), absAmount, trade.getTradeId());
-            }
-        }
-
+        // No longer holding funds - funds will be transferred immediately on acceptance
         return toDTO(trade);
     }
 
@@ -145,10 +134,25 @@ public class TradeService {
             throw new BadRequestException("Requested listing is no longer active");
         }
 
-        trade.setStatus(Trade.TradeStatus.ACCEPTED);
-        trade.setResolvedAt(LocalDateTime.now());
-        trade = tradeRepository.save(trade);
+        // Transfer funds immediately on acceptance
+        if (trade.getCashAdjustmentAmount() != null && trade.getCashAdjustmentAmount().compareTo(BigDecimal.ZERO) != 0) {
+            BigDecimal absAmount = trade.getCashAdjustmentAmount().abs();
+            if (trade.getCashAdjustmentAmount().compareTo(BigDecimal.ZERO) > 0) {
+                // Initiator pays extra - debit from initiator and credit to recipient
+                walletService.debitFunds(trade.getInitiatorId(), absAmount,
+                        WalletTransaction.TransactionReason.TRADE, tradeId, "Trade cash adjustment - payment to recipient");
+                walletService.creditFunds(trade.getRecipientId(), absAmount,
+                        WalletTransaction.TransactionReason.TRADE, tradeId, "Trade cash adjustment - received from initiator");
+            } else {
+                // Recipient pays extra - debit from recipient and credit to initiator
+                walletService.debitFunds(trade.getRecipientId(), absAmount,
+                        WalletTransaction.TransactionReason.TRADE, tradeId, "Trade cash adjustment - payment to initiator");
+                walletService.creditFunds(trade.getInitiatorId(), absAmount,
+                        WalletTransaction.TransactionReason.TRADE, tradeId, "Trade cash adjustment - received from recipient");
+            }
+        }
 
+        // Mark listings as inactive
         requestedListing.setIsActive(false);
         listingRepository.save(requestedListing);
 
@@ -160,20 +164,36 @@ public class TradeService {
             listingRepository.save(offeringListing);
         }
 
-        // Handle cash adjustment transfer on trade acceptance
+        // Set status to COMPLETED for rating validation
+        trade.setStatus(Trade.TradeStatus.COMPLETED);
+        trade.setResolvedAt(LocalDateTime.now());
+        trade = tradeRepository.save(trade);
+
+        // Notify both users about trade completion
+        User initiator = userRepository.findById(trade.getInitiatorId()).orElse(null);
+        User recipient = userRepository.findById(trade.getRecipientId()).orElse(null);
+        
+        String tradeMessage = String.format("✅ Trade Completed!\n\nYour trade has been completed. You can now rate each other to update trust scores.");
         if (trade.getCashAdjustmentAmount() != null && trade.getCashAdjustmentAmount().compareTo(BigDecimal.ZERO) != 0) {
             BigDecimal absAmount = trade.getCashAdjustmentAmount().abs();
             if (trade.getCashAdjustmentAmount().compareTo(BigDecimal.ZERO) > 0) {
-                // Initiator pays extra - release from initiator and credit to recipient
-                walletService.releaseFunds(trade.getInitiatorId(), absAmount, tradeId);
-                walletService.creditFunds(trade.getRecipientId(), absAmount,
-                        WalletTransaction.TransactionReason.TRADE, tradeId, "Trade cash adjustment - received from initiator");
+                tradeMessage += String.format("\n\nCash adjustment: ₹%s transferred from %s to %s", 
+                        absAmount.toPlainString(), 
+                        initiator != null ? initiator.getFullName() : "initiator",
+                        recipient != null ? recipient.getFullName() : "recipient");
             } else {
-                // Recipient pays extra - release from recipient and credit to initiator
-                walletService.releaseFunds(trade.getRecipientId(), absAmount, tradeId);
-                walletService.creditFunds(trade.getInitiatorId(), absAmount,
-                        WalletTransaction.TransactionReason.TRADE, tradeId, "Trade cash adjustment - received from recipient");
+                tradeMessage += String.format("\n\nCash adjustment: ₹%s transferred from %s to %s", 
+                        absAmount.toPlainString(), 
+                        recipient != null ? recipient.getFullName() : "recipient",
+                        initiator != null ? initiator.getFullName() : "initiator");
             }
+        }
+        
+        // Notify initiator
+        if (initiator != null && recipient != null) {
+            chatService.sendMessage(recipient.getUserId(), initiator.getUserId(), tradeMessage, trade.getRequestedListingId());
+            // Notify recipient
+            chatService.sendMessage(initiator.getUserId(), recipient.getUserId(), tradeMessage, trade.getRequestedListingId());
         }
 
         return toDTO(trade);
@@ -196,18 +216,7 @@ public class TradeService {
         trade.setResolvedAt(LocalDateTime.now());
         trade = tradeRepository.save(trade);
 
-        // Release held funds on trade rejection
-        if (trade.getCashAdjustmentAmount() != null && trade.getCashAdjustmentAmount().compareTo(BigDecimal.ZERO) != 0) {
-            BigDecimal absAmount = trade.getCashAdjustmentAmount().abs();
-            if (trade.getCashAdjustmentAmount().compareTo(BigDecimal.ZERO) > 0) {
-                // Release from initiator
-                walletService.releaseFunds(trade.getInitiatorId(), absAmount, tradeId);
-            } else {
-                // Release from recipient
-                walletService.releaseFunds(trade.getRecipientId(), absAmount, tradeId);
-            }
-        }
-
+        // No funds to release - funds are only transferred on acceptance
         return toDTO(trade);
     }
 
@@ -228,23 +237,27 @@ public class TradeService {
         trade.setResolvedAt(LocalDateTime.now());
         trade = tradeRepository.save(trade);
 
-        // Release held funds on trade rejection
-        if (trade.getCashAdjustmentAmount() != null && trade.getCashAdjustmentAmount().compareTo(BigDecimal.ZERO) != 0) {
-            BigDecimal absAmount = trade.getCashAdjustmentAmount().abs();
-            if (trade.getCashAdjustmentAmount().compareTo(BigDecimal.ZERO) > 0) {
-                // Release from initiator
-                walletService.releaseFunds(trade.getInitiatorId(), absAmount, tradeId);
-            } else {
-                // Release from recipient
-                walletService.releaseFunds(trade.getRecipientId(), absAmount, tradeId);
-            }
-        }
-
+        // No funds to release - funds are only transferred on acceptance
         return toDTO(trade);
     }
 
-    public List<TradeDTO> getUserTrades(String userId) {
-        return tradeRepository.findByInitiatorIdOrRecipientIdOrderByCreatedAtDesc(userId, userId).stream()
+    public List<TradeDTO> getUserTrades(String userId, String status) {
+        List<Trade> trades = tradeRepository.findByInitiatorIdOrRecipientIdOrderByCreatedAtDesc(userId, userId);
+        
+        // Filter by status if provided
+        if (status != null && !status.isEmpty()) {
+            try {
+                Trade.TradeStatus tradeStatus = Trade.TradeStatus.valueOf(status.toUpperCase());
+                trades = trades.stream()
+                        .filter(t -> t.getStatus() == tradeStatus)
+                        .collect(Collectors.toList());
+            } catch (IllegalArgumentException e) {
+                // Invalid status, return empty list
+                return new java.util.ArrayList<>();
+            }
+        }
+        
+        return trades.stream()
                 .map(this::toDTO)
                 .collect(Collectors.toList());
     }
@@ -279,6 +292,11 @@ public class TradeService {
         Listing requestedListing = listingRepository.findById(trade.getRequestedListingId()).orElse(null);
         if (requestedListing != null) {
             dto.setRequestedListingTitle(requestedListing.getTitle());
+            // Get first image URL for requested listing
+            List<com.tradenbysell.model.ListingImage> requestedImages = listingImageRepository.findByListingIdOrderByDisplayOrderAsc(requestedListing.getListingId());
+            if (requestedImages != null && !requestedImages.isEmpty()) {
+                dto.setRequestedListingImageUrl(requestedImages.get(0).getImageUrl());
+            }
         }
 
         List<TradeOffering> offerings = tradeOfferingRepository.findByTradeId(trade.getTradeId());
@@ -287,6 +305,16 @@ public class TradeService {
                 .map(offering -> listingRepository.findById(offering.getListingId()).orElse(null))
                 .filter(listing -> listing != null)
                 .map(Listing::getTitle)
+                .collect(Collectors.toList()));
+        // Get image URLs for offering listings
+        dto.setOfferingListingImageUrls(offerings.stream()
+                .map(offering -> {
+                    List<com.tradenbysell.model.ListingImage> images = listingImageRepository.findByListingIdOrderByDisplayOrderAsc(offering.getListingId());
+                    if (images != null && !images.isEmpty()) {
+                        return images.get(0).getImageUrl();
+                    }
+                    return null;
+                })
                 .collect(Collectors.toList()));
 
         return dto;

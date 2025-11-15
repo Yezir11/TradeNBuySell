@@ -7,6 +7,8 @@ import com.tradenbysell.model.User;
 import com.tradenbysell.model.WalletTransaction;
 import com.tradenbysell.repository.UserRepository;
 import com.tradenbysell.repository.WalletTransactionRepository;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.PersistenceContext;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -22,6 +24,9 @@ public class WalletService {
 
     @Autowired
     private WalletTransactionRepository walletTransactionRepository;
+    
+    @PersistenceContext
+    private EntityManager entityManager;
 
     public BigDecimal getBalance(String userId) {
         User user = userRepository.findById(userId)
@@ -46,6 +51,7 @@ public class WalletService {
 
         user.setWalletBalance(user.getWalletBalance().add(amount));
         userRepository.save(user);
+        entityManager.flush(); // Force immediate persistence
 
         WalletTransaction transaction = new WalletTransaction();
         transaction.setUserId(userId);
@@ -75,6 +81,7 @@ public class WalletService {
 
         user.setWalletBalance(user.getWalletBalance().subtract(amount));
         userRepository.save(user);
+        entityManager.flush(); // Force immediate persistence
 
         WalletTransaction transaction = new WalletTransaction();
         transaction.setUserId(userId);
@@ -101,6 +108,7 @@ public class WalletService {
 
         user.setWalletBalance(user.getWalletBalance().add(amount));
         userRepository.save(user);
+        entityManager.flush(); // Force immediate persistence
 
         WalletTransaction transaction = new WalletTransaction();
         transaction.setUserId(userId);

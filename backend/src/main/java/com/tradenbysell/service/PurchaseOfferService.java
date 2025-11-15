@@ -72,10 +72,6 @@ public class PurchaseOfferService {
         User seller = userRepository.findById(listing.getUserId())
                 .orElseThrow(() -> new ResourceNotFoundException("Seller not found"));
         
-        if (seller.getTrustScore() == null || seller.getTrustScore() < 3.0f) {
-            throw new BadRequestException("Seller does not meet trust score requirements (minimum 3.0)");
-        }
-        
         // Validate offer amount
         if (offerAmount == null || offerAmount.compareTo(BigDecimal.ZERO) <= 0) {
             throw new BadRequestException("Offer amount must be greater than zero");
@@ -142,8 +138,13 @@ public class PurchaseOfferService {
             throw new InsufficientFundsException("Buyer has insufficient funds");
         }
         
-        // Hold funds in escrow
-        walletService.holdFunds(offer.getBuyerId(), finalAmount, offerId);
+        // Transfer funds immediately on acceptance (no escrow)
+        walletService.debitFunds(offer.getBuyerId(), finalAmount,
+                com.tradenbysell.model.WalletTransaction.TransactionReason.PURCHASE, 
+                offerId, String.format("Purchase of listing: %s", listing.getTitle()));
+        walletService.creditFunds(offer.getSellerId(), finalAmount,
+                com.tradenbysell.model.WalletTransaction.TransactionReason.SALE, 
+                offerId, String.format("Sale of listing: %s", listing.getTitle()));
         
         // Update offer
         offer.setStatus(PurchaseOffer.OfferStatus.ACCEPTED);
@@ -154,14 +155,88 @@ public class PurchaseOfferService {
         listing.setIsActive(false);
         listingRepository.save(listing);
         
-        // Send acceptance message
-        String acceptMessage = String.format("✅ Offer Accepted!\n\nYour offer of ₹%s has been accepted by the seller.", 
-                finalAmount.toPlainString());
+        // Notify both users about purchase completion
+        User buyer = userRepository.findById(offer.getBuyerId()).orElse(null);
+        User seller = userRepository.findById(offer.getSellerId()).orElse(null);
+        
+        String acceptMessage = String.format("✅ Purchase Completed!\n\nYour offer of ₹%s has been accepted. Payment of ₹%s has been transferred. You can now rate each other to update trust scores.", 
+                finalAmount.toPlainString(), finalAmount.toPlainString());
         chatService.sendOfferStatusMessage(offer.getSellerId(), offer.getBuyerId(), offer.getListingId(), 
                 offer.getOfferId(), "OFFER_ACCEPTED", acceptMessage);
         
-        User buyer = userRepository.findById(offer.getBuyerId()).orElse(null);
+        // Also send notification to seller
+        String sellerMessage = String.format("✅ Sale Completed!\n\nYou accepted the offer of ₹%s. Payment of ₹%s has been received. You can now rate the buyer to update trust scores.", 
+                finalAmount.toPlainString(), finalAmount.toPlainString());
+        chatService.sendOfferStatusMessage(offer.getBuyerId(), offer.getSellerId(), offer.getListingId(), 
+                offer.getOfferId(), "OFFER_ACCEPTED", sellerMessage);
+        
+        return toDTO(offer, listing, buyer, seller);
+    }
+    
+    @Transactional
+    public PurchaseOfferDTO acceptCounterOfferByBuyer(String buyerId, String offerId) {
+        PurchaseOffer offer = purchaseOfferRepository.findById(offerId)
+                .orElseThrow(() -> new ResourceNotFoundException("Offer not found"));
+        
+        if (!offer.getBuyerId().equals(buyerId)) {
+            throw new BadRequestException("Only the buyer can accept their own counter offer");
+        }
+        
+        if (offer.getStatus() != PurchaseOffer.OfferStatus.COUNTERED) {
+            throw new BadRequestException("Offer is not in countered status");
+        }
+        
+        if (offer.getCounterOfferAmount() == null) {
+            throw new BadRequestException("No counter offer amount available");
+        }
+        
+        // Check listing is still active
+        Listing listing = listingRepository.findById(offer.getListingId())
+                .orElseThrow(() -> new ResourceNotFoundException("Listing not found"));
+        
+        if (!listing.getIsActive()) {
+            throw new BadRequestException("Listing is no longer active");
+        }
+        
+        // Check buyer has sufficient funds for the counter offer amount
+        BigDecimal finalAmount = offer.getCounterOfferAmount();
+        
+        BigDecimal buyerBalance = walletService.getBalance(buyerId);
+        if (buyerBalance.compareTo(finalAmount) < 0) {
+            throw new InsufficientFundsException("You have insufficient funds for this counter offer");
+        }
+        
+        // Transfer funds immediately on acceptance (no escrow) - direct transfer
+        walletService.debitFunds(buyerId, finalAmount,
+                com.tradenbysell.model.WalletTransaction.TransactionReason.PURCHASE, 
+                offerId, String.format("Purchase of listing: %s (counter offer accepted)", listing.getTitle()));
+        walletService.creditFunds(offer.getSellerId(), finalAmount,
+                com.tradenbysell.model.WalletTransaction.TransactionReason.SALE, 
+                offerId, String.format("Sale of listing: %s (counter offer accepted)", listing.getTitle()));
+        
+        // Update offer
+        offer.setStatus(PurchaseOffer.OfferStatus.ACCEPTED);
+        offer.setAcceptedAt(LocalDateTime.now());
+        offer = purchaseOfferRepository.save(offer);
+        
+        // Mark listing as reserved/sold
+        listing.setIsActive(false);
+        listingRepository.save(listing);
+        
+        // Notify both users about purchase completion
+        User buyer = userRepository.findById(buyerId).orElse(null);
         User seller = userRepository.findById(offer.getSellerId()).orElse(null);
+        
+        String acceptMessage = String.format("✅ Purchase Completed!\n\nYou accepted the counter offer of ₹%s. Payment of ₹%s has been transferred directly. You can now rate each other to update trust scores.", 
+                finalAmount.toPlainString(), finalAmount.toPlainString());
+        chatService.sendOfferStatusMessage(offer.getSellerId(), buyerId, offer.getListingId(), 
+                offer.getOfferId(), "OFFER_ACCEPTED", acceptMessage);
+        
+        // Also send notification to seller
+        String sellerMessage = String.format("✅ Sale Completed!\n\nThe buyer accepted your counter offer of ₹%s. Payment of ₹%s has been received directly. You can now rate the buyer to update trust scores.", 
+                finalAmount.toPlainString(), finalAmount.toPlainString());
+        chatService.sendOfferStatusMessage(buyerId, offer.getSellerId(), offer.getListingId(), 
+                offer.getOfferId(), "OFFER_ACCEPTED", sellerMessage);
         
         return toDTO(offer, listing, buyer, seller);
     }

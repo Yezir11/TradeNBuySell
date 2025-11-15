@@ -13,6 +13,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -55,6 +56,7 @@ public class ChatService {
         return toDTO(message);
     }
 
+    @Transactional
     public List<ChatMessageDTO> getConversation(String userId1, String userId2) {
         // Get messages in both directions
         List<ChatMessage> messages1 = chatMessageRepository.findBySenderIdAndReceiverIdOrderByTimestampAsc(userId1, userId2);
@@ -67,9 +69,23 @@ public class ChatService {
         // Sort by timestamp
         allMessages.sort((m1, m2) -> m1.getTimestamp().compareTo(m2.getTimestamp()));
         
+        // Mark messages sent to userId1 as read
+        LocalDateTime now = LocalDateTime.now();
+        for (ChatMessage message : messages2) {
+            if (message.getReceiverId().equals(userId1) && (message.getIsRead() == null || !message.getIsRead())) {
+                message.setIsRead(true);
+                message.setReadAt(now);
+                chatMessageRepository.save(message);
+            }
+        }
+        
         return allMessages.stream()
                 .map(this::toDTO)
                 .collect(Collectors.toList());
+    }
+    
+    public Long getUnreadMessageCount(String userId) {
+        return chatMessageRepository.countByReceiverIdAndIsReadFalse(userId);
     }
 
     public List<ChatMessageDTO> getUserConversations(String userId) {
@@ -125,6 +141,20 @@ public class ChatService {
         return toDTO(message);
     }
 
+    @Transactional
+    public ChatMessageDTO sendTradeMessage(String senderId, String receiverId, String listingId, String tradeId, String messageText) {
+        ChatMessage message = new ChatMessage();
+        message.setSenderId(senderId);
+        message.setReceiverId(receiverId);
+        message.setListingId(listingId);
+        message.setTradeId(tradeId);
+        message.setMessageText(messageText);
+        message.setMessageType("TRADE_PROPOSAL");
+        message.setIsReported(false);
+        message = chatMessageRepository.save(message);
+        return toDTO(message);
+    }
+
     private ChatMessageDTO toDTO(ChatMessage message) {
         ChatMessageDTO dto = new ChatMessageDTO();
         dto.setMessageId(message.getMessageId());
@@ -134,8 +164,11 @@ public class ChatService {
         dto.setMessageText(message.getMessageText());
         dto.setMessageType(message.getMessageType());
         dto.setOfferId(message.getOfferId());
+        dto.setTradeId(message.getTradeId());
         dto.setTimestamp(message.getTimestamp());
         dto.setIsReported(message.getIsReported());
+        dto.setIsRead(message.getIsRead());
+        dto.setReadAt(message.getReadAt());
 
         User sender = userRepository.findById(message.getSenderId()).orElse(null);
         if (sender != null) {

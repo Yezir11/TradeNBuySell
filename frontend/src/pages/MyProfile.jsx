@@ -339,8 +339,15 @@ const MyProfile = () => {
             </Typography>
             <Chip 
               label={`Trust Score: ${profile.trustScore ? profile.trustScore.toFixed(1) : 'N/A'}`} 
-              color="primary" 
-              variant="outlined"
+              sx={{
+                backgroundColor: 'var(--tbs-gold)',
+                color: '#11152A',
+                borderColor: 'var(--tbs-gold)',
+                fontWeight: 'bold',
+                '&:hover': {
+                  backgroundColor: 'var(--tbs-gold-light)',
+                }
+              }}
             />
             <Chip 
               label={`Wallet: ₹${profile.walletBalance ? parseFloat(profile.walletBalance).toFixed(2) : '0.00'}`} 
@@ -462,7 +469,7 @@ const MyProfile = () => {
                           '&:hover': {
                             boxShadow: 4,
                           },
-                          borderLeft: `4px solid ${isActive ? '#1976d2' : '#d32f2f'}`,
+                          borderLeft: `4px solid ${isActive ? 'var(--tbs-primary)' : 'var(--tbs-red)'}`,
                         }}
                         onClick={() => navigate(`/listing/${listing.listingId}`)}
                       >
@@ -583,7 +590,14 @@ const MyProfile = () => {
                                   </Button>
                                   <Button
                                     size="small"
-                                    color="primary"
+                                    sx={{
+                                      backgroundColor: 'var(--tbs-gold)',
+                                      color: '#11152A',
+                                      fontWeight: 'bold',
+                                      '&:hover': {
+                                        backgroundColor: 'var(--tbs-gold-light)',
+                                      }
+                                    }}
                                     onClick={(e) => handleSellFasterClick(listing.listingId, e)}
                                   >
                                     Sell faster now

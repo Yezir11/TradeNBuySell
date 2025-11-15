@@ -42,11 +42,20 @@ public class ChatMessage {
     @Column(name = "offer_id", length = 36, columnDefinition = "CHAR(36)")
     private String offerId; // Reference to purchase offer if message type is offer-related
 
+    @Column(name = "trade_id", length = 36, columnDefinition = "CHAR(36)")
+    private String tradeId; // Reference to trade if message type is trade-related
+
     @CreationTimestamp
     @Column(name = "timestamp")
     private LocalDateTime timestamp;
 
     @Column(name = "is_reported")
     private Boolean isReported = false;
+    
+    @Column(name = "is_read")
+    private Boolean isRead = false;
+    
+    @Column(name = "read_at")
+    private LocalDateTime readAt;
 }
 

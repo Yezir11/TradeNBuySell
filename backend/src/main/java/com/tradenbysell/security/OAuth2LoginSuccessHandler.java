@@ -49,7 +49,7 @@ public class OAuth2LoginSuccessHandler extends SimpleUrlAuthenticationSuccessHan
             user.setFullName(name != null ? name : email.split("@")[0]);
             user.setRole(User.Role.STUDENT);
             user.setWalletBalance(new java.math.BigDecimal("1000.00"));
-            user.setTrustScore(0.0f);
+            user.setTrustScore(3.0f); // Default trust score (prior mean in Bayesian average calculation);
             user.setIsSuspended(false);
             user.setRegisteredAt(java.time.LocalDateTime.now());
             userRepository.save(user);

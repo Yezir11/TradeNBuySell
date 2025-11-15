@@ -198,100 +198,11 @@ const Marketplace = () => {
             )}
           </div>
 
-          {/* Page Title */}
-          <div className="marketplace-title-section">
-            <h1>{totalElements} Listings in Marketplace</h1>
-            {category && <p>Browse {category.toLowerCase()} listings on TradeNBuySell</p>}
-          </div>
-
           <div className="marketplace-content">
-            {/* Left Sidebar - Filters */}
-            <div className="marketplace-sidebar">
-              <div className="sidebar-section">
-                <h3>CATEGORIES</h3>
-                <div className="category-filters">
-                  <button
-                    className={`category-filter-item ${!category ? 'active' : ''}`}
-                    onClick={() => handleCategoryClick('')}
-                  >
-                    All Categories
-                  </button>
-                  {categories.map(cat => (
-                    <button
-                      key={cat}
-                      className={`category-filter-item ${category === cat ? 'active' : ''}`}
-                      onClick={() => handleCategoryClick(cat)}
-                    >
-                      {cat}
-                    </button>
-                  ))}
-                </div>
-              </div>
-
-              <div className="sidebar-section">
-                <h3>BUDGET</h3>
-                <div className="budget-filter">
-                  <div className="price-inputs">
-                    <input
-                      type="number"
-                      id="minPrice"
-                      placeholder="Min"
-                      value={minPrice || ''}
-                      onChange={(e) => setMinPrice(parseInt(e.target.value) || 0)}
-                      onBlur={handleApplyPriceFilter}
-                    />
-                    <span>to</span>
-                    <input
-                      type="number"
-                      id="maxPrice"
-                      placeholder="Max"
-                      value={maxPrice === 200000 ? '' : maxPrice}
-                      onChange={(e) => setMaxPrice(parseInt(e.target.value) || 200000)}
-                      onBlur={handleApplyPriceFilter}
-                    />
-                  </div>
-                  <div className="price-slider-wrapper">
-                    <input
-                      type="range"
-                      min="0"
-                      max="200000"
-                      step="1000"
-                      value={priceRange[0]}
-                      onChange={(e) => {
-                        const newMin = parseInt(e.target.value);
-                        setPriceRange([newMin, priceRange[1]]);
-                        setMinPrice(newMin);
-                      }}
-                      className="price-slider"
-                    />
-                    <input
-                      type="range"
-                      min="0"
-                      max="200000"
-                      step="1000"
-                      value={priceRange[1]}
-                      onChange={(e) => {
-                        const newMax = parseInt(e.target.value);
-                        setPriceRange([priceRange[0], newMax]);
-                        setMaxPrice(newMax);
-                      }}
-                      className="price-slider"
-                    />
-                  </div>
-                  <button className="apply-filter-btn" onClick={handleApplyPriceFilter}>
-                    Apply
-                  </button>
-                </div>
-              </div>
-            </div>
-
             {/* Main Content Area */}
             <div className="marketplace-main">
               {/* Listings Info and Sort */}
               <div className="listings-header">
-                <div className="listings-count">
-                  {totalElements} {totalElements === 1 ? 'ad' : 'ads'} in Marketplace
-                </div>
                 <div className="sort-options">
                   <span>SORT BY:</span>
                   <select value={sortBy} onChange={(e) => setSortBy(e.target.value)} className="sort-select">
@@ -325,6 +236,9 @@ const Marketplace = () => {
                             <div className="listing-image-wrapper">
                               {listing.isFeatured && (
                                 <div className="featured-tag-olx">FEATURED</div>
+                              )}
+                              {listing.isTradeable && (
+                                <div className={`tradeable-tag-olx ${listing.isFeatured ? 'featured-active' : ''}`}>TRADEABLE</div>
                               )}
                               {listing.imageUrls && listing.imageUrls.length > 0 ? (
                                 <img src={listing.imageUrls[0]} alt={listing.title} className="listing-image-olx" />

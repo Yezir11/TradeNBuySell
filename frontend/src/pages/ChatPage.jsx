@@ -3,6 +3,8 @@ import { useSearchParams, Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import api from '../services/api';
 import MarketplaceHeader from '../components/MarketplaceHeader';
+import RatingDialog from '../components/RatingDialog';
+import RatingButton from '../components/RatingButton';
 import './ChatPage.css';
 
 const ChatPage = () => {
@@ -19,11 +21,23 @@ const ChatPage = () => {
   const [sending, setSending] = useState(false);
   const [listingContext, setListingContext] = useState(null);
   const [offers, setOffers] = useState({}); // Map of offerId -> offer details
+  const [trades, setTrades] = useState({}); // Map of tradeId -> trade details
   const [showCounterModal, setShowCounterModal] = useState(false);
   const [selectedOffer, setSelectedOffer] = useState(null);
   const [counterAmount, setCounterAmount] = useState('');
   const [counterMessage, setCounterMessage] = useState('');
   const [processingOffer, setProcessingOffer] = useState(false);
+  const [processingTrade, setProcessingTrade] = useState(false);
+  const [ratingDialog, setRatingDialog] = useState({
+    open: false,
+    toUserId: null,
+    toUserName: null,
+    listingId: null,
+    listingTitle: null
+  });
+  const [canRateCache, setCanRateCache] = useState({}); // Cache for rating eligibility
+  const [shouldShowRateButton, setShouldShowRateButton] = useState(false);
+  const [rateButtonInfo, setRateButtonInfo] = useState({ toUserId: null, toUserName: null, listingId: null, listingTitle: null });
   const messagesEndRef = useRef(null);
   const messagesRef = useRef(null);
 
@@ -71,12 +85,105 @@ const ChatPage = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [messages]);
 
+  // Fetch trade details for messages with tradeId
+  useEffect(() => {
+    const tradeIds = messages
+      .filter(m => m.tradeId && !trades[m.tradeId])
+      .map(m => m.tradeId);
+    
+    if (tradeIds.length > 0) {
+      tradeIds.forEach(tradeId => {
+        fetchTradeDetails(tradeId);
+      });
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [messages]);
+
+  // Check if rating button should be shown (above message input)
+  useEffect(() => {
+    const checkRatingEligibilityForConversation = async () => {
+      if (!activeConversation || !messages.length || !user?.userId) {
+        setShouldShowRateButton(false);
+        return;
+      }
+
+      // Find completed transactions (offers or trades) in this conversation
+      const completedOffer = messages.find(m => 
+        m.messageType === 'OFFER_ACCEPTED' && 
+        m.offerId && 
+        offers[m.offerId]?.status === 'ACCEPTED'
+      );
+
+      const completedTrade = messages.find(m => 
+        m.tradeId && 
+        trades[m.tradeId]?.status === 'COMPLETED'
+      );
+
+      if (completedOffer) {
+        const offer = offers[completedOffer.offerId];
+        const toUserId = offer.sellerId === user.userId ? offer.buyerId : offer.sellerId;
+        const toUserName = offer.sellerId === user.userId ? offer.buyerName : offer.sellerName;
+        
+        try {
+          const canRate = await checkCanRate(toUserId, offer.listingId, `offer-${completedOffer.offerId}`);
+          if (canRate) {
+            setShouldShowRateButton(true);
+            setRateButtonInfo({
+              toUserId,
+              toUserName: toUserName || 'User',
+              listingId: offer.listingId,
+              listingTitle: offer.listingTitle
+            });
+            return;
+          }
+        } catch (err) {
+          console.error('Failed to check rating eligibility:', err);
+        }
+      }
+
+      if (completedTrade) {
+        const trade = trades[completedTrade.tradeId];
+        const otherUserId = trade.initiatorId === user.userId ? trade.recipientId : trade.initiatorId;
+        const otherUserName = trade.initiatorId === user.userId ? trade.recipientName : trade.initiatorName;
+        
+        try {
+          const canRate = await checkCanRate(otherUserId, trade.requestedListingId, `trade-${completedTrade.tradeId}`);
+          if (canRate) {
+            setShouldShowRateButton(true);
+            setRateButtonInfo({
+              toUserId: otherUserId,
+              toUserName: otherUserName || 'User',
+              listingId: trade.requestedListingId,
+              listingTitle: trade.requestedListingTitle
+            });
+            return;
+          }
+        } catch (err) {
+          console.error('Failed to check rating eligibility:', err);
+        }
+      }
+
+      setShouldShowRateButton(false);
+    };
+
+    checkRatingEligibilityForConversation();
+  }, [messages, offers, trades, activeConversation, user?.userId]);
+
   const fetchOfferDetails = async (offerId) => {
     try {
       const response = await api.get(`/api/offers/${offerId}`);
       setOffers(prev => ({ ...prev, [offerId]: response.data }));
     } catch (err) {
       console.error('Failed to fetch offer details:', err);
+    }
+  };
+
+  const fetchTradeDetails = async (tradeId) => {
+    try {
+      const response = await api.get(`/api/trades/${tradeId}`);
+      setTrades(prev => ({ ...prev, [tradeId]: response.data }));
+    } catch (err) {
+      console.error('Failed to fetch trade details:', err);
     }
   };
 
@@ -87,7 +194,25 @@ const ChatPage = () => {
   const fetchConversations = async () => {
     try {
       const response = await api.get('/api/chat/conversations');
-      setConversations(response.data);
+      const allConversations = response.data || [];
+      
+      // Group by user and keep only the most recent conversation per user
+      const conversationsMap = new Map();
+      allConversations.forEach(conv => {
+        const partnerId = conv.senderId === user?.userId ? conv.receiverId : conv.senderId;
+        const existing = conversationsMap.get(partnerId);
+        
+        // Keep the most recent conversation with this user
+        if (!existing || new Date(conv.timestamp) > new Date(existing.timestamp)) {
+          conversationsMap.set(partnerId, conv);
+        }
+      });
+      
+      // Convert map to array and sort by timestamp (most recent first)
+      const uniqueConversations = Array.from(conversationsMap.values())
+        .sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+      
+      setConversations(uniqueConversations);
     } catch (err) {
       console.error('Failed to fetch conversations:', err);
     } finally {
@@ -152,14 +277,14 @@ const ChatPage = () => {
   };
 
   const handleAcceptOffer = async (offerId) => {
-    if (!window.confirm('Are you sure you want to accept this offer? The buyer\'s funds will be held in escrow.')) {
+    if (!window.confirm('Are you sure you want to accept this offer? Funds will be transferred immediately from the buyer\'s wallet to yours.')) {
       return;
     }
     
     setProcessingOffer(true);
     try {
       await api.post(`/api/offers/${offerId}/accept`);
-      alert('Offer accepted! Funds have been held in escrow. The buyer will be notified.');
+      alert('Offer accepted! Funds have been transferred directly. The buyer will be notified.');
       await fetchMessages(activeConversation);
       await fetchOfferDetails(offerId);
     } catch (err) {
@@ -190,14 +315,17 @@ const ChatPage = () => {
   };
 
   const handleAcceptCounterOffer = async (offerId) => {
-    if (!window.confirm('Are you sure you want to accept the counter offer? Your funds will be held in escrow.')) {
+    const offer = offers[offerId];
+    const counterAmount = offer?.counterOfferAmount || offer?.offerAmount || 0;
+    
+    if (!window.confirm(`Are you sure you want to accept the counter offer of ₹${parseFloat(counterAmount).toFixed(2)}? Funds will be transferred immediately from your wallet to the seller's wallet.`)) {
       return;
     }
     
     setProcessingOffer(true);
     try {
-      await api.post(`/api/offers/${offerId}/accept`);
-      alert('Counter offer accepted! Funds have been held in escrow.');
+      await api.post(`/api/offers/${offerId}/accept-counter`);
+      alert(`Counter offer accepted! Payment of ₹${parseFloat(counterAmount).toFixed(2)} has been transferred directly to the seller.`);
       await fetchMessages(activeConversation);
       await fetchOfferDetails(offerId);
     } catch (err) {
@@ -237,6 +365,44 @@ const ChatPage = () => {
     }
   };
 
+  const handleAcceptTrade = async (tradeId) => {
+    if (!window.confirm('Are you sure you want to accept this trade? Funds will be transferred immediately.')) {
+      return;
+    }
+    
+    setProcessingTrade(true);
+    try {
+      await api.post(`/api/trades/${tradeId}/accept`);
+      alert('Trade accepted! Funds have been transferred. You can now rate each other.');
+      await fetchMessages(activeConversation);
+      await fetchTradeDetails(tradeId);
+    } catch (err) {
+      console.error('Failed to accept trade:', err);
+      alert(err.response?.data?.message || 'Failed to accept trade');
+    } finally {
+      setProcessingTrade(false);
+    }
+  };
+
+  const handleRejectTrade = async (tradeId) => {
+    if (!window.confirm('Are you sure you want to reject this trade?')) {
+      return;
+    }
+    
+    setProcessingTrade(true);
+    try {
+      await api.post(`/api/trades/${tradeId}/reject`);
+      alert('Trade rejected. The initiator has been notified.');
+      await fetchMessages(activeConversation);
+      await fetchTradeDetails(tradeId);
+    } catch (err) {
+      console.error('Failed to reject trade:', err);
+      alert(err.response?.data?.message || 'Failed to reject trade');
+    } finally {
+      setProcessingTrade(false);
+    }
+  };
+
   const getConversationPartner = (message) => {
     return message.senderId === user?.userId ? message.receiverName : message.senderName;
   };
@@ -246,6 +412,52 @@ const ChatPage = () => {
       return conversation.receiverName;
     }
     return conversation.senderName;
+  };
+
+  const checkCanRate = async (toUserId, listingId, cacheKey) => {
+    // Check cache first
+    if (canRateCache[cacheKey] !== undefined) {
+      return canRateCache[cacheKey];
+    }
+
+    try {
+      const response = await api.get(`/api/ratings/can-rate?toUserId=${toUserId}${listingId ? `&listingId=${listingId}` : ''}`);
+      const canRate = response.data.canRate;
+      setCanRateCache(prev => ({ ...prev, [cacheKey]: canRate }));
+      return canRate;
+    } catch (err) {
+      console.error('Failed to check rating eligibility:', err);
+      return false;
+    }
+  };
+
+  const handleRateUser = async (toUserId, toUserName, listingId, listingTitle) => {
+    // Fetch listing title if not provided
+    let finalListingTitle = listingTitle;
+    if (!finalListingTitle && listingId) {
+      try {
+        const listingResponse = await api.get(`/api/listings/${listingId}`);
+        finalListingTitle = listingResponse.data.title;
+      } catch (err) {
+        console.error('Failed to fetch listing:', err);
+      }
+    }
+
+    setRatingDialog({
+      open: true,
+      toUserId,
+      toUserName: toUserName || 'User',
+      listingId,
+      listingTitle: finalListingTitle
+    });
+  };
+
+  const handleRatingSuccess = () => {
+    // Clear cache and refresh messages
+    setCanRateCache({});
+    if (activeConversation) {
+      fetchMessages(activeConversation);
+    }
   };
 
   if (loading) {
@@ -283,10 +495,6 @@ const ChatPage = () => {
                         {conv.listingTitle && (
                           <p className="listing-context">About: {conv.listingTitle}</p>
                         )}
-                        <p className="last-message">{conv.messageText}</p>
-                      </div>
-                      <div className="message-time">
-                        {new Date(conv.timestamp).toLocaleTimeString()}
                       </div>
                     </div>
                   );
@@ -363,8 +571,11 @@ const ChatPage = () => {
                       const isOwnMessage = message.senderId === user?.userId;
                       const isOfferMessage = message.messageType && 
                         ['PURCHASE_OFFER', 'OFFER_ACCEPTED', 'OFFER_REJECTED', 'OFFER_COUNTERED'].includes(message.messageType);
+                      const isTradeMessage = message.messageType === 'TRADE_PROPOSAL';
                       const offer = message.offerId ? offers[message.offerId] : null;
+                      const trade = message.tradeId ? trades[message.tradeId] : null;
                       const isSeller = offer && offer.sellerId === user?.userId;
+                      const isRecipient = trade && trade.recipientId === user?.userId;
                       
                       if (isOfferMessage && offer) {
                         return (
@@ -467,7 +678,22 @@ const ChatPage = () => {
                                   </button>
                                 </div>
                               )}
+
                               
+                              <span className="message-time">
+                                {new Date(message.timestamp).toLocaleTimeString()}
+                              </span>
+                            </div>
+                          </div>
+                        );
+                      }
+                      
+                      // Trade proposal message - show as regular message
+                      if (isTradeMessage && trade) {
+                        return (
+                          <div key={message.messageId} className={`message ${isOwnMessage ? 'own' : 'other'}`}>
+                            <div className="message-content">
+                              <p style={{ whiteSpace: 'pre-line' }}>{message.messageText}</p>
                               <span className="message-time">
                                 {new Date(message.timestamp).toLocaleTimeString()}
                               </span>
@@ -494,6 +720,24 @@ const ChatPage = () => {
                   )}
                   <div ref={messagesEndRef} />
                 </div>
+
+                {/* Rating Button - Horizontal above message input */}
+                {shouldShowRateButton && (
+                  <div className="rating-button-container">
+                    <button
+                      onClick={() => handleRateUser(
+                        rateButtonInfo.toUserId,
+                        rateButtonInfo.toUserName,
+                        rateButtonInfo.listingId,
+                        rateButtonInfo.listingTitle
+                      )}
+                      className="rate-user-button-horizontal"
+                    >
+                      ⭐ Rate {rateButtonInfo.toUserName || 'User'}
+                      {rateButtonInfo.listingTitle && ` - ${rateButtonInfo.listingTitle}`}
+                    </button>
+                  </div>
+                )}
 
                 <form onSubmit={handleSendMessage} className="message-input-form">
                   <input
@@ -572,6 +816,17 @@ const ChatPage = () => {
           </div>
         </div>
       )}
+
+      {/* Rating Dialog */}
+      <RatingDialog
+        open={ratingDialog.open}
+        onClose={() => setRatingDialog({ ...ratingDialog, open: false })}
+        onSuccess={handleRatingSuccess}
+        toUserId={ratingDialog.toUserId}
+        toUserName={ratingDialog.toUserName}
+        listingId={ratingDialog.listingId}
+        listingTitle={ratingDialog.listingTitle}
+      />
     </>
   );
 };
