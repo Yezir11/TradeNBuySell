@@ -2,7 +2,10 @@ package com.tradenbysell.controller;
 
 import com.tradenbysell.dto.ModerationLogDTO;
 import com.tradenbysell.dto.ModerationResponseDTO;
+import com.tradenbysell.model.ListingImage;
 import com.tradenbysell.model.ModerationLog;
+import com.tradenbysell.repository.ListingImageRepository;
+import com.tradenbysell.repository.ListingRepository;
 import com.tradenbysell.repository.ModerationLogRepository;
 import com.tradenbysell.service.ModerationService;
 import com.tradenbysell.util.AuthUtil;
@@ -16,6 +19,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
@@ -28,6 +32,12 @@ public class ModerationController {
     
     @Autowired
     private ModerationLogRepository moderationLogRepository;
+    
+    @Autowired
+    private ListingRepository listingRepository;
+    
+    @Autowired
+    private ListingImageRepository listingImageRepository;
     
     @Autowired
     private AuthUtil authUtil;
@@ -75,6 +85,7 @@ public class ModerationController {
             dto.setListingId(log.getListingId());
             dto.setUserId(log.getUser().getUserId());
             dto.setUserName(log.getUser().getFullName());
+            dto.setUserEmail(log.getUser().getEmail());
             dto.setPredictedLabel(log.getPredictedLabel());
             dto.setConfidence(log.getConfidence());
             dto.setShouldFlag(log.getShouldFlag());
@@ -84,6 +95,23 @@ public class ModerationController {
             dto.setTextExplanation(log.getTextExplanation());
             dto.setCreatedAt(log.getCreatedAt());
             dto.setUpdatedAt(log.getUpdatedAt());
+            
+            // Fetch listing details if listing exists
+            if (log.getListingId() != null) {
+                listingRepository.findById(log.getListingId()).ifPresent(listing -> {
+                    dto.setListingTitle(listing.getTitle());
+                    dto.setListingDescription(listing.getDescription());
+                    dto.setListingCategory(listing.getCategory());
+                    
+                    // Fetch listing images
+                    List<ListingImage> images = listingImageRepository.findByListingIdOrderByDisplayOrderAsc(log.getListingId());
+                    List<String> imageUrls = images.stream()
+                            .map(ListingImage::getImageUrl)
+                            .collect(Collectors.toList());
+                    dto.setListingImageUrls(imageUrls);
+                });
+            }
+            
             return dto;
         });
         

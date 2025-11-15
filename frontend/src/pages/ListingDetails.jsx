@@ -13,13 +13,28 @@ const ListingDetails = () => {
   const [error, setError] = useState('');
   const [isInWishlist, setIsInWishlist] = useState(false);
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
+  const [showOfferModal, setShowOfferModal] = useState(false);
+  const [offerAmount, setOfferAmount] = useState('');
+  const [offerMessage, setOfferMessage] = useState('');
+  const [submittingOffer, setSubmittingOffer] = useState(false);
+  const [walletBalance, setWalletBalance] = useState(null);
 
   useEffect(() => {
     fetchListing();
     if (isAuthenticated) {
       checkWishlist();
+      fetchWalletBalance();
     }
   }, [listingId, isAuthenticated]);
+
+  const fetchWalletBalance = async () => {
+    try {
+      const response = await api.get('/api/auth/profile');
+      setWalletBalance(response.data.walletBalance);
+    } catch (err) {
+      console.error('Failed to fetch wallet balance:', err);
+    }
+  };
 
   const fetchListing = async () => {
     try {
@@ -57,6 +72,54 @@ const ListingDetails = () => {
       }
     } catch (err) {
       console.error('Failed to update wishlist:', err);
+    }
+  };
+
+  const handleBuyNowClick = () => {
+    if (!isAuthenticated) {
+      const shouldSignIn = window.confirm('You need to sign in to make a purchase offer. Would you like to sign in now?');
+      if (shouldSignIn) {
+        window.location.href = '/auth';
+      }
+      return;
+    }
+
+    if (listing.price && parseFloat(listing.price) > 0) {
+      setShowOfferModal(true);
+      setOfferAmount(listing.price); // Pre-fill with listing price
+    } else {
+      alert('This listing does not have a price. It is trade-only.');
+    }
+  };
+
+  const handleSubmitOffer = async (e) => {
+    e.preventDefault();
+    
+    if (!offerAmount || parseFloat(offerAmount) <= 0) {
+      alert('Please enter a valid offer amount');
+      return;
+    }
+
+    setSubmittingOffer(true);
+    try {
+      await api.post('/api/offers', {
+        listingId: listingId,
+        offerAmount: parseFloat(offerAmount),
+        message: offerMessage
+      });
+      
+      alert('Your offer has been sent to the seller! Check your chat for updates.');
+      setShowOfferModal(false);
+      setOfferAmount('');
+      setOfferMessage('');
+      
+      // Navigate to chat with seller
+      window.location.href = `/chat?userId=${listing.userId}&listingId=${listingId}`;
+    } catch (err) {
+      console.error('Failed to submit offer:', err);
+      alert(err.response?.data?.message || 'Failed to submit offer. Please try again.');
+    } finally {
+      setSubmittingOffer(false);
     }
   };
 
@@ -152,6 +215,11 @@ const ListingDetails = () => {
                   <Link to={`/chat?userId=${listing.userId}&listingId=${listingId}`} className="contact-btn">
                     Contact Seller
                   </Link>
+                  {listing.price && parseFloat(listing.price) > 0 && !listing.isBiddable && (
+                    <button onClick={handleBuyNowClick} className="buy-now-btn">
+                      Buy Now
+                    </button>
+                  )}
                   {listing.isTradeable && (
                     <Link to={`/trades?listingId=${listingId}`} className="trade-btn">
                       Propose Trade
@@ -175,6 +243,73 @@ const ListingDetails = () => {
           </div>
         </div>
       </div>
+
+      {/* Offer Modal */}
+      {showOfferModal && (
+        <div className="modal-overlay" onClick={() => setShowOfferModal(false)}>
+          <div className="modal-content offer-modal" onClick={(e) => e.stopPropagation()}>
+            <div className="modal-header">
+              <h2>Make a Purchase Offer</h2>
+              <button className="close-btn" onClick={() => setShowOfferModal(false)}>×</button>
+            </div>
+            <div className="modal-body">
+              <div className="listing-summary">
+                {listing.imageUrls && listing.imageUrls.length > 0 && (
+                  <img src={listing.imageUrls[0]} alt={listing.title} className="listing-thumbnail" />
+                )}
+                <div>
+                  <h3>{listing.title}</h3>
+                  <p className="original-price">Original Price: ₹{listing.price}</p>
+                </div>
+              </div>
+              
+              <form onSubmit={handleSubmitOffer}>
+                <div className="form-group">
+                  <label htmlFor="offerAmount">Your Offer Amount (₹)</label>
+                  <input
+                    type="number"
+                    id="offerAmount"
+                    value={offerAmount}
+                    onChange={(e) => setOfferAmount(e.target.value)}
+                    min="1"
+                    step="0.01"
+                    required
+                    placeholder="Enter your offer"
+                  />
+                  {walletBalance !== null && (
+                    <p className="wallet-info">
+                      Your wallet balance: ₹{parseFloat(walletBalance).toFixed(2)}
+                      {parseFloat(offerAmount) > parseFloat(walletBalance) && (
+                        <span className="insufficient-funds"> (Insufficient funds)</span>
+                      )}
+                    </p>
+                  )}
+                </div>
+                
+                <div className="form-group">
+                  <label htmlFor="offerMessage">Message to Seller (Optional)</label>
+                  <textarea
+                    id="offerMessage"
+                    value={offerMessage}
+                    onChange={(e) => setOfferMessage(e.target.value)}
+                    rows="4"
+                    placeholder="Add a message to the seller..."
+                  />
+                </div>
+                
+                <div className="modal-actions">
+                  <button type="button" className="btn-cancel" onClick={() => setShowOfferModal(false)}>
+                    Cancel
+                  </button>
+                  <button type="submit" className="btn-submit" disabled={submittingOffer}>
+                    {submittingOffer ? 'Submitting...' : 'Place Offer'}
+                  </button>
+                </div>
+              </form>
+            </div>
+          </div>
+        </div>
+      )}
     </>
   );
 };

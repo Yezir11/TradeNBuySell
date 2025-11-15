@@ -31,5 +31,7 @@ public class ListingDTO {
     private String featuredType;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
+    private Boolean hasModerationLog; // True if listing has been flagged/modered
+    private Boolean isModeratedPending; // True if moderation is still pending
 }
 

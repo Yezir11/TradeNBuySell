@@ -36,17 +36,17 @@ INSERT INTO users (user_id, email, password_hash, role, full_name, wallet_balanc
 -- Student Users with varying trust scores (will be updated based on ratings)
 INSERT INTO users (user_id, email, password_hash, role, full_name, wallet_balance, trust_score, registered_at, is_suspended) VALUES
 -- High trust score users (for trading) - trust scores will be updated from ratings
-('11111111-1111-1111-1111-111111111111', 'student1@pilani.bits-pilani.ac.in', @password_hash, 'STUDENT', 'Rahul Sharma', 2500.00, 0.0, DATE_SUB(NOW(), INTERVAL 30 DAY), 0),
-('22222222-2222-2222-2222-222222222222', 'student2@pilani.bits-pilani.ac.in', @password_hash, 'STUDENT', 'Priya Patel', 3200.00, 0.0, DATE_SUB(NOW(), INTERVAL 25 DAY), 0),
-('33333333-3333-3333-3333-333333333333', 'student3@pilani.bits-pilani.ac.in', @password_hash, 'STUDENT', 'Arjun Kumar', 1800.00, 0.0, DATE_SUB(NOW(), INTERVAL 20 DAY), 0),
-('44444444-4444-4444-4444-444444444444', 'student4@pilani.bits-pilani.ac.in', @password_hash, 'STUDENT', 'Ananya Singh', 1500.00, 0.0, DATE_SUB(NOW(), INTERVAL 15 DAY), 0),
-('55555555-5555-5555-5555-555555555555', 'student5@pilani.bits-pilani.ac.in', @password_hash, 'STUDENT', 'Vikram Mehta', 2100.00, 0.0, DATE_SUB(NOW(), INTERVAL 10 DAY), 0),
+('11111111-1111-1111-1111-111111111111', 'rahul.sharma@pilani.bits-pilani.ac.in', @password_hash, 'STUDENT', 'Rahul Sharma', 2500.00, 0.0, DATE_SUB(NOW(), INTERVAL 30 DAY), 0),
+('22222222-2222-2222-2222-222222222222', 'priya.patel@pilani.bits-pilani.ac.in', @password_hash, 'STUDENT', 'Priya Patel', 3200.00, 0.0, DATE_SUB(NOW(), INTERVAL 25 DAY), 0),
+('33333333-3333-3333-3333-333333333333', 'arjun.kumar@pilani.bits-pilani.ac.in', @password_hash, 'STUDENT', 'Arjun Kumar', 1800.00, 0.0, DATE_SUB(NOW(), INTERVAL 20 DAY), 0),
+('44444444-4444-4444-4444-444444444444', 'ananya.singh@pilani.bits-pilani.ac.in', @password_hash, 'STUDENT', 'Ananya Singh', 1500.00, 0.0, DATE_SUB(NOW(), INTERVAL 15 DAY), 0),
+('55555555-5555-5555-5555-555555555555', 'vikram.mehta@pilani.bits-pilani.ac.in', @password_hash, 'STUDENT', 'Vikram Mehta', 2100.00, 0.0, DATE_SUB(NOW(), INTERVAL 10 DAY), 0),
 -- Medium trust score users
-('66666666-6666-6666-6666-666666666666', 'student6@pilani.bits-pilani.ac.in', @password_hash, 'STUDENT', 'Sneha Reddy', 1400.00, 0.0, DATE_SUB(NOW(), INTERVAL 8 DAY), 0),
-('77777777-7777-7777-7777-777777777777', 'student7@pilani.bits-pilani.ac.in', @password_hash, 'STUDENT', 'Aditya Joshi', 1900.00, 0.0, DATE_SUB(NOW(), INTERVAL 5 DAY), 0),
+('66666666-6666-6666-6666-666666666666', 'sneha.reddy@pilani.bits-pilani.ac.in', @password_hash, 'STUDENT', 'Sneha Reddy', 1400.00, 0.0, DATE_SUB(NOW(), INTERVAL 8 DAY), 0),
+('77777777-7777-7777-7777-777777777777', 'aditya.joshi@pilani.bits-pilani.ac.in', @password_hash, 'STUDENT', 'Aditya Joshi', 1900.00, 0.0, DATE_SUB(NOW(), INTERVAL 5 DAY), 0),
 -- New users (low trust score, cannot trade)
-('88888888-8888-8888-8888-888888888888', 'student8@pilani.bits-pilani.ac.in', @password_hash, 'STUDENT', 'Kavya Nair', 1000.00, 0.0, DATE_SUB(NOW(), INTERVAL 3 DAY), 0),
-('99999999-9999-9999-9999-999999999999', 'student9@pilani.bits-pilani.ac.in', @password_hash, 'STUDENT', 'Rajesh Verma', 1000.00, 0.0, DATE_SUB(NOW(), INTERVAL 1 DAY), 0);
+('88888888-8888-8888-8888-888888888888', 'kavya.nair@pilani.bits-pilani.ac.in', @password_hash, 'STUDENT', 'Kavya Nair', 1000.00, 0.0, DATE_SUB(NOW(), INTERVAL 3 DAY), 0),
+('99999999-9999-9999-9999-999999999999', 'rajesh.verma@pilani.bits-pilani.ac.in', @password_hash, 'STUDENT', 'Rajesh Verma', 1000.00, 0.0, DATE_SUB(NOW(), INTERVAL 1 DAY), 0);
 
 -- ============================================================================
 -- LISTINGS

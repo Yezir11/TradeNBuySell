@@ -29,7 +29,12 @@ public class ListingCreateDTO {
     private BigDecimal bidIncrement;
     private LocalDateTime bidStartTime;
     private LocalDateTime bidEndTime;
+    
+    @NotBlank(message = "Category is required")
     private String category;
+    
+    @NotNull(message = "Tags are required")
+    @Size(min = 1, message = "At least one tag is required")
     private List<String> tags;
 }
 

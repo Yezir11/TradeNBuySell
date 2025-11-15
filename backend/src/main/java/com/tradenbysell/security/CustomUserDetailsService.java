@@ -3,12 +3,15 @@ package com.tradenbysell.security;
 import com.tradenbysell.model.User;
 import com.tradenbysell.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -38,10 +41,16 @@ public class CustomUserDetailsService implements UserDetailsService {
                     .orElseThrow(() -> new UsernameNotFoundException("User not found: " + identifier));
         }
 
+        Collection<GrantedAuthority> authorities = new ArrayList<>();
+        // Add role as authority with ROLE_ prefix (Spring Security requirement)
+        if (user.getRole() != null) {
+            authorities.add(new SimpleGrantedAuthority("ROLE_" + user.getRole().name()));
+        }
+
         return new org.springframework.security.core.userdetails.User(
                 user.getUserId(),
                 user.getPasswordHash() != null ? user.getPasswordHash() : "",
-                new ArrayList<>()
+                authorities
         );
     }
 

@@ -13,6 +13,7 @@ public interface BidRepository extends JpaRepository<Bid, Long> {
     Optional<Bid> findTopByListingIdOrderByBidAmountDescBidTimeAsc(String listingId);
     List<Bid> findByUserIdOrderByBidTimeDesc(String userId);
     List<Bid> findByListingIdAndIsWinning(String listingId, Boolean isWinning);
+    void deleteByListingId(String listingId);
     
     // Check if a user has a winning bid (completed purchase) for a listing
     @org.springframework.data.jpa.repository.Query(

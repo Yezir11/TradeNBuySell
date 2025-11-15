@@ -13,6 +13,8 @@ public class ChatMessageDTO {
     private String listingId;
     private String listingTitle;
     private String messageText;
+    private String messageType; // TEXT, PURCHASE_OFFER, OFFER_ACCEPTED, OFFER_REJECTED, OFFER_COUNTERED
+    private String offerId; // Reference to purchase offer if message type is offer-related
     private LocalDateTime timestamp;
     private Boolean isReported;
 }

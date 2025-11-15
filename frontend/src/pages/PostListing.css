@@ -113,3 +113,93 @@
   text-align: center;
 }
 
+/* Flagged Listing Dialog */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.6);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+}
+
+.flagged-dialog {
+  background: white;
+  border-radius: 10px;
+  padding: 0;
+  max-width: 600px;
+  width: 90%;
+  max-height: 90vh;
+  overflow-y: auto;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+}
+
+.flagged-dialog-header {
+  background: #ff9800;
+  color: white;
+  padding: 20px;
+  border-radius: 10px 10px 0 0;
+}
+
+.flagged-dialog-header h2 {
+  margin: 0;
+  font-size: 1.5rem;
+}
+
+.flagged-dialog-body {
+  padding: 20px;
+}
+
+.flagged-dialog-body p {
+  margin-bottom: 15px;
+  line-height: 1.6;
+}
+
+.flagged-dialog-body ul {
+  margin: 15px 0;
+  padding-left: 25px;
+}
+
+.flagged-dialog-body li {
+  margin-bottom: 8px;
+  line-height: 1.5;
+}
+
+.flagged-dialog-actions {
+  display: flex;
+  gap: 10px;
+  padding: 20px;
+  border-top: 1px solid #ddd;
+  justify-content: flex-end;
+}
+
+.flagged-dialog-actions button {
+  padding: 10px 20px;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  font-size: 1rem;
+}
+
+.flagged-dialog-actions .btn-primary {
+  background: #007bff;
+  color: white;
+}
+
+.flagged-dialog-actions .btn-primary:hover {
+  background: #0056b3;
+}
+
+.flagged-dialog-actions .btn-secondary {
+  background: #6c757d;
+  color: white;
+}
+
+.flagged-dialog-actions .btn-secondary:hover {
+  background: #5a6268;
+}
+

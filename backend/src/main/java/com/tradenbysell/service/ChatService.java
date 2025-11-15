@@ -56,7 +56,18 @@ public class ChatService {
     }
 
     public List<ChatMessageDTO> getConversation(String userId1, String userId2) {
-        return chatMessageRepository.findBySenderIdAndReceiverIdOrderByTimestampAsc(userId1, userId2).stream()
+        // Get messages in both directions
+        List<ChatMessage> messages1 = chatMessageRepository.findBySenderIdAndReceiverIdOrderByTimestampAsc(userId1, userId2);
+        List<ChatMessage> messages2 = chatMessageRepository.findBySenderIdAndReceiverIdOrderByTimestampAsc(userId2, userId1);
+        
+        List<ChatMessage> allMessages = new java.util.ArrayList<>();
+        allMessages.addAll(messages1);
+        allMessages.addAll(messages2);
+        
+        // Sort by timestamp
+        allMessages.sort((m1, m2) -> m1.getTimestamp().compareTo(m2.getTimestamp()));
+        
+        return allMessages.stream()
                 .map(this::toDTO)
                 .collect(Collectors.toList());
     }
@@ -85,6 +96,34 @@ public class ChatService {
         message.setIsReported(true);
         chatMessageRepository.save(message);
     }
+    
+    @Transactional
+    public ChatMessageDTO sendOfferMessage(String senderId, String receiverId, String listingId, String offerId, String messageText) {
+        ChatMessage message = new ChatMessage();
+        message.setSenderId(senderId);
+        message.setReceiverId(receiverId);
+        message.setListingId(listingId);
+        message.setOfferId(offerId);
+        message.setMessageText(messageText);
+        message.setMessageType("PURCHASE_OFFER");
+        message.setIsReported(false);
+        message = chatMessageRepository.save(message);
+        return toDTO(message);
+    }
+    
+    @Transactional
+    public ChatMessageDTO sendOfferStatusMessage(String senderId, String receiverId, String listingId, String offerId, String messageType, String messageText) {
+        ChatMessage message = new ChatMessage();
+        message.setSenderId(senderId);
+        message.setReceiverId(receiverId);
+        message.setListingId(listingId);
+        message.setOfferId(offerId);
+        message.setMessageText(messageText);
+        message.setMessageType(messageType);
+        message.setIsReported(false);
+        message = chatMessageRepository.save(message);
+        return toDTO(message);
+    }
 
     private ChatMessageDTO toDTO(ChatMessage message) {
         ChatMessageDTO dto = new ChatMessageDTO();
@@ -93,6 +132,8 @@ public class ChatService {
         dto.setReceiverId(message.getReceiverId());
         dto.setListingId(message.getListingId());
         dto.setMessageText(message.getMessageText());
+        dto.setMessageType(message.getMessageType());
+        dto.setOfferId(message.getOfferId());
         dto.setTimestamp(message.getTimestamp());
         dto.setIsReported(message.getIsReported());
 

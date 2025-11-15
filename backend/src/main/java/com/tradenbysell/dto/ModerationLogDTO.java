@@ -7,6 +7,7 @@ import lombok.NoArgsConstructor;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Map;
 
 @Data
@@ -17,6 +18,7 @@ public class ModerationLogDTO {
     private String listingId;
     private String userId;
     private String userName;
+    private String userEmail;
     private String predictedLabel;
     private BigDecimal confidence;
     private Boolean shouldFlag;
@@ -27,5 +29,11 @@ public class ModerationLogDTO {
     private Map<String, Object> textExplanation;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
+    
+    // Listing details
+    private String listingTitle;
+    private String listingDescription;
+    private List<String> listingImageUrls;
+    private String listingCategory;
 }
 

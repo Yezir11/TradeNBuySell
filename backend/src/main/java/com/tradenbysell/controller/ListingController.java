@@ -86,9 +86,16 @@ public class ListingController {
 
     @DeleteMapping("/{listingId}")
     public ResponseEntity<Void> deactivateListing(@PathVariable String listingId,
+                                                   @RequestParam(required = false, defaultValue = "false") Boolean permanent,
                                                    Authentication authentication) {
         String userId = authUtil.getUserId(authentication);
-        listingService.deactivateListing(userId, listingId);
+        if (permanent != null && permanent) {
+            // Permanently delete the listing
+            listingService.deleteListing(userId, listingId);
+        } else {
+            // Deactivate (set isActive = false)
+            listingService.deactivateListing(userId, listingId);
+        }
         return ResponseEntity.ok().build();
     }
 
@@ -104,6 +111,11 @@ public class ListingController {
     public ResponseEntity<Map<String, Object>> addImages(@PathVariable String listingId,
                                          @RequestBody List<String> imageUrls,
                                          Authentication authentication) {
+        // Validate: At least one image is required
+        if (imageUrls == null || imageUrls.isEmpty()) {
+            throw new com.tradenbysell.exception.BadRequestException("At least one image is required");
+        }
+        
         listingService.addImages(listingId, imageUrls, authentication);
         
         // Get listing to check if it was flagged

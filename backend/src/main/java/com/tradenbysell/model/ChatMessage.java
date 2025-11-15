@@ -36,6 +36,12 @@ public class ChatMessage {
     @Column(name = "message_text", nullable = false, columnDefinition = "TEXT")
     private String messageText;
 
+    @Column(name = "message_type", length = 50)
+    private String messageType; // TEXT, PURCHASE_OFFER, OFFER_ACCEPTED, OFFER_REJECTED, OFFER_COUNTERED
+
+    @Column(name = "offer_id", length = 36, columnDefinition = "CHAR(36)")
+    private String offerId; // Reference to purchase offer if message type is offer-related
+
     @CreationTimestamp
     @Column(name = "timestamp")
     private LocalDateTime timestamp;

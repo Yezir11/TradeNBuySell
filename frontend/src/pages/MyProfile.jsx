@@ -168,7 +168,8 @@ const MyProfile = () => {
     } else if (activeFilter === 'pending') {
       filtered = filtered.filter(l => l.isActive);
     } else if (activeFilter === 'moderated') {
-      filtered = filtered.filter(l => !l.isActive);
+      // Only show listings that were actually flagged by moderation (shouldFlag = true)
+      filtered = filtered.filter(l => l.hasModerationLog === true);
     }
 
     // Apply search query
@@ -199,9 +200,10 @@ const MyProfile = () => {
   };
 
   const handleRemoveListing = async (listingId, closeMenu = false) => {
-    if (window.confirm('Are you sure you want to remove this listing? This action cannot be undone.')) {
+    if (window.confirm('Are you sure you want to permanently delete this listing? This action cannot be undone.')) {
       try {
-        await api.delete(`/api/listings/${listingId}`);
+        // Pass permanent=true to actually delete the listing
+        await api.delete(`/api/listings/${listingId}?permanent=true`);
         fetchProfileData();
         if (closeMenu) handleMenuClose();
       } catch (err) {
@@ -319,7 +321,7 @@ const MyProfile = () => {
   const activeCount = listings.filter(l => l.isActive).length;
   const inactiveCount = listings.filter(l => !l.isActive).length;
   const pendingCount = 0;
-  const moderatedCount = 0;
+  const moderatedCount = listings.filter(l => l.hasModerationLog === true).length;
 
   return (
     <>

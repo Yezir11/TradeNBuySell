@@ -1,17 +1,21 @@
 import React, { useState, useEffect, useCallback } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import api from '../services/api';
 import Navigation from '../components/Navigation';
 import './AdminDashboard.css';
 
 const AdminDashboard = () => {
+  const navigate = useNavigate();
   const { isAdmin } = useAuth();
   const [reports, setReports] = useState([]);
   const [users, setUsers] = useState([]);
   const [flaggedListings, setFlaggedListings] = useState([]);
   const [moderationStats, setModerationStats] = useState({});
+  const [mandatoryModerationEnabled, setMandatoryModerationEnabled] = useState(true);
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState('reports');
+  const [error, setError] = useState('');
   const [selectedReport, setSelectedReport] = useState(null);
   const [selectedModeration, setSelectedModeration] = useState(null);
   const [adminAction, setAdminAction] = useState('');
@@ -27,15 +31,30 @@ const AdminDashboard = () => {
         const response = await api.get('/api/admin/users');
         setUsers(response.data);
       } else if (activeTab === 'moderation') {
-        const [listingsResponse, statsResponse] = await Promise.all([
-          api.get(`/api/moderation/admin/flagged-listings?page=${moderationPage}&size=20`),
-          api.get('/api/moderation/admin/statistics')
-        ]);
-        setFlaggedListings(listingsResponse.data.content || []);
-        setModerationStats(statsResponse.data || {});
+        try {
+          const [listingsResponse, statsResponse, settingResponse] = await Promise.all([
+            api.get(`/api/moderation/admin/flagged-listings?page=${moderationPage}&size=20`),
+            api.get('/api/moderation/admin/statistics'),
+            api.get('/api/admin/settings/mandatory-moderation')
+          ]);
+          setFlaggedListings(listingsResponse.data.content || []);
+          setModerationStats(statsResponse.data || {});
+          setMandatoryModerationEnabled(settingResponse.data.enabled || false);
+        } catch (moderationErr) {
+          // Handle moderation-specific errors separately
+          if (moderationErr.response?.status === 403) {
+            console.error('Access denied. Please ensure you are logged in as an ADMIN and restart the backend after the security fix.');
+            setError('Access denied. Please log out and log back in, and ensure the backend has been restarted.');
+          } else {
+            throw moderationErr; // Re-throw to be caught by outer catch
+          }
+        }
       }
     } catch (err) {
       console.error('Failed to fetch dashboard data:', err);
+      if (err.response?.status === 403) {
+        console.error('403 Forbidden: Your JWT token may not have the correct roles. Please log out and log back in.');
+      }
     } finally {
       setLoading(false);
     }
@@ -95,6 +114,22 @@ const AdminDashboard = () => {
     }
   };
 
+  const handleToggleMandatoryModeration = async () => {
+    try {
+      const response = await api.post('/api/admin/settings/mandatory-moderation/toggle');
+      if (response.data.error) {
+        alert('Error: ' + response.data.error);
+      } else {
+        setMandatoryModerationEnabled(response.data.enabled);
+        alert(response.data.message || `Mandatory moderation ${response.data.enabled ? 'enabled' : 'disabled'}`);
+      }
+    } catch (err) {
+      const errorMessage = err.response?.data?.error || err.response?.data?.message || err.message || 'Failed to toggle mandatory moderation setting';
+      alert('Error: ' + errorMessage);
+      console.error('Toggle moderation error:', err);
+    }
+  };
+
   if (!isAdmin()) {
     return (
       <>
@@ -124,6 +159,25 @@ const AdminDashboard = () => {
       <div className="admin-dashboard">
         <div className="container">
           <h1>Admin Dashboard</h1>
+
+          {error && (
+            <div className="error-message" style={{
+              background: '#ffebee',
+              color: '#c62828',
+              padding: '12px',
+              borderRadius: '4px',
+              marginBottom: '20px',
+              border: '1px solid #ef5350'
+            }}>
+              {error}
+              <button 
+                onClick={() => setError('')}
+                style={{ float: 'right', background: 'none', border: 'none', cursor: 'pointer', fontSize: '18px' }}
+              >
+                ×
+              </button>
+            </div>
+          )}
 
           <div className="tabs">
             <button
@@ -325,85 +379,196 @@ const AdminDashboard = () => {
                 </div>
               </div>
 
+              <div className="moderation-setting-card" style={{
+                background: '#f5f5f5',
+                padding: '20px',
+                borderRadius: '8px',
+                marginBottom: '20px',
+                display: 'flex',
+                justifyContent: 'space-between',
+                alignItems: 'center'
+              }}>
+                <div>
+                  <h3 style={{ margin: '0 0 8px 0' }}>Mandatory Moderation for New Postings</h3>
+                  <p style={{ margin: 0, color: '#666', fontSize: '14px' }}>
+                    {mandatoryModerationEnabled 
+                      ? 'All new postings must go through ML moderation before being activated'
+                      : 'Moderation is optional - postings can be created without moderation'}
+                  </p>
+                </div>
+                <button
+                  onClick={handleToggleMandatoryModeration}
+                  style={{
+                    padding: '10px 20px',
+                    backgroundColor: mandatoryModerationEnabled ? '#4caf50' : '#f44336',
+                    color: 'white',
+                    border: 'none',
+                    borderRadius: '4px',
+                    cursor: 'pointer',
+                    fontSize: '16px',
+                    fontWeight: 'bold',
+                    minWidth: '120px'
+                  }}
+                >
+                  {mandatoryModerationEnabled ? 'ON' : 'OFF'}
+                </button>
+              </div>
+
               {flaggedListings.length === 0 ? (
                 <div className="no-flagged">No flagged listings found</div>
               ) : (
-                <div className="flagged-listings">
+                <div className="flagged-listings-grid">
                   {flaggedListings.map(log => (
-                    <div key={log.logId} className="moderation-card">
-                      <div className="moderation-header">
-                        <div>
-                          <h3>Listing #{log.listingId || 'N/A'}</h3>
-                          <span className={`label-badge ${log.predictedLabel}`}>
-                            {log.predictedLabel} ({Math.round(log.confidence * 100)}%)
-                          </span>
+                    <div key={log.logId} className="moderation-card-enhanced">
+                      {/* Header Section */}
+                      <div className="moderation-card-header">
+                        <div className="moderation-card-title-section">
+                          <h3>{log.listingTitle || `Listing #${log.listingId?.substring(0, 8) || 'N/A'}`}</h3>
+                          <div className="moderation-header-badges">
+                            <span className={`label-badge ${log.predictedLabel}`}>
+                              {log.predictedLabel?.toUpperCase()} ({Math.round(log.confidence * 100)}%)
+                            </span>
+                            {log.listingCategory && (
+                              <span className="category-badge-header">{log.listingCategory}</span>
+                            )}
+                          </div>
                         </div>
                         <span className="moderation-date">
-                          {new Date(log.createdAt).toLocaleString()}
+                          {new Date(log.createdAt).toLocaleDateString()}<br/>
+                          {new Date(log.createdAt).toLocaleTimeString()}
                         </span>
                       </div>
 
-                      <div className="moderation-details">
-                        <p><strong>User:</strong> {log.userName}</p>
-                        <p><strong>Confidence:</strong> {Math.round(log.confidence * 100)}%</p>
-                        <p><strong>Status:</strong> {log.adminAction || 'PENDING'}</p>
-                        
-                        {log.imageHeatmap && (
-                          <div className="heatmap-preview">
-                            <p><strong>ML Explanation:</strong></p>
-                            <img src={log.imageHeatmap} alt="Heatmap" style={{maxWidth: '300px', marginTop: '10px'}} />
+                      {/* Images Section */}
+                      {log.listingImageUrls && log.listingImageUrls.length > 0 && (
+                        <div className="moderation-listing-images">
+                          <div className="listing-images-grid">
+                            {log.listingImageUrls.slice(0, 3).map((imageUrl, idx) => (
+                              <div key={idx} className="image-wrapper">
+                                <img 
+                                  src={imageUrl} 
+                                  alt={`Listing ${idx + 1}`}
+                                  className="listing-image-thumbnail"
+                                  onClick={() => window.open(imageUrl, '_blank')}
+                                />
+                              </div>
+                            ))}
+                            {log.listingImageUrls.length > 3 && (
+                              <div className="more-images-indicator">
+                                +{log.listingImageUrls.length - 3}
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                      )}
+
+                      {/* Content Section */}
+                      <div className="moderation-card-content">
+                        {/* Description */}
+                        {log.listingDescription && (
+                          <div className="moderation-description-section">
+                            <p className="listing-description">
+                              {log.listingDescription.length > 150 
+                                ? log.listingDescription.substring(0, 150) + '...' 
+                                : log.listingDescription}
+                            </p>
                           </div>
                         )}
 
-                        {log.textExplanation && (
-                          <div className="text-explanation">
-                            <p><strong>Important Tokens:</strong></p>
-                            <div className="tokens-list">
-                              {log.textExplanation.tokens?.slice(0, 10).map((token, idx) => (
-                                <span key={idx} className="token-badge">
-                                  {token} ({log.textExplanation.scores?.[idx]?.toFixed(2)})
-                                </span>
-                              ))}
-                            </div>
+                        {/* User Info Section */}
+                        <div className="moderation-user-section">
+                          <div className="user-info-block">
+                            <div className="user-label">Posted by:</div>
+                            <div className="user-name">{log.userName}</div>
+                            {log.userEmail && (
+                              <div className="user-email">{log.userEmail}</div>
+                            )}
                           </div>
-                        )}
+                          <button
+                            className="btn-chat"
+                            onClick={() => navigate(`/chat?userId=${log.userId}${log.listingId ? `&listingId=${log.listingId}` : ''}`)}
+                            title="Chat with user about this listing"
+                          >
+                            💬 Chat About Listing
+                          </button>
+                        </div>
+
+                        {/* Moderation Status */}
+                        <div className="moderation-status-section">
+                          <div className="status-row">
+                            <div className="confidence-info">
+                              <span className="confidence-label">Confidence:</span>
+                              <span className="confidence-value">{Math.round(log.confidence * 100)}%</span>
+                            </div>
+                            <span className={`status-badge ${log.adminAction || 'PENDING'}`}>
+                              {log.adminAction || 'PENDING'}
+                            </span>
+                          </div>
+                          
+                          {log.textExplanation && log.textExplanation.tokens && log.textExplanation.tokens.length > 0 && (
+                            <div className="flagged-tokens-section">
+                              <div className="tokens-label">Flagged Tokens:</div>
+                              <div className="tokens-list">
+                                {log.textExplanation.tokens.slice(0, 5).map((token, idx) => (
+                                  <span key={idx} className="token-badge">
+                                    {token}
+                                  </span>
+                                ))}
+                              </div>
+                            </div>
+                          )}
+                        </div>
                       </div>
 
+                      {/* Action Buttons Section */}
                       {selectedModeration === log.logId ? (
-                        <div className="moderation-actions">
+                        <div className="moderation-actions-panel">
                           <select
                             value={adminAction}
                             onChange={(e) => setAdminAction(e.target.value)}
                             className="action-select"
                           >
                             <option value="">Select Action</option>
-                            <option value="APPROVED">Approve</option>
-                            <option value="REJECTED">Reject</option>
-                            <option value="BLACKLISTED">Blacklist User</option>
+                            <option value="APPROVED">✅ Approve</option>
+                            <option value="REJECTED">❌ Reject</option>
+                            <option value="BLACKLISTED">🚫 Blacklist User</option>
                           </select>
-                          <button
-                            onClick={() => handleModerationAction(log.logId)}
-                            className="btn-primary"
-                          >
-                            Submit Action
-                          </button>
-                          <button
-                            onClick={() => {
-                              setSelectedModeration(null);
-                              setAdminAction('');
-                            }}
-                            className="btn-secondary"
-                          >
-                            Cancel
-                          </button>
+                          <div className="action-buttons-group">
+                            <button
+                              onClick={() => handleModerationAction(log.logId)}
+                              className="btn-submit"
+                              disabled={!adminAction}
+                            >
+                              Submit Action
+                            </button>
+                            <button
+                              onClick={() => {
+                                setSelectedModeration(null);
+                                setAdminAction('');
+                              }}
+                              className="btn-cancel"
+                            >
+                              Cancel
+                            </button>
+                          </div>
                         </div>
                       ) : (
-                        <button
-                          onClick={() => setSelectedModeration(log.logId)}
-                          className="btn-primary"
-                        >
-                          Review
-                        </button>
+                        <div className="moderation-card-actions">
+                          <button
+                            onClick={() => setSelectedModeration(log.logId)}
+                            className="btn-review"
+                          >
+                            Review Listing
+                          </button>
+                          {log.listingId && (
+                            <button
+                              onClick={() => navigate(`/listing/${log.listingId}`)}
+                              className="btn-view"
+                            >
+                              View Listing
+                            </button>
+                          )}
+                        </div>
                       )}
                     </div>
                   ))}
