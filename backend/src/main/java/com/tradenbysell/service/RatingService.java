@@ -37,6 +37,9 @@ public class RatingService {
     
     @Autowired
     private com.tradenbysell.repository.PurchaseOfferRepository purchaseOfferRepository;
+    
+    @Autowired(required = false)
+    private NotificationService notificationService;
 
     @Transactional
     public RatingDTO createRating(String fromUserId, String toUserId, Integer ratingValue,
@@ -108,7 +111,18 @@ public class RatingService {
         rating.setReviewComment(reviewComment);
         rating = ratingRepository.save(rating);
 
+        Float oldTrustScore = userRepository.findById(toUserId).map(User::getTrustScore).orElse(null);
         updateTrustScore(toUserId);
+        
+        // Notify user about new rating and trust score update
+        if (notificationService != null) {
+            notificationService.notifyRatingReceived(toUserId);
+            
+            User user = userRepository.findById(toUserId).orElse(null);
+            if (user != null && (oldTrustScore == null || !oldTrustScore.equals(user.getTrustScore()))) {
+                notificationService.notifyTrustScoreUpdated(toUserId, user.getTrustScore());
+            }
+        }
 
         return toDTO(rating);
     }

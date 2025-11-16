@@ -21,7 +21,9 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
@@ -44,6 +46,9 @@ public class TradeService {
     
     @Autowired
     private ChatService chatService;
+    
+    @Autowired
+    private NotificationService notificationService;
     
     @Autowired
     private com.tradenbysell.repository.ListingImageRepository listingImageRepository;
@@ -110,6 +115,17 @@ public class TradeService {
             }
         }
 
+        // Notify recipient about trade proposal
+        User initiator = userRepository.findById(initiatorId).orElse(null);
+        if (initiator != null) {
+            notificationService.notifyTradeProposed(
+                    requestedListing.getUserId(),
+                    trade.getTradeId(),
+                    requestedListing.getTitle(),
+                    initiator.getFullName()
+            );
+        }
+        
         // No longer holding funds - funds will be transferred immediately on acceptance
         return toDTO(trade);
     }
@@ -173,6 +189,18 @@ public class TradeService {
         User initiator = userRepository.findById(trade.getInitiatorId()).orElse(null);
         User recipient = userRepository.findById(trade.getRecipientId()).orElse(null);
         
+        Listing requestedListingForNotification = listingRepository.findById(trade.getRequestedListingId()).orElse(null);
+        String listingTitle = requestedListingForNotification != null ? requestedListingForNotification.getTitle() : "listing";
+        
+        // Send notifications
+        if (initiator != null) {
+            notificationService.notifyTradeAccepted(initiator.getUserId(), trade.getTradeId(), listingTitle);
+            notificationService.notifyTradeCompleted(initiator.getUserId(), trade.getTradeId(), listingTitle);
+        }
+        if (recipient != null) {
+            notificationService.notifyTradeCompleted(recipient.getUserId(), trade.getTradeId(), listingTitle);
+        }
+        
         String tradeMessage = String.format("✅ Trade Completed!\n\nYour trade has been completed. You can now rate each other to update trust scores.");
         if (trade.getCashAdjustmentAmount() != null && trade.getCashAdjustmentAmount().compareTo(BigDecimal.ZERO) != 0) {
             BigDecimal absAmount = trade.getCashAdjustmentAmount().abs();
@@ -216,6 +244,12 @@ public class TradeService {
         trade.setResolvedAt(LocalDateTime.now());
         trade = tradeRepository.save(trade);
 
+        // Notify initiator about rejection
+        Listing requestedListing = listingRepository.findById(trade.getRequestedListingId()).orElse(null);
+        if (requestedListing != null) {
+            notificationService.notifyTradeRejected(trade.getInitiatorId(), trade.getTradeId(), requestedListing.getTitle());
+        }
+
         // No funds to release - funds are only transferred on acceptance
         return toDTO(trade);
     }
@@ -236,6 +270,24 @@ public class TradeService {
         trade.setStatus(Trade.TradeStatus.CANCELLED);
         trade.setResolvedAt(LocalDateTime.now());
         trade = tradeRepository.save(trade);
+
+        // Notify recipient about cancellation
+        Listing requestedListing = listingRepository.findById(trade.getRequestedListingId()).orElse(null);
+        if (requestedListing != null) {
+            Map<String, Object> metadata = new HashMap<>();
+            metadata.put("tradeId", trade.getTradeId());
+            metadata.put("listingTitle", requestedListing.getTitle());
+            notificationService.createNotification(
+                    trade.getRecipientId(),
+                    com.tradenbysell.model.Notification.NotificationType.TRADE_CANCELLED,
+                    "Trade Cancelled",
+                    String.format("The trade proposal for '%s' was cancelled by the initiator.", requestedListing.getTitle()),
+                    trade.getTradeId(),
+                    com.tradenbysell.model.Notification.RelatedEntityType.TRADE,
+                    com.tradenbysell.model.Notification.Priority.MEDIUM,
+                    metadata
+            );
+        }
 
         // No funds to release - funds are only transferred on acceptance
         return toDTO(trade);

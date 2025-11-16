@@ -73,18 +73,93 @@
   color: var(--tbs-text);
 }
 
+.file-upload-button {
+  width: 100%;
+  padding: 12px 20px;
+  background: var(--tbs-bg-elevated);
+  border: 2px dashed var(--tbs-border);
+  border-radius: 8px;
+  color: var(--tbs-text);
+  font-size: 1rem;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  margin-top: 8px;
+  text-align: center;
+  user-select: none;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+}
+
+.file-upload-button:hover {
+  background: var(--tbs-bg-card);
+  border-color: var(--tbs-gold);
+  color: var(--tbs-gold);
+}
+
+.file-upload-button:active {
+  transform: scale(0.98);
+}
+
+#file-upload-input:disabled + .file-upload-button,
+.file-upload-button[style*="cursor: not-allowed"] {
+  opacity: 0.6;
+  cursor: not-allowed;
+  pointer-events: none;
+}
+
+.file-upload-button i {
+  font-size: 1.2rem;
+}
+
 .uploaded-images {
   display: flex;
-  gap: 10px;
-  margin-top: 10px;
+  gap: 15px;
+  margin-top: 15px;
   flex-wrap: wrap;
 }
 
+.uploaded-image-wrapper {
+  position: relative;
+  width: 120px;
+  height: 120px;
+}
+
 .uploaded-images img {
-  width: 100px;
-  height: 100px;
+  width: 120px;
+  height: 120px;
   object-fit: cover;
-  border-radius: 5px;
+  border-radius: 8px;
+  border: 2px solid var(--tbs-border);
+}
+
+.remove-image-btn {
+  position: absolute;
+  top: -8px;
+  right: -8px;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: var(--tbs-red);
+  color: white;
+  border: 2px solid var(--tbs-bg-card);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.9rem;
+  transition: all 0.2s ease;
+  padding: 0;
+}
+
+.remove-image-btn:hover {
+  background: var(--tbs-red);
+  transform: scale(1.1);
+  box-shadow: 0 2px 8px rgba(214, 35, 50, 0.4);
 }
 
 .submit-btn {

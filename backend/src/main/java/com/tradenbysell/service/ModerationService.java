@@ -44,6 +44,9 @@ public class ModerationService {
     @Autowired
     private AuthUtil authUtil;
     
+    @Autowired(required = false)
+    private NotificationService notificationService;
+    
     @Value("${app.moderation.api.url:http://localhost:5000}")
     private String moderationApiUrl;
     
@@ -170,6 +173,25 @@ public class ModerationService {
         }
         
         moderationLogRepository.save(log);
+        
+        // Notify user if listing was flagged
+        if (response.getShould_flag() && listingId != null) {
+            Listing listing = listingRepository.findById(listingId).orElse(null);
+            if (listing != null && notificationService != null) {
+                notificationService.notifyListingFlagged(userId, listingId, listing.getTitle());
+                
+                // Notify all admins about new flagged listing
+                List<User> admins = userRepository.findByRole(com.tradenbysell.model.User.Role.ADMIN);
+                for (User admin : admins) {
+                    notificationService.notifyAdminNewFlaggedListing(
+                            admin.getUserId(),
+                            listingId,
+                            listing.getTitle(),
+                            response.getLabel()
+                    );
+                }
+            }
+        }
     }
     
     /**
@@ -190,13 +212,22 @@ public class ModerationService {
         
         moderationLogRepository.save(log);
         
-        // If rejected, deactivate listing
-        if (action == ModerationLog.AdminAction.REJECTED && log.getListingId() != null) {
-            Listing listing = listingRepository.findById(log.getListingId())
-                    .orElse(null);
+        // Send notifications based on admin action
+        if (log.getListingId() != null && log.getUser() != null && notificationService != null) {
+            Listing listing = listingRepository.findById(log.getListingId()).orElse(null);
             if (listing != null) {
-                listing.setIsActive(false);
-                listingRepository.save(listing);
+                String userId = log.getUser().getUserId();
+                String listingTitle = listing.getTitle();
+                
+                if (action == ModerationLog.AdminAction.APPROVED) {
+                    listing.setIsActive(true);
+                    listingRepository.save(listing);
+                    notificationService.notifyListingApproved(userId, log.getListingId(), listingTitle);
+                } else if (action == ModerationLog.AdminAction.REJECTED) {
+                    listing.setIsActive(false);
+                    listingRepository.save(listing);
+                    notificationService.notifyListingRejected(userId, log.getListingId(), listingTitle, reason);
+                }
             }
         }
     }

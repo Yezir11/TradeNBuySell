@@ -38,6 +38,9 @@ public class BidService {
 
     @Autowired
     private WalletService walletService;
+    
+    @Autowired
+    private NotificationService notificationService;
 
     @Transactional
     public BidDTO placeBid(String userId, String listingId, BigDecimal bidAmount) {
@@ -110,6 +113,28 @@ public class BidService {
         bid.setIsWinning(true);
         bid = bidRepository.save(bid);
 
+        // Notify listing owner about new bid
+        User bidder = userRepository.findById(userId).orElse(null);
+        if (bidder != null) {
+            notificationService.notifyNewBidReceived(
+                    listing.getUserId(),
+                    listingId,
+                    listing.getTitle(),
+                    bidAmount,
+                    bidder.getFullName()
+            );
+        }
+
+        // Notify previous highest bidder if they were outbid
+        if (highestBid != null && !highestBid.getUserId().equals(userId)) {
+            notificationService.notifyBidOutbid(
+                    highestBid.getUserId(),
+                    listingId,
+                    listing.getTitle(),
+                    bidAmount
+            );
+        }
+
         return toDTO(bid);
     }
 
@@ -159,6 +184,30 @@ public class BidService {
 
         walletService.creditFunds(listing.getUserId(), winningBid.getBidAmount(),
                 com.tradenbysell.model.WalletTransaction.TransactionReason.BID, listingId, "Bid payment received");
+
+        // Notify winner
+        notificationService.notifyBidWon(winningBid.getUserId(), listingId, listing.getTitle(), winningBid.getBidAmount());
+        
+        // Notify other bidders that they lost
+        List<Bid> allBids = bidRepository.findByListingIdOrderByBidAmountDescBidTimeAsc(listingId);
+        for (Bid bid : allBids) {
+            if (!bid.getBidId().equals(winningBid.getBidId()) && !bid.getUserId().equals(winningBid.getUserId())) {
+                notificationService.notifyBidLost(bid.getUserId(), listingId, listing.getTitle());
+            }
+        }
+        
+        // Notify winner about finalization
+        notificationService.createNotification(
+                winningBid.getUserId(),
+                com.tradenbysell.model.Notification.NotificationType.BID_FINALIZED,
+                "Bid Finalized",
+                String.format("Your winning bid of ₹%s on '%s' has been finalized by the seller.", 
+                        winningBid.getBidAmount().toPlainString(), listing.getTitle()),
+                listingId,
+                com.tradenbysell.model.Notification.RelatedEntityType.BID,
+                com.tradenbysell.model.Notification.Priority.HIGH,
+                null
+        );
 
         return toDTO(winningBid);
     }

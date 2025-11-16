@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import NotificationBell from './NotificationBell';
 import './MarketplaceHeader.css';
 
 const MarketplaceHeader = ({ showSearch = true, searchPlaceholder = "Find items, services and more...", onSearchSubmit, onSearchChange, initialSearchQuery = '' }) => {
@@ -125,6 +126,7 @@ const MarketplaceHeader = ({ showSearch = true, searchPlaceholder = "Find items,
               <Link to="/marketplace" className="marketplace-link-button">
                 Marketplace
               </Link>
+              <NotificationBell />
               <Link to="/chat" className="header-icon">
                 <i className="fas fa-comments"></i>
               </Link>

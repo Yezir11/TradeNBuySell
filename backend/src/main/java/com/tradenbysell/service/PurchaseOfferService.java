@@ -42,6 +42,9 @@ public class PurchaseOfferService {
     @Autowired
     private WalletService walletService;
     
+    @Autowired
+    private NotificationService notificationService;
+    
     @Transactional
     public PurchaseOfferDTO createOffer(String buyerId, String listingId, BigDecimal offerAmount, String message) {
         // Validate listing
@@ -103,6 +106,15 @@ public class PurchaseOfferService {
                 message != null && !message.trim().isEmpty() ? "Message: " + message : "");
         
         chatService.sendOfferMessage(buyerId, listing.getUserId(), listingId, offer.getOfferId(), offerMessage);
+        
+        // Notify seller about new purchase offer
+        notificationService.notifyPurchaseOfferReceived(
+                listing.getUserId(),
+                offer.getOfferId(),
+                listing.getTitle(),
+                offerAmount,
+                buyer.getFullName()
+        );
         
         return toDTO(offer, listing, buyer, seller);
     }
@@ -169,6 +181,11 @@ public class PurchaseOfferService {
                 finalAmount.toPlainString(), finalAmount.toPlainString());
         chatService.sendOfferStatusMessage(offer.getBuyerId(), offer.getSellerId(), offer.getListingId(), 
                 offer.getOfferId(), "OFFER_ACCEPTED", sellerMessage);
+        
+        // Send notifications
+        notificationService.notifyPurchaseOfferAccepted(offer.getBuyerId(), offer.getOfferId(), listing.getTitle(), finalAmount);
+        notificationService.notifyPurchaseCompleted(offer.getBuyerId(), offer.getOfferId(), listing.getTitle(), finalAmount);
+        notificationService.notifyPurchaseCompleted(offer.getSellerId(), offer.getOfferId(), listing.getTitle(), finalAmount);
         
         return toDTO(offer, listing, buyer, seller);
     }
@@ -238,6 +255,11 @@ public class PurchaseOfferService {
         chatService.sendOfferStatusMessage(buyerId, offer.getSellerId(), offer.getListingId(), 
                 offer.getOfferId(), "OFFER_ACCEPTED", sellerMessage);
         
+        // Send notifications
+        notificationService.notifyCounterOfferAccepted(offer.getSellerId(), offer.getOfferId(), listing.getTitle(), finalAmount);
+        notificationService.notifyPurchaseCompleted(buyerId, offer.getOfferId(), listing.getTitle(), finalAmount);
+        notificationService.notifyPurchaseCompleted(offer.getSellerId(), offer.getOfferId(), listing.getTitle(), finalAmount);
+        
         return toDTO(offer, listing, buyer, seller);
     }
     
@@ -273,7 +295,12 @@ public class PurchaseOfferService {
         chatService.sendOfferStatusMessage(offer.getSellerId(), offer.getBuyerId(), offer.getListingId(), 
                 offer.getOfferId(), "OFFER_COUNTERED", counterMessage);
         
+        // Notify buyer about counter offer
         Listing listing = listingRepository.findById(offer.getListingId()).orElse(null);
+        if (listing != null) {
+            notificationService.notifyPurchaseOfferCountered(offer.getBuyerId(), offer.getOfferId(), listing.getTitle(), counterAmount);
+        }
+        
         User buyer = userRepository.findById(offer.getBuyerId()).orElse(null);
         User seller = userRepository.findById(offer.getSellerId()).orElse(null);
         
@@ -303,7 +330,12 @@ public class PurchaseOfferService {
         chatService.sendOfferStatusMessage(offer.getSellerId(), offer.getBuyerId(), offer.getListingId(), 
                 offer.getOfferId(), "OFFER_REJECTED", rejectMessage);
         
+        // Notify buyer about rejection
         Listing listing = listingRepository.findById(offer.getListingId()).orElse(null);
+        if (listing != null) {
+            notificationService.notifyPurchaseOfferRejected(offer.getBuyerId(), offer.getOfferId(), listing.getTitle());
+        }
+        
         User buyer = userRepository.findById(offer.getBuyerId()).orElse(null);
         User seller = userRepository.findById(offer.getSellerId()).orElse(null);
         

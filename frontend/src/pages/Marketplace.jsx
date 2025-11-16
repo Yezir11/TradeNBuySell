@@ -20,6 +20,7 @@ const Marketplace = () => {
   const [totalElements, setTotalElements] = useState(0);
   const [error, setError] = useState(null);
   const [priceRange, setPriceRange] = useState([0, 200000]);
+  const pageSize = 15; // Fixed page size
 
   const categories = ['Electronics', 'Books', 'Furniture', 'Clothing', 'Sports', 'Stationery', 'Appliances', 'Other'];
 
@@ -35,7 +36,7 @@ const Marketplace = () => {
     setLoading(true);
     setError(null);
     try {
-      const params = { page, size: 12, nonBiddableOnly: true };
+      const params = { page, size: pageSize, nonBiddableOnly: true };
       if (searchQuery) params.search = searchQuery;
       if (category) params.category = category;
 

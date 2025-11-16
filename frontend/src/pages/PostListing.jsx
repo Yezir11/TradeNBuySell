@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import api from '../services/api';
 import MarketplaceHeader from '../components/MarketplaceHeader';
@@ -25,6 +25,7 @@ const PostListing = () => {
   const [loading, setLoading] = useState(false);
   const [showFlaggedDialog, setShowFlaggedDialog] = useState(false);
   const [flaggedListingId, setFlaggedListingId] = useState(null);
+  const fileInputRef = useRef(null);
 
   const handleInputChange = (e) => {
     const { name, value, type, checked } = e.target;
@@ -35,10 +36,11 @@ const PostListing = () => {
   };
 
   const handleImageUpload = async (e) => {
-    const files = Array.from(e.target.files);
+    const files = Array.from(e.target.files || []);
     if (files.length === 0) return;
 
     setUploading(true);
+    setError('');
     try {
       const formData = new FormData();
       files.forEach(file => formData.append('files', file));
@@ -46,12 +48,34 @@ const PostListing = () => {
       const response = await api.post('/api/upload/images', formData, {
         headers: { 'Content-Type': 'multipart/form-data' }
       });
-      setImages(prev => [...prev, ...response.data]);
+      
+      if (response.data && response.data.length > 0) {
+        setImages(prev => [...prev, ...response.data]);
+      } else {
+        setError('No images were uploaded. Please try again.');
+      }
+      
+      // Reset file input to allow selecting same files again
+      if (fileInputRef.current) {
+        fileInputRef.current.value = '';
+      }
     } catch (err) {
-      setError('Failed to upload images');
+      console.error('Image upload error:', err);
+      setError(err.response?.data?.message || 'Failed to upload images. Please try again.');
     } finally {
       setUploading(false);
     }
+  };
+
+  const handleChooseFilesClick = (e) => {
+    // This is now handled by label, but keeping for backup
+    if (fileInputRef.current && !uploading) {
+      fileInputRef.current.click();
+    }
+  };
+
+  const handleRemoveImage = (index) => {
+    setImages(prev => prev.filter((_, i) => i !== index));
   };
 
   const handleSubmit = async (e) => {
@@ -310,24 +334,68 @@ const PostListing = () => {
             <div className="form-group">
               <label>Images *</label>
               <input
+                ref={fileInputRef}
                 type="file"
+                id="file-upload-input"
+                name="file-upload-input"
                 multiple
                 accept="image/*"
                 onChange={handleImageUpload}
                 disabled={uploading}
-                required
+                style={{ display: 'none' }}
+                required={images.length === 0}
               />
-              {uploading && <p>Uploading images...</p>}
+              {uploading ? (
+                <div className="file-upload-button" style={{ cursor: 'not-allowed', opacity: 0.6, marginBottom: 0 }}>
+                  <i className="fas fa-upload"></i>
+                  Uploading...
+                </div>
+              ) : (
+                <button
+                  type="button"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    console.log('Button clicked, fileInputRef:', fileInputRef.current);
+                    if (fileInputRef.current) {
+                      console.log('Triggering file input click');
+                      fileInputRef.current.click();
+                    } else {
+                      console.error('File input ref is null!');
+                    }
+                  }}
+                  className="file-upload-button"
+                  style={{ marginBottom: 0, width: '100%', background: 'transparent', border: 'none' }}
+                >
+                  <i className="fas fa-upload"></i>
+                  Choose Files
+                </button>
+              )}
+              {uploading && (
+                <p style={{ color: 'var(--tbs-text-muted)', marginTop: '10px' }}>
+                  Uploading images... Please wait.
+                </p>
+              )}
               {images.length > 0 && (
                 <div className="uploaded-images">
                   {images.map((url, index) => (
-                    <img key={index} src={url} alt={`Upload ${index + 1}`} />
+                    <div key={index} className="uploaded-image-wrapper">
+                      <img src={url} alt={`Upload ${index + 1}`} />
+                      <button
+                        type="button"
+                        className="remove-image-btn"
+                        onClick={() => handleRemoveImage(index)}
+                        title="Remove image"
+                      >
+                        <i className="fas fa-times"></i>
+                      </button>
+                    </div>
                   ))}
                 </div>
               )}
               {images.length === 0 && !uploading && (
-                <small style={{ color: 'var(--tbs-red)', display: 'block', marginTop: '4px' }}>
-                  At least one image is required
+                <small style={{ color: 'var(--tbs-text-muted)', display: 'block', marginTop: '10px' }}>
+                  At least one image is required. Click "Choose Files" to upload.
                 </small>
               )}
             </div>

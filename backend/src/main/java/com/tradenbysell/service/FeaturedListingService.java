@@ -33,6 +33,9 @@ public class FeaturedListingService {
     @Autowired
     private WalletService walletService;
     
+    @Autowired(required = false)
+    private NotificationService notificationService;
+    
     public List<FeaturedPackageDTO> getAvailablePackages() {
         return featuredPackageRepository.findByIsActiveOrderByDisplayOrderAsc(true).stream()
                 .map(this::toDTO)
@@ -90,6 +93,11 @@ public class FeaturedListingService {
         listing.setFeaturedUntil(featuredUntil);
         listing.setFeaturedType(featuredPackage.getPackageId());
         listingRepository.save(listing);
+        
+        // Notify user about featured listing
+        if (notificationService != null) {
+            notificationService.notifyListingFeatured(userId, listingId, listing.getTitle(), featuredPackage.getDurationDays());
+        }
     }
     
     @Transactional

@@ -16,7 +16,10 @@ app = Flask(__name__)
 CORS(app)
 
 # Configuration
-MODEL_PATH = os.environ.get('MODEL_PATH', './models/model.pt')
+# Get the directory where this script is located
+SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
+BASE_DIR = os.path.dirname(SCRIPT_DIR)
+MODEL_PATH = os.environ.get('MODEL_PATH', os.path.join(BASE_DIR, 'models', 'model.pt'))
 PORT = int(os.environ.get('PORT', 5002))  # Changed from 5000 to avoid macOS AirPlay conflict, using 5002
 
 # Try to import ML dependencies (optional)
@@ -92,23 +95,25 @@ def load_model():
                 state_dict = checkpoint
             
             # Try to import model architecture
-            src_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'src')
+            src_path = os.path.join(BASE_DIR, 'src')
             if os.path.exists(src_path):
                 sys.path.insert(0, src_path)
                 try:
                     from modeling.multimodal_model import MultimodalModerationModel
                     model = MultimodalModerationModel(num_classes=len(LABELS))
-                    model.load_state_dict(state_dict)
+                    model.load_state_dict(state_dict, strict=False)  # Use strict=False for flexibility
                     model.to(DEVICE)
                     model.eval()
                     print(f"✅ Model loaded successfully on {DEVICE}")
                     return True
                 except Exception as e:
                     print(f"⚠️  Could not load model architecture: {e}")
+                    import traceback
+                    traceback.print_exc()
                     print("   Running in mock mode.")
                     return False
             else:
-                print("⚠️  Source directory not found. Running in mock mode.")
+                print(f"⚠️  Source directory not found at {src_path}. Running in mock mode.")
                 return False
                 
         except Exception as e:

@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Link, NavLink, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import api from '../services/api';
+import NotificationBell from './NotificationBell';
 import './Navigation.css';
 
 const Navigation = () => {
@@ -37,6 +38,11 @@ const Navigation = () => {
     }
 
     const fetchUnreadCount = async () => {
+      // Don't fetch if tab is hidden (performance optimization)
+      if (document.hidden) {
+        return;
+      }
+
       try {
         const response = await api.get('/api/chat/unread-count');
         setUnreadCount(response.data.unreadCount || 0);
@@ -47,9 +53,26 @@ const Navigation = () => {
     };
 
     fetchUnreadCount();
-    // Poll every 10 seconds for new messages
-    const interval = setInterval(fetchUnreadCount, 10000);
-    return () => clearInterval(interval);
+    // Poll every 30 seconds for new messages (reduced from 10s)
+    const interval = setInterval(() => {
+      if (!document.hidden) {
+        fetchUnreadCount();
+      }
+    }, 30000);
+    
+    // Fetch when tab becomes visible
+    const handleVisibilityChange = () => {
+      if (!document.hidden) {
+        fetchUnreadCount();
+      }
+    };
+    
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    
+    return () => {
+      clearInterval(interval);
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+    };
   }, [isAuthenticated, user, loading]);
 
   return (
@@ -70,6 +93,7 @@ const Navigation = () => {
               <NavLink to="/post-listing" onClick={() => setIsMobileMenuOpen(false)}>Post Listing</NavLink>
               <NavLink to="/trades" onClick={() => setIsMobileMenuOpen(false)}>Trades</NavLink>
               <NavLink to="/bids" onClick={() => setIsMobileMenuOpen(false)}>Bidding Center</NavLink>
+              <NotificationBell />
               <NavLink to="/chat" onClick={() => setIsMobileMenuOpen(false)} className="chat-link">
                 Chat
                 {unreadCount > 0 && (

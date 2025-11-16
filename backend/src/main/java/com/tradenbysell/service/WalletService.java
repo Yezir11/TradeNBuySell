@@ -27,6 +27,9 @@ public class WalletService {
     
     @PersistenceContext
     private EntityManager entityManager;
+    
+    @Autowired(required = false)
+    private NotificationService notificationService;
 
     public BigDecimal getBalance(String userId) {
         User user = userRepository.findById(userId)
@@ -91,6 +94,11 @@ public class WalletService {
         transaction.setReferenceId(referenceId);
         transaction.setDescription(description);
         transaction = walletTransactionRepository.save(transaction);
+        
+        // Send notification for debit
+        if (notificationService != null) {
+            notificationService.notifyWalletDebited(userId, amount, reason.toString(), description);
+        }
 
         return toDTO(transaction);
     }
@@ -118,6 +126,11 @@ public class WalletService {
         transaction.setReferenceId(referenceId);
         transaction.setDescription(description);
         transaction = walletTransactionRepository.save(transaction);
+        
+        // Send notification for credit
+        if (notificationService != null) {
+            notificationService.notifyWalletCredited(userId, amount, reason.toString(), description);
+        }
 
         return toDTO(transaction);
     }

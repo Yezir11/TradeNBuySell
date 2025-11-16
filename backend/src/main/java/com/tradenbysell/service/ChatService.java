@@ -27,6 +27,9 @@ public class ChatService {
 
     @Autowired
     private ListingRepository listingRepository;
+    
+    @Autowired(required = false)
+    private NotificationService notificationService;
 
     @Transactional
     public ChatMessageDTO sendMessage(String senderId, String receiverId, String messageText, String listingId) {
@@ -52,6 +55,13 @@ public class ChatService {
         message.setMessageText(messageText);
         message.setIsReported(false);
         message = chatMessageRepository.save(message);
+
+        // Send notification for new message (if not a system/offer/trade message)
+        if (notificationService != null && message.getMessageType() == null) {
+            Listing listing = listingId != null ? listingRepository.findById(listingId).orElse(null) : null;
+            String listingTitle = listing != null ? listing.getTitle() : null;
+            notificationService.notifyNewMessage(receiverId, sender.getFullName(), listingTitle);
+        }
 
         return toDTO(message);
     }

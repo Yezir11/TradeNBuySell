@@ -64,10 +64,29 @@ const ChatPage = () => {
 
   useEffect(() => {
     if (activeConversation) {
-      const interval = setInterval(() => {
-        fetchMessages(activeConversation);
-      }, 3000);
-      return () => clearInterval(interval);
+      const fetchMessagesIfVisible = () => {
+        // Don't fetch if tab is hidden (performance optimization)
+        if (!document.hidden) {
+          fetchMessages(activeConversation);
+        }
+      };
+      
+      // Poll every 10 seconds (reduced from 3s) for new messages
+      const interval = setInterval(fetchMessagesIfVisible, 10000);
+      
+      // Fetch when tab becomes visible
+      const handleVisibilityChange = () => {
+        if (!document.hidden && activeConversation) {
+          fetchMessages(activeConversation);
+        }
+      };
+      
+      document.addEventListener('visibilitychange', handleVisibilityChange);
+      
+      return () => {
+        clearInterval(interval);
+        document.removeEventListener('visibilitychange', handleVisibilityChange);
+      };
     }
   }, [activeConversation]);
 
