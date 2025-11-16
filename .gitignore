@@ -92,3 +92,8 @@ Thumbs.db
 backend/src/main/resources/application-local.properties
 frontend/.env.local
 
+# ML Model files (too large for git)
+ml-moderation/models/*.pt
+ml-moderation/models/*.pth
+ml-moderation/models/*.h5
+
